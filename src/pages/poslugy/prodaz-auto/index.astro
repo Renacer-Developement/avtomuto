@@ -1,0 +1,90 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CarCatalog from '../../../components/CarCatalog.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import RelatedServices from '../../../components/RelatedServices.astro';
+import { getServiceBySlug } from '../../../data/services';
+import { TEAM } from '../../../data/site';
+import { getCarListings, brandSlug } from '../../../lib/cars';
+import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
+
+const service = getServiceBySlug('prodaz-auto')!;
+const responsible = TEAM[service.responsible];
+const path = '/poslugy/prodaz-auto';
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: service.title, href: path },
+];
+const schema = [breadcrumbSchema(crumbs), serviceSchema(service, path)];
+const faq = faqSchema(service.faq);
+if (faq) schema.push(faq);
+
+const cars = await getCarListings();
+const brands = [...new Set(cars.map((c) => c.name).filter(Boolean))].sort();
+
+const title = 'Автомобілі в наявності — купити в Рудниках';
+const description =
+  'Автомобілі в наявності в AvtoMuto: перевірені, з-за кордону та б/в. Огляд у Рудниках біля Стрия, Львівська область.';
+---
+
+<Layout title={title} description={description} path={path} schema={schema} serviceSlug={service.slug}>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="container catalog-page">
+    <h1>Автомобілі в наявності — купити в Рудниках</h1>
+    <p class="lead">{service.shortDescription}</p>
+
+    {brands.length > 1 && (
+      <div class="brand-links">
+        {brands.map((b) => (
+          <a href={`/poslugy/prodaz-auto/marka/${brandSlug(b)}`}>{b}</a>
+        ))}
+      </div>
+    )}
+
+    <CarCatalog cars={cars} responsible={responsible} />
+  </section>
+
+  <section class="container">
+    <FaqAccordion items={service.faq} />
+  </section>
+
+  {service.related && <RelatedServices slugs={service.related} />}
+</Layout>
+
+<style>
+  .catalog-page {
+    padding-block: var(--space-6) var(--space-8);
+  }
+
+  .lead {
+    color: var(--color-gray-mid);
+    max-width: 65ch;
+  }
+
+  .brand-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .brand-links a {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--color-black);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+
+  .brand-links a:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+</style>

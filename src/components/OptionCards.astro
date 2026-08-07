@@ -1,0 +1,62 @@
+---
+interface Option {
+  title: string;
+  text: string;
+}
+
+interface Props {
+  heading: string;
+  items: Option[];
+}
+
+const { heading, items } = Astro.props;
+---
+
+<section class="container options" data-animate>
+  <h2>{heading}</h2>
+  <div class="options__grid">
+    {items.map((item) => (
+      <div class="option-card">
+        <h3>{item.title}</h3>
+        <p>{item.text}</p>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .options {
+    padding-block: var(--space-6);
+  }
+
+  .options__grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+    margin-top: var(--space-4);
+  }
+
+  @media (min-width: 640px) {
+    .options__grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+  }
+
+  .option-card {
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-md);
+    background: var(--color-gray-light);
+    border-left: 3px solid var(--color-accent);
+  }
+
+  .option-card h3 {
+    font-size: var(--fs-lg);
+    margin-bottom: var(--space-2);
+  }
+
+  .option-card p {
+    margin: 0;
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+</style>

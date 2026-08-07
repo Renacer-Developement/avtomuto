@@ -1,0 +1,85 @@
+---
+import type { FaqItem } from '../data/services';
+
+interface Props {
+  items: FaqItem[];
+}
+
+const { items } = Astro.props;
+---
+
+{items.length > 0 && (
+  <div class="faq">
+    <h2>Часті запитання</h2>
+    <div class="faq__list">
+      {items.map((item) => (
+        <details class="faq__item">
+          <summary>{item.question}</summary>
+          <p>{item.answer}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+)}
+
+<style>
+  .faq {
+    margin-block: var(--space-6);
+  }
+
+  .faq__list {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .faq__item {
+    background: var(--color-gray-light);
+    border-left: 3px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    padding: var(--space-4);
+    transition: background var(--transition-fast);
+  }
+
+  .faq__item[open] {
+    background: var(--color-white);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  .faq__item summary {
+    cursor: pointer;
+    font-weight: 700;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .faq__item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__item summary::after {
+    content: '+';
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--color-white);
+    background: var(--color-accent);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .faq__item[open] summary::after {
+    content: '−';
+  }
+
+  .faq__item p {
+    margin: var(--space-3) 0 0;
+    color: var(--color-gray-mid);
+  }
+</style>

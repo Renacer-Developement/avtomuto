@@ -1,0 +1,239 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import TeamCard from '../components/TeamCard.astro';
+import Icon from '../components/Icon.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+import ProcessSteps from '../components/ProcessSteps.astro';
+import { TEAM, telHref } from '../data/site';
+import equipmentStoPhoto from '../assets/images/equipment-sto.webp';
+import equipmentBayPhoto from '../assets/images/equipment-bay.jpg';
+
+const howWeWork = [
+  { title: 'Дзвоните напряму майстру', text: 'Без кол-центру та посередників — одразу спілкуєтесь з людиною, яка виконуватиме роботу.' },
+  { title: 'Діагностика чи консультація', text: 'На місці розбираємось, що саме потрібно вашому авто, перш ніж щось радити.' },
+  { title: 'Чесна ціна і термін', text: 'Називаємо орієнтовну вартість і терміни до початку робіт — без сюрпризів по факту.' },
+];
+import { breadcrumbSchema } from '../utils/schema';
+import { TEAM_PHOTOS } from '../data/team-photos';
+import type { FaqItem } from '../data/services';
+
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Про нас', href: '/pro-nas' },
+];
+
+const trustPoints = [
+  { icon: 'wrench', text: '10 напрямків послуг під одним дахом' },
+  { icon: 'team', text: '11 досвідчених майстрів своєї справи' },
+  { icon: 'clock', text: 'Евакуатор працює цілодобово, 24/7' },
+  { icon: 'check', text: 'Гарантія на виконані роботи та запчастини' },
+];
+
+const aboutFaq: FaqItem[] = [
+  {
+    question: 'Як записатися на ремонт чи консультацію?',
+    answer:
+      'Зателефонуйте або напишіть у WhatsApp, Viber чи Telegram відповідальному майстру — контакти вказані нижче та на сторінці «Контакти». Підкажемо, коли зручно приїхати.',
+  },
+  {
+    question: 'У яких містах ви обслуговуєте клієнтів?',
+    answer:
+      'СТО розташоване в с. Рудники (Стрийський район, Львівська область). До нас приїжджають клієнти зі Стрия, Дрогобича, Львова та навколишніх міст.',
+  },
+  {
+    question: 'Чи можна викликати евакуатор вночі або у вихідний?',
+    answer:
+      'Так, евакуатор працює цілодобово, без вихідних. Решта послуг доступні Пн–Сб з 09:00 до 18:00, у неділю — вихідний.',
+  },
+  {
+    question: 'Чи даєте гарантію на ремонт?',
+    answer:
+      'Так, на виконані роботи та встановлені запчастини надається гарантія — конкретний термін назвемо одразу після діагностики вашого авто.',
+  },
+  {
+    question: 'До кого звертатися з конкретним питанням?',
+    answer:
+      'Ігор відповідає за ремонт, запчастини та колеса; Володимир — за пригон, сертифікацію та розмитнення; Андрій — за продаж авто, детейлінг та евакуатор.',
+  },
+];
+---
+
+<Layout
+  title="Про нас"
+  description="AvtoMuto — команда та історія автосервісу в с. Рудники: Ігор, Володимир та Андрій обслуговують клієнтів зі Стрия, Дрогобича та Львова."
+  path="/pro-nas"
+  schema={breadcrumbSchema(crumbs)}
+>
+  <div class="pro-nas-page">
+    <div class="container">
+      <Breadcrumbs items={crumbs} />
+    </div>
+
+    <section class="story container" data-animate>
+      <h1>Про AvtoMuto</h1>
+      <p>
+        AvtoMuto — автосервіс повного циклу в с. Рудники, Стрийський район, Львівська область. Ми починали з
+        ремонту автомобілів. Сьогодні пропонуємо клієнтам зі Стрия, Дрогобича, Львова та навколишніх міст
+        повний спектр послуг: технічне обслуговування та ремонт, пригон, сертифікацію й розмитнення, продаж
+        авто, а також евакуатор, який працює цілодобово.
+      </p>
+      <p>
+        Наша мета проста: з будь-яким питанням щодо авто ви можете звернутися в одне місце. Ми чесно
+        розкажемо, що потрібно зробити, скільки це коштуватиме і скільки часу займе, а потім якісно виконаємо
+        роботу.
+      </p>
+      <ul class="trust-list">
+        {trustPoints.map((point) => (
+          <li>
+            <span class="trust-list__icon"><Icon name={point.icon} size={22} /></span>
+            <span>{point.text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <ProcessSteps title="Як ми працюємо" steps={howWeWork} />
+
+    <section class="team container" data-animate>
+      <h2>Наша команда</h2>
+      <p class="team__intro">
+        Кожен майстер відповідає за свій напрямок — ви завжди спілкуєтесь напряму з людиною, яка виконує
+        роботу, без кол-центру та посередників.
+      </p>
+      <div class="team__grid">
+        {Object.values(TEAM).map((member) => (
+          <TeamCard member={member} photo={TEAM_PHOTOS[member.key]} />
+        ))}
+      </div>
+    </section>
+
+    <section class="equipment container" data-animate>
+      <h2>Обладнання станції</h2>
+      <p>
+        СТО обладнане сучасним діагностичним устаткуванням: комп’ютерна діагностика двигуна, підвіски та
+        трансмісії, а також стенд розвал-сходження. Це дозволяє швидко й точно визначити несправність перед
+        початком ремонту — і заздалегідь розказати вам, що саме потрібно зробити.
+      </p>
+      <div class="equipment__gallery">
+        <Image src={equipmentStoPhoto} alt="Діагностичне обладнання та підйомник на СТО AvtoMuto" width={480} height={320} format="avif" quality={80} fit="cover" loading="lazy" />
+        <Image src={equipmentBayPhoto} alt="Майстер AvtoMuto готує колесо в ремонтному боксі" width={480} height={320} format="avif" quality={80} fit="cover" position="top" loading="lazy" />
+      </div>
+    </section>
+
+    <section class="faq container" data-animate>
+      <FaqAccordion items={aboutFaq} />
+      <p class="faq__contact">
+        Не знайшли відповіді на своє запитання? Зателефонуйте нам напряму —
+        <a href={telHref(TEAM.ihor.phone)} data-gtm-event="click_phone">{TEAM.ihor.phoneDisplay}</a>.
+      </p>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .pro-nas-page {
+    font-size: 1.08rem;
+    line-height: 1.7;
+  }
+
+  .story,
+  .team,
+  .equipment {
+    padding-block: var(--space-6);
+  }
+
+  .story p,
+  .team__intro,
+  .equipment p {
+    max-width: 70ch;
+    color: var(--color-gray-mid);
+  }
+
+  .trust-list {
+    list-style: none;
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+    max-width: 70ch;
+  }
+
+  @media (min-width: 640px) {
+    .trust-list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .trust-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-gray-light);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+  }
+
+  .trust-list__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-white);
+  }
+
+  .team__grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+    margin-top: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .team__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .equipment__gallery {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+    margin-top: var(--space-4);
+  }
+
+  @media (min-width: 640px) {
+    .equipment__gallery {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .equipment__gallery img {
+    border-radius: var(--radius-md);
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 3 / 2;
+  }
+
+  .faq {
+    padding-block: var(--space-6);
+  }
+
+  .faq__contact {
+    margin-top: var(--space-5);
+    color: var(--color-gray-mid);
+  }
+
+  .faq__contact a {
+    color: var(--color-accent);
+    font-weight: 700;
+    text-decoration: underline;
+  }
+</style>

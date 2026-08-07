@@ -1,0 +1,67 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import EvakuatorBanner from '../../components/EvakuatorBanner.astro';
+import { SERVICES } from '../../data/services';
+import { breadcrumbSchema } from '../../utils/schema';
+
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+];
+const gridServices = SERVICES.filter((s) => !s.highlight);
+---
+
+<Layout
+  title="Послуги AvtoMuto — ремонт, СТО, продаж авто, евакуатор"
+  description="Усі послуги AvtoMuto в Рудниках: ремонт авто, автозапчастини, продаж коліс, сертифікація, розмитнення, пригон авто, дилінг, детейлінг та евакуатор 24/7."
+  path="/poslugy"
+  schema={breadcrumbSchema(crumbs)}
+>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="container" data-animate>
+    <h1>Наші послуги</h1>
+    <p class="lead">Дев’ять напрямків роботи AvtoMuto — від планового ТО до термінового виклику евакуатора.</p>
+    <div class="grid">
+      {gridServices.map((s) => (
+        <ServiceCard service={s} />
+      ))}
+    </div>
+  </section>
+
+  <EvakuatorBanner />
+</Layout>
+
+<style>
+  section {
+    padding-block: var(--space-6);
+  }
+
+  .lead {
+    color: var(--color-gray-mid);
+    max-width: 60ch;
+    margin-bottom: var(--space-5);
+  }
+
+  .grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

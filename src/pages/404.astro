@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
+import { TEAM, telHref } from '../data/site';
+---
+
+<Layout title="Сторінку не знайдено" description="Сторінку не знайдено на сайті AvtoMuto." path="/404" noindex>
+  <section class="not-found container">
+    <span class="not-found__code">404</span>
+    <h1>Сторінку не знайдено</h1>
+    <p>Можливо, посилання застаріло або адресу введено з помилкою.</p>
+    <div class="not-found__actions">
+      <a href="/" class="btn btn-primary">На головну</a>
+      <a href="/poslugy" class="btn btn-outline not-found__outline">Усі послуги</a>
+    </div>
+    <a href={telHref(TEAM.ihor.phone)} class="not-found__call" data-gtm-event="click_phone">
+      <Icon name="phone" size={18} /> Або зателефонуйте нам: {TEAM.ihor.phoneDisplay}
+    </a>
+  </section>
+</Layout>
+
+<style>
+  .not-found {
+    text-align: center;
+    padding-block: var(--space-8);
+  }
+
+  .not-found__code {
+    display: block;
+    font-size: clamp(4rem, 8vw, 8rem);
+    font-weight: 800;
+    color: var(--color-accent);
+    line-height: 1;
+  }
+
+  .not-found p {
+    color: var(--color-gray-mid);
+  }
+
+  .not-found__actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-5);
+  }
+
+  .not-found__outline {
+    color: var(--color-black);
+    border-color: var(--color-black);
+  }
+
+  .not-found__outline:hover {
+    background: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .not-found__call {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+    color: var(--color-black);
+    font-weight: 600;
+  }
+
+  .not-found__call:hover {
+    color: var(--color-accent);
+  }
+</style>

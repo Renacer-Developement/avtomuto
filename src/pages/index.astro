@@ -1,0 +1,167 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import EvakuatorBanner from '../components/EvakuatorBanner.astro';
+import StatsRow from '../components/StatsRow.astro';
+import FeaturedCars from '../components/FeaturedCars.astro';
+import { SERVICES } from '../data/services';
+import { SITE, TEAM, telHref } from '../data/site';
+import { organizationSchema } from '../utils/schema';
+import stoPhoto from '../assets/images/sto-photo.png';
+
+const gridServices = SERVICES.filter((s) => !s.highlight);
+---
+
+<Layout
+  title="AvtoMuto — ремонт, продаж авто, евакуатор у Рудниках 24/7"
+  description="AvtoMuto — автосервіс повного циклу в Рудниках біля Стрия: ремонт, продаж авто, запчастини, сертифікація, розмитнення, евакуатор 24/7 по Львівській області."
+  path="/"
+  schema={organizationSchema()}
+>
+  <section class="hero" data-animate>
+    <div class="container hero__inner">
+      <div class="hero__text">
+        <h1>Ремонт, продаж і евакуатор авто в Рудниках — під ключ, 24/7</h1>
+        <p>
+          Ремонт, запчастини, продаж авто та коліс, сертифікація й розмитнення — AvtoMuto обслуговує клієнтів
+          із с. Рудники, Стрия, Дрогобича та Львова.
+        </p>
+        <div class="hero__actions">
+          <a href={telHref(TEAM.ihor.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+            <Icon name="phone" size={18} /> Записатися на СТО
+          </a>
+          <a href="/poslugy" class="btn btn-outline hero__outline">Усі послуги</a>
+        </div>
+      </div>
+      <div class="hero__media">
+        <Image
+          src={stoPhoto}
+          alt="СТО AvtoMuto — будівля автосервісу з мийкою в с. Рудники"
+          width={800}
+          height={600}
+          format="avif"
+          quality={80}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+  </section>
+
+  <FeaturedCars responsible={TEAM.andriy} />
+
+  <EvakuatorBanner />
+
+  <section class="services" data-animate>
+    <div class="container">
+      <h2>Наші послуги</h2>
+      <div class="services__grid">
+        {gridServices.map((s) => (
+          <ServiceCard service={s} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <StatsRow />
+
+  <section class="final-cta" data-animate>
+    <div class="container final-cta__inner">
+      <h2>Потрібна консультація по вашому авто?</h2>
+      <p>Зателефонуйте — підкажемо, яка послуга підійде саме вам, і назвемо орієнтовний термін виконання.</p>
+      <a href="/kontakty" class="btn btn-primary">Написати нам</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    padding-block: var(--space-7);
+  }
+
+  .hero__inner {
+    display: grid;
+    gap: var(--space-6);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .hero__inner {
+      grid-template-columns: 1.1fr 1fr;
+    }
+  }
+
+  .hero__text p {
+    color: var(--color-gray-mid);
+    max-width: 52ch;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .hero__outline {
+    color: var(--color-black);
+    border-color: var(--color-black);
+  }
+
+  .hero__outline:hover {
+    background: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .hero__media img {
+    border-radius: var(--radius-md);
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
+  }
+
+  .services {
+    padding-block: var(--space-7);
+  }
+
+  .services h2 {
+    text-align: center;
+    margin-bottom: var(--space-5);
+  }
+
+  .services__grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .services__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .services__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .final-cta {
+    background: var(--color-gray-light);
+    padding-block: var(--space-7);
+  }
+
+  .final-cta__inner {
+    text-align: center;
+    max-width: 600px;
+    margin-inline: auto;
+  }
+
+  .final-cta p {
+    color: var(--color-gray-mid);
+  }
+</style>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#141414"/>
+  <rect x="0" y="0" width="640" height="6" fill="#ff6b00"/>
+  <text x="50%" y="50%" fill="#ffffff" font-family="Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle" dominant-baseline="middle">Фото СТО AvtoMuto</text>
+  <text x="50%" y="62%" fill="#ff6b00" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" dominant-baseline="middle">AvtoMuto — плейсхолдер</text>
+</svg>

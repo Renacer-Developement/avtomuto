@@ -1,0 +1,80 @@
+---
+import Icon from './Icon.astro';
+import { TEAM, telHref } from '../data/site';
+
+interface Props {
+  phone?: string;
+  phoneDisplay?: string;
+  label?: string;
+}
+
+const {
+  phone = TEAM.ihor.phone,
+  phoneDisplay = TEAM.ihor.phoneDisplay,
+  label = 'Зателефонувати',
+} = Astro.props;
+---
+
+<div class="sticky-cta" aria-hidden="false">
+  <a href={telHref(phone)} class="sticky-cta__call" data-gtm-event="click_phone">
+    <Icon name="phone" size={20} />
+    <span>
+      <strong>{label}</strong>
+      <small>{phoneDisplay}</small>
+    </span>
+  </a>
+  <a href={telHref(TEAM.andriy.phone)} class="sticky-cta__evakuator" data-gtm-event="click_phone">
+    <Icon name="tow-truck" size={20} />
+    <span>Евакуатор</span>
+  </a>
+</div>
+
+<style>
+  .sticky-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 150;
+    display: flex;
+    height: var(--mobile-cta-height);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .sticky-cta__call,
+  .sticky-cta__evakuator {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    text-decoration: none;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .sticky-cta__call {
+    background: var(--color-accent);
+    color: var(--color-white);
+  }
+
+  .sticky-cta__call small {
+    display: block;
+    font-weight: 500;
+    font-size: 0.75rem;
+    opacity: 0.9;
+  }
+
+  .sticky-cta__evakuator {
+    background: var(--color-black);
+    color: var(--color-white);
+    flex: 0 0 40%;
+  }
+
+  @media (min-width: 1024px) {
+    .sticky-cta {
+      display: none;
+    }
+  }
+</style>

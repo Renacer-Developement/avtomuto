@@ -1,0 +1,188 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from './Icon.astro';
+import type { TeamMember } from '../data/site';
+import { telHref, waHref, viberHref, tgHref } from '../data/site';
+
+interface Props {
+  member: TeamMember;
+  photo?: ImageMetadata;
+  eyebrow?: string;
+  ctaLabel?: string;
+}
+
+const { member, photo, eyebrow = 'Потрібна консультація?', ctaLabel = "Зв'язатись з менеджером" } = Astro.props;
+---
+
+<aside class="contact-card">
+  {photo ? (
+    <div class="contact-card__photo">
+      <Image src={photo} alt={`${member.name}, AvtoMuto`} width={160} height={160} format="avif" quality={80} fit="cover" position="top" />
+    </div>
+  ) : (
+    <div class="contact-card__icon" aria-hidden="true">
+      <Icon name="phone" size={22} />
+    </div>
+  )}
+  <div class="contact-card__body">
+    {photo ? (
+      <>
+        <p class="contact-card__eyebrow">{eyebrow}</p>
+        <p class="contact-card__name">{member.name}</p>
+        <p class="contact-card__role">{member.role}</p>
+      </>
+    ) : (
+      <p class="contact-card__name-inline"><strong>{member.name}</strong> — {member.role}</p>
+    )}
+  </div>
+  <div class="contact-card__actions">
+    <a href={telHref(member.phone)} class="btn btn-primary contact-card__call" data-gtm-event="click_phone">
+      <Icon name="phone" size={18} />
+      <strong>{ctaLabel}</strong>
+    </a>
+    <div class="contact-card__messengers">
+      <a href={waHref(member.phone)} aria-label="WhatsApp" data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={20} /></a>
+      <a href={viberHref(member.phone)} aria-label="Viber" data-gtm-event="click_messenger"><Icon name="viber" size={20} /></a>
+      <a href={tgHref(member.phone)} aria-label="Telegram" data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="telegram" size={20} /></a>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .contact-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    background: linear-gradient(180deg, rgba(255, 107, 0, 0.07), rgba(255, 107, 0, 0.02));
+    border: 1px solid rgba(255, 107, 0, 0.22);
+    border-left: 4px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-5);
+  }
+
+  @media (min-width: 640px) {
+    .contact-card {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .contact-card__icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-white);
+  }
+
+  .contact-card__photo {
+    flex-shrink: 0;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--color-gray-light);
+    border: 3px solid var(--color-white);
+    box-shadow: 0 0 0 1px rgba(255, 107, 0, 0.3);
+  }
+
+  .contact-card__photo :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .contact-card__body {
+    flex: 1;
+  }
+
+  .contact-card__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: var(--fs-sm);
+    color: var(--color-accent-dark);
+    font-weight: 700;
+    margin-bottom: var(--space-1);
+  }
+
+  .contact-card__name {
+    font-size: var(--fs-lg);
+    font-weight: 800;
+    color: var(--color-black);
+    margin-bottom: 0;
+  }
+
+  .contact-card__role {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+    margin-bottom: 0;
+  }
+
+  .contact-card__name-inline {
+    font-size: var(--fs-base);
+    color: var(--color-gray-mid);
+    margin-bottom: 0;
+  }
+
+  .contact-card__name-inline strong {
+    color: var(--color-black);
+    font-size: var(--fs-lg);
+  }
+
+  .contact-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+  }
+
+  @media (min-width: 640px) {
+    .contact-card__actions {
+      width: auto;
+      flex-shrink: 0;
+    }
+  }
+
+  .contact-card__call {
+    flex: 1;
+    justify-content: center;
+  }
+
+  @media (min-width: 640px) {
+    .contact-card__call {
+      flex: none;
+    }
+  }
+
+  .contact-card__messengers {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .contact-card__messengers a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--color-accent-dark);
+    background: var(--color-white);
+    border: 1px solid rgba(255, 107, 0, 0.3);
+    transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .contact-card__messengers a:hover,
+  .contact-card__messengers a:focus-visible {
+    color: var(--color-white);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+</style>

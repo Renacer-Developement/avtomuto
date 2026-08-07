@@ -1,0 +1,619 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Icon from '../../../components/Icon.astro';
+import ContactCard from '../../../components/ContactCard.astro';
+import CarCard from '../../../components/CarCard.astro';
+import { getServiceBySlug } from '../../../data/services';
+import { TEAM, telHref } from '../../../data/site';
+import { getCarListings, CAR_STATUS_LABELS, carTitle, carMetaDescription } from '../../../lib/cars';
+import { breadcrumbSchema, vehicleSchema } from '../../../utils/schema';
+
+export async function getStaticPaths() {
+  const cars = await getCarListings();
+  return cars.map((car) => ({
+    params: { car: car.slug },
+    props: { car },
+  }));
+}
+
+const { car } = Astro.props;
+const service = getServiceBySlug('prodaz-auto')!;
+const responsible = TEAM[service.responsible];
+const path = `/poslugy/prodaz-auto/${car.slug}`;
+const title = carTitle(car);
+
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: service.title, href: '/poslugy/prodaz-auto' },
+  { label: title, href: path },
+];
+
+const specs = [
+  { label: 'Рік випуску', value: car.year ? String(car.year) : undefined },
+  { label: 'Пробіг', value: car.mileageKm != null ? `${car.mileageKm.toLocaleString('uk-UA')} км` : undefined },
+  { label: 'Пальне', value: car.fuelType },
+  { label: 'Коробка передач', value: car.transmission },
+  { label: 'Привід', value: car.driveType },
+  { label: 'Кузов', value: car.bodyType },
+  { label: 'Об’єм двигуна', value: car.engineVolume ? `${car.engineVolume} л` : undefined },
+  { label: 'Колір', value: undefined as string | undefined, swatch: car.colorHex },
+  { label: 'VIN', value: car.vin },
+].filter((s) => s.value || s.swatch);
+
+const otherCars = (await getCarListings()).filter((c) => c.id !== car.id).slice(0, 3);
+const schema = [breadcrumbSchema(crumbs), vehicleSchema(car, path)];
+---
+
+<Layout
+  title={title}
+  description={carMetaDescription(car)}
+  path={path}
+  schema={schema}
+>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="container car-header" data-animate>
+    <span class="car-hero__status">{CAR_STATUS_LABELS[car.status]}</span>
+    <div class="car-header__row">
+      <div>
+        <h1>{car.name} {car.model}</h1>
+        {car.year && <p class="car-header__year">{car.year}</p>}
+      </div>
+      <div class="car-header__buy">
+        {car.priceUsd && <p class="car-hero__price">${car.priceUsd.toLocaleString('uk-UA')}</p>}
+        <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+          <Icon name="phone" size={18} /> Запитати про це авто
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {car.photoUrls.length > 0 && (
+    <section class="container gallery-section" data-animate>
+      <div class="gallery">
+        <div class="gallery__main" data-photos={JSON.stringify(car.photoUrls)}>
+          <img id="main-photo" src={car.photoUrls[0]} alt={title} width="1200" height="675" />
+          <button type="button" class="gallery__zoom" aria-label="Розглянути фото ближче">
+            <Icon name="zoom" size={18} />
+          </button>
+          {car.photoUrls.length > 1 && (
+            <>
+              <button type="button" class="gallery__nav gallery__nav--prev" aria-label="Попереднє фото">
+                <Icon name="arrow" size={20} />
+              </button>
+              <button type="button" class="gallery__nav gallery__nav--next" aria-label="Наступне фото">
+                <Icon name="arrow" size={20} />
+              </button>
+              <span class="gallery__counter" id="gallery-counter">1 / {car.photoUrls.length}</span>
+            </>
+          )}
+        </div>
+        {car.photoUrls.length > 1 && (
+          <div class="gallery__thumbs">
+            {car.photoUrls.map((url, i) => (
+              <button type="button" class={`gallery__thumb ${i === 0 ? 'is-active' : ''}`} data-src={url}>
+                <img src={url} alt={`${title} — фото ${i + 1}`} width="120" height="90" loading="lazy" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  {car.photoUrls.length > 0 && (
+    <div class="lightbox" id="lightbox" hidden>
+      <button type="button" class="lightbox__close" aria-label="Закрити">
+        <Icon name="close" size={22} />
+      </button>
+      {car.photoUrls.length > 1 && (
+        <>
+          <button type="button" class="lightbox__nav lightbox__nav--prev" aria-label="Попереднє фото">
+            <Icon name="arrow" size={24} />
+          </button>
+          <button type="button" class="lightbox__nav lightbox__nav--next" aria-label="Наступне фото">
+            <Icon name="arrow" size={24} />
+          </button>
+          <span class="lightbox__counter" id="lightbox-counter">1 / {car.photoUrls.length}</span>
+        </>
+      )}
+      <img id="lightbox-img" src={car.photoUrls[0]} alt={title} />
+    </div>
+  )}
+
+  {specs.length > 0 && (
+    <section class="container specs" data-animate>
+      <h2>Характеристики</h2>
+      <dl class="specs__list">
+        {specs.map((s) => (
+          <div class="specs__row">
+            <dt>{s.label}</dt>
+            <dd>
+              {s.swatch && <span class="specs__swatch" style={`background:${s.swatch}`}></span>}
+              {s.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )}
+
+  {car.features.length > 0 && (
+    <section class="container features" data-animate>
+      <h2>Комплектація</h2>
+      <ul class="features__list">
+        {car.features.map((f) => (
+          <li><Icon name="check" size={16} /> {f}</li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {car.description && (
+    <section class="container description" data-animate>
+      <h2>Опис</h2>
+      <p>{car.description}</p>
+    </section>
+  )}
+
+  <section class="container" data-animate>
+    <ContactCard member={responsible} eyebrow="Хочете оглянути це авто?" ctaLabel="Запитати про це авто" />
+  </section>
+
+  {otherCars.length > 0 && (
+    <section class="container other-cars" data-animate>
+      <h2>Інші пропозиції</h2>
+      <div class="other-cars__list">
+        {otherCars.map((c) => (
+          <CarCard car={c} />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <div class="container">
+    <a href="/poslugy/prodaz-auto" class="back-link"><Icon name="arrow" size={16} /> Усі авто в наявності</a>
+  </div>
+</Layout>
+
+<script>
+  const thumbs = document.querySelectorAll<HTMLButtonElement>('.gallery__thumb');
+  const main = document.getElementById('main-photo') as HTMLImageElement | null;
+  const counter = document.getElementById('gallery-counter');
+  const prevBtn = document.querySelector<HTMLButtonElement>('.gallery__nav--prev');
+  const nextBtn = document.querySelector<HTMLButtonElement>('.gallery__nav--next');
+  const zoomBtn = document.querySelector<HTMLButtonElement>('.gallery__zoom');
+  const galleryMain = document.querySelector<HTMLDivElement>('.gallery__main');
+  const photos: string[] = JSON.parse(galleryMain?.getAttribute('data-photos') ?? '[]');
+
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+  const lightboxCounter = document.getElementById('lightbox-counter');
+  const lightboxClose = document.querySelector<HTMLButtonElement>('.lightbox__close');
+  const lightboxPrev = document.querySelector<HTMLButtonElement>('.lightbox__nav--prev');
+  const lightboxNext = document.querySelector<HTMLButtonElement>('.lightbox__nav--next');
+
+  let current = 0;
+
+  function show(index: number) {
+    if (photos.length === 0) return;
+    current = (index + photos.length) % photos.length;
+    if (main) main.src = photos[current];
+    thumbs.forEach((b, i) => b.classList.toggle('is-active', i === current));
+    if (counter) counter.textContent = `${current + 1} / ${photos.length}`;
+    if (lightbox && !lightbox.hidden) updateLightbox();
+  }
+
+  function updateLightbox() {
+    if (!lightboxImg || photos.length === 0) return;
+    lightboxImg.src = photos[current];
+    if (lightboxCounter) lightboxCounter.textContent = `${current + 1} / ${photos.length}`;
+  }
+
+  function openLightbox() {
+    if (!lightbox) return;
+    lightbox.hidden = false;
+    document.body.style.overflow = 'hidden';
+    updateLightbox();
+  }
+
+  function closeLightbox() {
+    if (!lightbox) return;
+    lightbox.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  thumbs.forEach((btn, i) => btn.addEventListener('click', () => show(i)));
+  prevBtn?.addEventListener('click', () => show(current - 1));
+  nextBtn?.addEventListener('click', () => show(current + 1));
+
+  main?.addEventListener('click', openLightbox);
+  zoomBtn?.addEventListener('click', openLightbox);
+  lightboxClose?.addEventListener('click', closeLightbox);
+  lightbox?.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  lightboxPrev?.addEventListener('click', () => show(current - 1));
+  lightboxNext?.addEventListener('click', () => show(current + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox || lightbox.hidden) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') show(current - 1);
+    if (e.key === 'ArrowRight') show(current + 1);
+  });
+</script>
+
+<style>
+  .car-header {
+    padding-block: var(--space-6) var(--space-4);
+  }
+
+  .car-header__row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .car-header__row {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-5);
+    }
+
+    .car-header__row h1 {
+      margin-bottom: 0;
+    }
+  }
+
+  .car-header__year {
+    margin: var(--space-1) 0 0;
+    font-size: var(--fs-sm);
+    color: var(--color-gray-mid);
+  }
+
+  .car-header__buy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 768px) {
+    .car-header__buy {
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+  }
+
+  .gallery-section {
+    padding-block: var(--space-4) var(--space-6);
+  }
+
+  .gallery__main {
+    position: relative;
+  }
+
+  .gallery img#main-photo {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    cursor: zoom-in;
+  }
+
+  .gallery__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(20, 20, 20, 0.55);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .gallery__nav:hover {
+    background: rgba(20, 20, 20, 0.8);
+  }
+
+  .gallery__nav--prev {
+    left: var(--space-2);
+  }
+
+  .gallery__nav--prev :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .gallery__nav--next {
+    right: var(--space-2);
+  }
+
+  .gallery__counter {
+    position: absolute;
+    right: var(--space-2);
+    bottom: var(--space-2);
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(20, 20, 20, 0.7);
+    color: var(--color-white);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .gallery__zoom {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(20, 20, 20, 0.55);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .gallery__zoom:hover {
+    background: rgba(20, 20, 20, 0.8);
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(10, 10, 10, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+  }
+
+  .lightbox[hidden] {
+    display: none;
+  }
+
+  .lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+  }
+
+  .lightbox__close {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .lightbox__close:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .lightbox__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .lightbox__nav:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .lightbox__nav--prev {
+    left: var(--space-4);
+  }
+
+  .lightbox__nav--prev :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .lightbox__nav--next {
+    right: var(--space-4);
+  }
+
+  .lightbox__counter {
+    position: absolute;
+    bottom: var(--space-4);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: var(--space-1) var(--space-3);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-white);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+
+  .gallery__thumbs {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    margin-top: var(--space-3);
+    padding-bottom: var(--space-2);
+    scroll-snap-type: x proximity;
+  }
+
+  .gallery__thumb {
+    flex-shrink: 0;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: none;
+    cursor: pointer;
+    scroll-snap-align: start;
+    line-height: 0;
+  }
+
+  .gallery__thumb.is-active {
+    border-color: var(--color-accent);
+  }
+
+  .gallery__thumb img {
+    width: 90px;
+    height: 68px;
+    object-fit: cover;
+  }
+
+  .car-hero__status {
+    display: inline-block;
+    padding: var(--space-1) var(--space-3);
+    border-radius: 999px;
+    background: var(--color-gray-light);
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    margin-bottom: var(--space-3);
+  }
+
+  .car-hero__price {
+    font-size: var(--fs-2xl);
+    font-weight: 800;
+    color: var(--color-accent);
+    margin: 0;
+  }
+
+  .specs,
+  .features,
+  .description {
+    padding-block: var(--space-5);
+  }
+
+  .specs__list {
+    margin: var(--space-4) 0 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 768px) {
+    .specs__list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: var(--space-6);
+    }
+  }
+
+  .specs__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .specs__row dt {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .specs__row dd {
+    margin: 0;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .specs__swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+    border: 1px solid var(--color-border);
+  }
+
+  .features__list {
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .features__list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .features__list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-gray-mid);
+  }
+
+  .features__list :global(svg) {
+    color: var(--color-accent);
+    flex-shrink: 0;
+  }
+
+  .description p {
+    max-width: 70ch;
+    color: var(--color-gray-mid);
+  }
+
+  .other-cars {
+    padding-block: var(--space-6);
+  }
+
+  .other-cars__list {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-block: var(--space-3) var(--space-8);
+    color: var(--color-gray-mid);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .back-link :global(svg) {
+    transform: rotate(180deg);
+  }
+
+  .back-link:hover {
+    color: var(--color-accent);
+  }
+</style>

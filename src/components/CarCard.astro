@@ -1,0 +1,347 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { CAR_STATUS_LABELS, carTitle, type CarListing } from '../lib/cars';
+import { TEAM, telHref } from '../data/site';
+
+interface Props {
+  car: CarListing;
+  layout?: 'list' | 'grid';
+}
+
+const { car, layout = 'list' } = Astro.props;
+const detailUrl = `/poslugy/prodaz-auto/${car.slug}`;
+
+const quickSpecs = [
+  car.mileageKm != null ? `${car.mileageKm.toLocaleString('uk-UA')} км` : null,
+  car.engineVolume ? `${car.engineVolume} л` : null,
+  car.fuelType,
+  car.transmission,
+].filter(Boolean);
+
+// Розгорнута сітка характеристик — лише для layout="grid" (картка каталогу).
+const specs = [
+  car.mileageKm != null ? { icon: 'road', label: `${car.mileageKm.toLocaleString('uk-UA')} км` } : null,
+  car.year ? { icon: 'calendar', label: String(car.year) } : null,
+  car.fuelType ? { icon: 'fuel', label: car.fuelType } : null,
+  car.transmission ? { icon: 'gearbox', label: car.transmission } : null,
+  car.engineVolume ? { icon: 'engine', label: `${car.engineVolume} л` } : null,
+  car.driveType ? { icon: 'drive', label: car.driveType } : null,
+].filter((s): s is { icon: string; label: string } => s !== null);
+
+// layout="grid" (картка каталогу) має два окремих <a> в тілі (переглянути / підібрати),
+// тому вся картка не може сама бути посиланням — фото стає власним <a>, а обгортка стає <div>.
+const Wrapper = layout === 'grid' ? 'div' : 'a';
+const wrapperProps = layout === 'grid' ? {} : { href: detailUrl };
+const PhotoTag = layout === 'grid' ? 'a' : 'div';
+const photoProps = layout === 'grid' ? { href: detailUrl, 'aria-label': carTitle(car) } : {};
+---
+
+<Wrapper class={`car-card car-card--${layout}`} {...wrapperProps}>
+  <PhotoTag class="car-card__photo" {...photoProps}>
+    {car.photoUrls[0] ? (
+      <Image
+        src={car.photoUrls[0]}
+        inferSize
+        width={480}
+        height={360}
+        fit="cover"
+        alt={`${car.name} ${car.model}`}
+        format="avif"
+        quality={65}
+        loading="lazy"
+      />
+    ) : (
+      <Icon name="car-sale" size={28} />
+    )}
+    {layout === 'grid' && (
+      <span class="car-card__status">{CAR_STATUS_LABELS[car.status]}</span>
+    )}
+    {layout === 'grid' && car.vin && (
+      <span class="car-card__vin"><Icon name="car-sale" size={14} /> {car.vin}</span>
+    )}
+    {car.photoUrls.length > 1 && <span class="car-card__photo-count">{car.photoUrls.length} фото</span>}
+  </PhotoTag>
+  <div class="car-card__body">
+    {car.priceUsd && <p class="car-card__price">${car.priceUsd.toLocaleString('uk-UA')}</p>}
+    <h4>{carTitle(car)}</h4>
+    {layout === 'grid' ? (
+      specs.length > 0 && (
+        <div class="car-card__specs">
+          {specs.map((s) => (
+            <span class="car-card__spec">
+              <span class="car-card__spec-icon"><Icon name={s.icon} size={16} /></span>
+              {s.label}
+            </span>
+          ))}
+        </div>
+      )
+    ) : (
+      quickSpecs.length > 0 && <p class="car-card__meta">{quickSpecs.join(' • ')}</p>
+    )}
+    {layout === 'grid' && (
+      <div class="car-card__actions">
+        <a href={detailUrl} class="btn btn-primary car-card__view">Переглянути автомобіль</a>
+        <a href={telHref(TEAM.andriy.phone)} class="btn btn-outline car-card__pick" data-gtm-event="click_phone">Підібрати авто</a>
+      </div>
+    )}
+  </div>
+  {layout === 'list' && <Icon name="arrow" size={18} class="car-card__arrow" />}
+</Wrapper>
+
+<style>
+  .car-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    text-decoration: none;
+    color: var(--color-black);
+    background: var(--color-white);
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  }
+
+  /* hover лише на пристроях з мишею — на тач-екранах :hover "залипає" після тапу */
+  @media (hover: hover) and (pointer: fine) {
+    .car-card:hover {
+      border-color: var(--color-accent);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  .car-card:active {
+    transform: scale(0.98);
+    transition: transform 100ms ease;
+  }
+
+  .car-card__photo {
+    position: relative;
+    flex-shrink: 0;
+    width: 128px;
+    height: 96px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-gray-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-gray-mid);
+  }
+
+  @media (min-width: 640px) {
+    .car-card--list .car-card__photo {
+      width: 180px;
+      height: 135px;
+    }
+  }
+
+  .car-card__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 400ms ease;
+  }
+
+  .car-card__photo-count {
+    position: absolute;
+    right: var(--space-1);
+    bottom: var(--space-1);
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(20, 20, 20, 0.75);
+    color: var(--color-white);
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .car-card__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .car-card h4 {
+    font-size: var(--fs-base);
+    margin-bottom: var(--space-1);
+  }
+
+  @media (min-width: 640px) {
+    .car-card--list h4 {
+      font-size: var(--fs-lg);
+    }
+  }
+
+  .car-card__meta {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+    margin-bottom: 0;
+  }
+
+  .car-card__price {
+    margin-bottom: var(--space-1);
+    font-weight: 800;
+    color: var(--color-accent);
+    font-size: var(--fs-lg);
+  }
+
+  .car-card :global(.car-card__arrow) {
+    flex-shrink: 0;
+    color: var(--color-gray-mid);
+  }
+
+  @media (max-width: 480px) {
+    .car-card--list :global(.car-card__arrow) {
+      display: none;
+    }
+  }
+
+  /* Картка каталогу: велике фото, VIN/статус, розгорнуті характеристики, дві дії */
+  .car-card--grid {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  .car-card--grid .car-card__photo {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    border-radius: 0;
+  }
+
+  .car-card--grid .car-card__body {
+    padding: var(--space-4);
+  }
+
+  .car-card--grid h4 {
+    font-size: var(--fs-lg);
+    margin-bottom: var(--space-3);
+  }
+
+  .car-card--grid .car-card__price {
+    font-size: var(--fs-xl);
+  }
+
+  .car-card__status {
+    position: absolute;
+    top: var(--space-3);
+    right: -2.2rem;
+    transform: rotate(45deg);
+    width: 9rem;
+    padding: 0.3rem 0;
+    text-align: center;
+    background: var(--color-accent);
+    color: var(--color-white);
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .car-card__vin {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--color-black);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .car-card__specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .car-card__spec {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--fs-sm);
+    color: var(--color-black);
+  }
+
+  .car-card__spec-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-gray-light);
+    color: var(--color-gray-mid);
+  }
+
+  .car-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .car-card__view,
+  .car-card__pick {
+    flex: 1;
+    min-width: 180px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .car-card__pick {
+    color: var(--color-black);
+    border-color: var(--color-black);
+  }
+
+  .car-card__pick:hover,
+  .car-card__pick:focus-visible {
+    background: var(--color-black);
+    color: var(--color-white);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .car-card--grid:hover {
+      border-color: var(--color-accent);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    .car-card--grid:hover .car-card__photo img {
+      transform: scale(1.06);
+    }
+  }
+
+  /* Десктоп: картка каталогу — фото зліва, вміст справа */
+  @media (min-width: 900px) {
+    .car-card--grid {
+      flex-direction: row;
+      align-items: stretch;
+    }
+
+    .car-card--grid .car-card__photo {
+      width: 38%;
+      height: auto;
+      aspect-ratio: auto;
+      flex-shrink: 0;
+    }
+
+    .car-card--grid .car-card__body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--space-5);
+    }
+  }
+</style>

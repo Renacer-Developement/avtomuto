@@ -1,0 +1,38 @@
+---
+---
+
+<script>
+  // scroll-reveal animation
+  const animated = document.querySelectorAll('[data-animate]');
+  if ('IntersectionObserver' in window && animated.length) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    animated.forEach((el) => observer.observe(el));
+  } else {
+    animated.forEach((el) => el.classList.add('is-visible'));
+  }
+
+  // GTM dataLayer events for click-to-call / messenger clicks
+  window.dataLayer = window.dataLayer || [];
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest ? e.target.closest('[data-gtm-event]') : null;
+    if (!target) return;
+    const eventName = target.getAttribute('data-gtm-event');
+    window.dataLayer.push({ event: eventName, link_url: target.getAttribute('href') });
+  });
+
+  // view_service event on service pages
+  const serviceSlug = document.body.getAttribute('data-service-slug');
+  if (serviceSlug) {
+    window.dataLayer.push({ event: 'view_service', service_type: serviceSlug });
+  }
+</script>

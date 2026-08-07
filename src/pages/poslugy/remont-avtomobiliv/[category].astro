@@ -1,0 +1,152 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Icon from '../../../components/Icon.astro';
+import ContactCard from '../../../components/ContactCard.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import RelatedServices from '../../../components/RelatedServices.astro';
+import { getServiceBySlug } from '../../../data/services';
+import { REMONT_CATEGORIES } from '../../../data/remont-categories';
+import { TEAM, telHref } from '../../../data/site';
+import { TEAM_PHOTOS } from '../../../data/team-photos';
+import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
+
+export function getStaticPaths() {
+  return REMONT_CATEGORIES.map((cat) => ({
+    params: { category: cat.slug },
+    props: { cat },
+  }));
+}
+
+const { cat } = Astro.props;
+const service = getServiceBySlug('remont-avtomobiliv')!;
+const responsible = TEAM[service.responsible];
+const responsiblePhoto = TEAM_PHOTOS[service.responsible];
+const path = `/poslugy/remont-avtomobiliv/${cat.slug}`;
+const otherCategories = REMONT_CATEGORIES.filter((c) => c.slug !== cat.slug);
+const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджером";
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: service.title, href: '/poslugy/remont-avtomobiliv' },
+  { label: cat.title, href: path },
+];
+const schema = [
+  breadcrumbSchema(crumbs),
+  serviceSchema({ ...service, title: `${cat.title} — ${service.title}`, description: cat.description }, path),
+];
+const faq = faqSchema(service.faq);
+if (faq) schema.push(faq);
+---
+
+<Layout
+  title={`${cat.title} — ремонт авто`}
+  description={cat.description || `${cat.title}: ремонт та діагностика в AvtoMuto, с. Рудники.`}
+  path={path}
+  schema={schema}
+  serviceSlug={`remont-avtomobiliv-${cat.slug}`}
+>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="container" data-animate>
+    <h1>{cat.title}</h1>
+    {cat.description && <p class="lead">{cat.description}</p>}
+    <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+      <Icon name="phone" size={18} /> {ctaLabel}
+    </a>
+  </section>
+
+  {cat.services.length > 0 && (
+    <section class="container" data-animate>
+      <h2>Перелік робіт</h2>
+      <ul class="service-list">
+        {cat.services.map((s) => (
+          <li>{s}</li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <section class="container other-categories" data-animate>
+    <h2>Інші категорії ремонту</h2>
+    <div class="other-categories__list">
+      {otherCategories.map((c) => (
+        <a href={`/poslugy/remont-avtomobiliv/${c.slug}`}>{c.title}</a>
+      ))}
+    </div>
+  </section>
+
+  <section class="container" data-animate>
+    <ContactCard member={responsible} photo={responsiblePhoto} ctaLabel={ctaLabel} />
+  </section>
+
+  <section class="container">
+    <FaqAccordion items={service.faq} />
+  </section>
+
+  {service.related && <RelatedServices slugs={service.related} />}
+</Layout>
+
+<style>
+  section {
+    padding-block: var(--space-5);
+  }
+
+  .lead {
+    color: var(--color-gray-mid);
+    max-width: 65ch;
+    margin-bottom: var(--space-4);
+  }
+
+  .service-list {
+    columns: 1;
+    gap: var(--space-4);
+    padding-left: 1.2em;
+    color: var(--color-gray-mid);
+  }
+
+  .service-list li {
+    margin-bottom: var(--space-2);
+    break-inside: avoid;
+  }
+
+  @media (min-width: 768px) {
+    .service-list {
+      columns: 2;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .service-list {
+      columns: 3;
+    }
+  }
+
+  .other-categories {
+    padding-block: var(--space-4) var(--space-6);
+  }
+
+  .other-categories__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .other-categories__list a {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--color-black);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+
+  .other-categories__list a:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+</style>

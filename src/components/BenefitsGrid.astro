@@ -1,0 +1,79 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  heading: string;
+  items: string[];
+}
+
+const { heading, items } = Astro.props;
+---
+
+<section class="container benefits-section" data-animate>
+  <h2>{heading}</h2>
+  <div class="benefits-grid">
+    {items.map((item) => (
+      <div class="benefit-card">
+        <span class="benefit-card__icon">
+          <Icon name="check" size={20} />
+        </span>
+        <p>{item}</p>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .benefits-section {
+    padding-block: var(--space-6);
+  }
+
+  .benefits-grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+    margin-top: var(--space-4);
+  }
+
+  @media (min-width: 640px) {
+    .benefits-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .benefits-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .benefit-card {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .benefit-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-3px);
+  }
+
+  .benefit-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-white);
+    margin-bottom: var(--space-3);
+  }
+
+  .benefit-card p {
+    margin: 0;
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+</style>

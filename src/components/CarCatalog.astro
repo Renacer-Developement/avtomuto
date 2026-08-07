@@ -1,0 +1,508 @@
+---
+import CarCard from './CarCard.astro';
+import Icon from './Icon.astro';
+import { CAR_STATUS_LABELS, type CarListing, type CarStatus } from '../lib/cars';
+import { telHref, type TeamMember } from '../data/site';
+
+interface Props {
+  cars: CarListing[];
+  responsible: TeamMember;
+}
+
+const { cars, responsible } = Astro.props;
+
+// Фіксований набір статусів — завжди пропонуємо всі три в фільтрі, навіть якщо
+// зараз немає жодного авто в якомусь статусі (напр. "Під замовлення").
+const statusOrder: CarStatus[] = ['available', 'in_transit', 'on_order'];
+
+const brands = [...new Set(cars.map((c) => c.name).filter(Boolean))].sort();
+const bodyTypes = [...new Set(cars.map((c) => c.bodyType).filter((v): v is string => Boolean(v)))].sort();
+const fuelTypes = [...new Set(cars.map((c) => c.fuelType).filter((v): v is string => Boolean(v)))].sort();
+const showFilters = cars.length > 1;
+---
+
+{cars.length > 0 ? (
+  <div class="car-catalog">
+    <div class="car-catalog__toolbar">
+      <p class="car-catalog__count" id="car-catalog-count">Знайдено {cars.length} авто</p>
+      {showFilters && (
+        <button type="button" class="car-catalog__filters-toggle" id="filters-toggle">
+          <Icon name="filter" size={16} /> Фільтри
+        </button>
+      )}
+    </div>
+
+    {showFilters && (
+      <>
+        <div class="car-catalog__backdrop" id="filters-backdrop"></div>
+        <div class="car-catalog__filters" id="car-catalog-filters">
+          <div class="car-catalog__filters-header">
+            <h3>Фільтри</h3>
+            <button type="button" class="car-catalog__filters-close" id="filters-close" aria-label="Закрити">
+              <Icon name="close" size={20} />
+            </button>
+          </div>
+
+          <select id="filter-status" class="car-filter-select">
+            <option value="">Статус: всі</option>
+            {statusOrder.map((status) => <option value={status}>{CAR_STATUS_LABELS[status]}</option>)}
+          </select>
+          {brands.length > 1 && (
+            <select id="filter-brand" class="car-filter-select">
+              <option value="">Марка: всі</option>
+              {brands.map((b) => <option value={b}>{b}</option>)}
+            </select>
+          )}
+          {bodyTypes.length > 1 && (
+            <select id="filter-body" class="car-filter-select">
+              <option value="">Кузов: всі</option>
+              {bodyTypes.map((b) => <option value={b}>{b}</option>)}
+            </select>
+          )}
+          {fuelTypes.length > 1 && (
+            <select id="filter-fuel" class="car-filter-select">
+              <option value="">Пальне: всі</option>
+              {fuelTypes.map((f) => <option value={f}>{f}</option>)}
+            </select>
+          )}
+          <div class="car-catalog__filters-range">
+            <input id="filter-price-min" class="car-filter-input" type="number" inputmode="numeric" placeholder="Ціна від, $" />
+            <input id="filter-price-max" class="car-filter-input" type="number" inputmode="numeric" placeholder="Ціна до, $" />
+          </div>
+          <div class="car-catalog__filters-range">
+            <input id="filter-mileage-min" class="car-filter-input" type="number" inputmode="numeric" placeholder="Пробіг від, км" />
+            <input id="filter-mileage-max" class="car-filter-input" type="number" inputmode="numeric" placeholder="Пробіг до, км" />
+          </div>
+
+          <div class="car-catalog__filters-actions">
+            <button type="button" id="filter-reset" class="car-filter-reset">Скинути</button>
+            <button type="button" class="btn btn-primary car-catalog__filters-apply" id="filters-apply">Показати авто</button>
+          </div>
+        </div>
+      </>
+    )}
+
+    <div class="car-catalog__list" id="car-catalog-list">
+      {cars.map((car) => (
+        <div
+          class="car-filter-item"
+          data-status={car.status}
+          data-brand={car.name}
+          data-body={car.bodyType ?? ''}
+          data-fuel={car.fuelType ?? ''}
+          data-price={car.priceUsd ?? ''}
+          data-mileage={car.mileageKm ?? ''}
+        >
+          <CarCard car={car} layout="grid" />
+        </div>
+      ))}
+    </div>
+    <p class="car-catalog__empty" id="car-catalog-empty" hidden>
+      Авто за цими критеріями не знайдено. Спробуйте змінити фільтри або зателефонуйте — підберемо варіант.
+    </p>
+  </div>
+) : (
+  <div class="car-catalog__empty-state">
+    <p>Каталог зараз оновлюється. Зателефонуйте — розкажемо, які авто є в наявності просто зараз, і надішлемо фото.</p>
+    <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+      <Icon name="phone" size={18} /> {responsible.phoneDisplay}
+    </a>
+  </div>
+)}
+
+<script>
+  const items = document.querySelectorAll<HTMLDivElement>('.car-filter-item');
+  const statusSel = document.getElementById('filter-status') as HTMLSelectElement | null;
+  const brandSel = document.getElementById('filter-brand') as HTMLSelectElement | null;
+  const bodySel = document.getElementById('filter-body') as HTMLSelectElement | null;
+  const fuelSel = document.getElementById('filter-fuel') as HTMLSelectElement | null;
+  const priceMin = document.getElementById('filter-price-min') as HTMLInputElement | null;
+  const priceMax = document.getElementById('filter-price-max') as HTMLInputElement | null;
+  const mileageMin = document.getElementById('filter-mileage-min') as HTMLInputElement | null;
+  const mileageMax = document.getElementById('filter-mileage-max') as HTMLInputElement | null;
+  const resetBtn = document.getElementById('filter-reset');
+  const emptyMsg = document.getElementById('car-catalog-empty');
+  const countLabel = document.getElementById('car-catalog-count');
+
+  const filtersToggle = document.getElementById('filters-toggle');
+  const filtersPanel = document.getElementById('car-catalog-filters');
+  const filtersBackdrop = document.getElementById('filters-backdrop');
+  const filtersClose = document.getElementById('filters-close');
+  const filtersApply = document.getElementById('filters-apply');
+
+  function applyFilters() {
+    let visibleCount = 0;
+    items.forEach((item) => {
+      let visible = true;
+      if (statusSel?.value && item.dataset.status !== statusSel.value) visible = false;
+      if (brandSel?.value && item.dataset.brand !== brandSel.value) visible = false;
+      if (bodySel?.value && item.dataset.body !== bodySel.value) visible = false;
+      if (fuelSel?.value && item.dataset.fuel !== fuelSel.value) visible = false;
+      const price = Number(item.dataset.price || 0);
+      if (priceMin?.value && price < Number(priceMin.value)) visible = false;
+      if (priceMax?.value && price > Number(priceMax.value)) visible = false;
+      const mileage = Number(item.dataset.mileage || 0);
+      if (mileageMin?.value && mileage < Number(mileageMin.value)) visible = false;
+      if (mileageMax?.value && mileage > Number(mileageMax.value)) visible = false;
+      item.hidden = !visible;
+      if (visible) visibleCount++;
+    });
+    if (emptyMsg) emptyMsg.hidden = visibleCount > 0;
+    if (filtersApply) filtersApply.textContent = `Показати ${visibleCount} авто`;
+    if (countLabel) countLabel.textContent = `Знайдено ${visibleCount} авто`;
+  }
+
+  [statusSel, brandSel, bodySel, fuelSel, priceMin, priceMax, mileageMin, mileageMax].forEach((el) =>
+    el?.addEventListener('input', applyFilters)
+  );
+
+  resetBtn?.addEventListener('click', () => {
+    if (statusSel) statusSel.value = '';
+    if (brandSel) brandSel.value = '';
+    if (bodySel) bodySel.value = '';
+    if (fuelSel) fuelSel.value = '';
+    if (priceMin) priceMin.value = '';
+    if (priceMax) priceMax.value = '';
+    if (mileageMin) mileageMin.value = '';
+    if (mileageMax) mileageMax.value = '';
+    applyFilters();
+  });
+
+  function openFilters() {
+    filtersPanel?.classList.add('is-open');
+    filtersBackdrop?.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeFilters() {
+    filtersPanel?.classList.remove('is-open');
+    filtersBackdrop?.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  filtersToggle?.addEventListener('click', openFilters);
+  filtersClose?.addEventListener('click', closeFilters);
+  filtersBackdrop?.addEventListener('click', closeFilters);
+  filtersApply?.addEventListener('click', closeFilters);
+</script>
+
+<style>
+  .car-catalog__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .car-catalog__count {
+    margin: 0;
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .car-catalog__filters-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-white);
+    color: var(--color-black);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+  }
+
+  .car-catalog__filters-toggle:hover {
+    border-color: var(--color-accent);
+  }
+
+  .car-catalog__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(10, 10, 10, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 250ms ease;
+  }
+
+  .car-catalog__backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Мобільно — фільтри як bottom-sheet, що виїжджає знизу */
+  .car-catalog__filters {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    background: var(--color-white);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.18);
+    padding: var(--space-5) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 300ms ease;
+  }
+
+  .car-catalog__filters.is-open {
+    transform: translateY(0);
+  }
+
+  .car-catalog__filters-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .car-catalog__filters-header h3 {
+    margin: 0;
+  }
+
+  .car-catalog__filters-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--color-gray-light);
+    color: var(--color-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .car-catalog__filters-range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+
+  /* прибираємо стрілки лічильника в number-інпутах — з'їдають місце й ріжуть текст плейсхолдера */
+  .car-filter-input::-webkit-outer-spin-button,
+  .car-filter-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .car-filter-input {
+    -moz-appearance: textfield;
+  }
+
+  .car-filter-select,
+  .car-filter-input {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    font-size: var(--fs-base);
+    font-family: var(--font-base);
+    color: var(--color-black);
+  }
+
+  .car-catalog__filters-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+  }
+
+  .car-catalog__filters-apply {
+    flex: 1;
+  }
+
+  .car-filter-reset {
+    padding: var(--space-2) var(--space-3);
+    border: none;
+    background: transparent;
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .car-filter-reset:hover {
+    text-decoration: underline;
+  }
+
+  /* Планшет: фільтри як звичайна горизонтальна панель під табами */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .car-catalog__filters-toggle,
+    .car-catalog__backdrop,
+    .car-catalog__filters-header,
+    .car-catalog__filters-apply {
+      display: none;
+    }
+
+    .car-catalog__filters {
+      position: static;
+      transform: none;
+      z-index: auto;
+      max-height: none;
+      overflow: visible;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+      padding: var(--space-4);
+      background: var(--color-gray-light);
+      border-radius: var(--radius-md);
+      box-shadow: none;
+    }
+
+    .car-catalog__filters-range {
+      display: contents;
+    }
+
+    .car-filter-select,
+    .car-filter-input {
+      width: auto;
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--fs-sm);
+    }
+
+    .car-filter-input {
+      width: 120px;
+    }
+
+    .car-catalog__filters-actions {
+      margin-top: 0;
+    }
+  }
+
+  .car-catalog__list {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+    margin-top: var(--space-4);
+  }
+
+  @media (min-width: 640px) {
+    .car-catalog__list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Десктоп: фільтри як прилипла бічна панель зліва, картки — 2-3 колонки справа */
+  @media (min-width: 1024px) {
+    .car-catalog {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      align-items: start;
+      gap: var(--space-5);
+    }
+
+    .car-catalog__toolbar {
+      grid-column: 2;
+      grid-row: 1;
+      margin-top: 0;
+    }
+
+    .car-catalog__filters-toggle,
+    .car-catalog__backdrop,
+    .car-catalog__filters-apply,
+    .car-catalog__filters-close {
+      display: none;
+    }
+
+    .car-catalog__filters {
+      position: static;
+      inset: auto;
+      z-index: auto;
+      max-height: none;
+      overflow: visible;
+      transform: none;
+      box-shadow: none;
+      grid-column: 1;
+      grid-row: 1 / span 3;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      flex-wrap: nowrap;
+      gap: var(--space-3);
+      margin-top: 0;
+      padding: var(--space-4);
+      background: var(--color-gray-light);
+      border-radius: var(--radius-md);
+    }
+
+    .car-catalog__filters-header {
+      display: flex;
+      margin-bottom: var(--space-1);
+    }
+
+    /* у вузькій бічній панелі (260px) поля "від/до" в 2 колонки не влазять — ставимо одне під одним */
+    .car-catalog__filters-range {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+
+    .car-filter-select,
+    .car-filter-input {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--fs-sm);
+    }
+
+    .car-catalog__filters-actions {
+      flex-direction: column-reverse;
+      align-items: stretch;
+      margin-top: 0;
+    }
+
+    .car-filter-reset {
+      text-align: center;
+    }
+
+    .car-catalog__list {
+      grid-column: 2;
+      grid-row: 2;
+      margin-top: 0;
+      grid-template-columns: 1fr;
+    }
+
+    .car-catalog__empty {
+      grid-column: 2;
+      grid-row: 3;
+    }
+  }
+
+  .car-catalog__empty {
+    margin-top: var(--space-4);
+    padding: var(--space-5);
+    background: var(--color-gray-light);
+    border-radius: var(--radius-md);
+    text-align: center;
+    color: var(--color-gray-mid);
+  }
+
+  .car-catalog__empty-state {
+    margin-top: var(--space-4);
+    padding: var(--space-5);
+    background: var(--color-gray-light);
+    border-radius: var(--radius-md);
+    text-align: center;
+  }
+
+  .car-catalog__empty-state p {
+    max-width: 55ch;
+    margin-inline: auto;
+    color: var(--color-gray-mid);
+    margin-bottom: var(--space-4);
+  }
+</style>

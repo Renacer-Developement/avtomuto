@@ -1,0 +1,111 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Icon from '../../components/Icon.astro';
+import { getBlogPosts } from '../../data/blog';
+import { getServiceBySlug } from '../../data/services';
+import { breadcrumbSchema } from '../../utils/schema';
+
+export async function getStaticPaths() {
+  const posts = await getBlogPosts();
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const path = `/blog/${post.slug}`;
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Блог', href: '/blog' },
+  { label: post.title, href: path },
+];
+const relatedService = post.relatedServiceSlug ? getServiceBySlug(post.relatedServiceSlug) : undefined;
+---
+
+<Layout title={post.title} description={post.excerpt} path={path} schema={breadcrumbSchema(crumbs)}>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <article class="container post" data-animate>
+    <time datetime={post.date}>{new Date(post.date).toLocaleDateString('uk-UA')}</time>
+    <h1>{post.title}</h1>
+    <div class="post-body" set:html={post.content} />
+
+    {relatedService && (
+      <a href={`/poslugy/${relatedService.slug}`} class="related-service">
+        <span class="related-service__label">Читайте також про послугу</span>
+        <span class="related-service__title">{relatedService.title} <Icon name="arrow" size={16} /></span>
+      </a>
+    )}
+  </article>
+</Layout>
+
+<style>
+  .post {
+    max-width: 70ch;
+    padding-block: var(--space-5) var(--space-8);
+  }
+
+  .post time {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .post-body {
+    margin-top: var(--space-4);
+    color: var(--color-black);
+  }
+
+  .post-body :global(h2) {
+    font-size: var(--fs-xl);
+    margin-top: var(--space-6);
+  }
+
+  .post-body :global(p) {
+    color: var(--color-gray-mid);
+  }
+
+  .post-body :global(ul),
+  .post-body :global(ol) {
+    color: var(--color-gray-mid);
+    padding-left: 1.3em;
+    margin: 0 0 var(--space-3);
+  }
+
+  .post-body :global(li) {
+    margin-bottom: var(--space-2);
+  }
+
+  .post-body :global(strong) {
+    color: var(--color-black);
+  }
+
+  .related-service {
+    display: block;
+    margin-top: var(--space-6);
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-gray-light);
+    border-left: 3px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--color-black);
+  }
+
+  .related-service__label {
+    display: block;
+    font-size: var(--fs-sm);
+    color: var(--color-gray-mid);
+    margin-bottom: var(--space-1);
+  }
+
+  .related-service__title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+</style>

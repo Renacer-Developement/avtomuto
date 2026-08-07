@@ -1,0 +1,100 @@
+---
+---
+
+<div class="consent" data-consent hidden>
+  <div class="consent__inner container">
+    <p>
+      Ми використовуємо cookies для аналітики та покращення роботи сайту. Детальніше — у
+      <a href="/polityka-konfidentsiynosti">Політиці конфіденційності</a>.
+    </p>
+    <div class="consent__actions">
+      <button class="btn btn-dark" data-consent-decline type="button">Відхилити</button>
+      <button class="btn btn-primary" data-consent-accept type="button">Прийняти</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .consent {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 300;
+    background: var(--color-black);
+    color: var(--color-white);
+    padding: var(--space-4);
+  }
+
+  .consent__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .consent p {
+    margin: 0;
+    font-size: var(--fs-sm);
+    max-width: 60ch;
+  }
+
+  .consent a {
+    color: var(--color-accent);
+  }
+
+  .consent__actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .consent {
+      bottom: var(--space-4);
+      left: var(--space-4);
+      right: auto;
+      max-width: 480px;
+      border-radius: var(--radius-md);
+    }
+  }
+</style>
+
+<script>
+  const KEY = 'avtomuto_consent';
+  const banner = document.querySelector('[data-consent]');
+  const stored = localStorage.getItem(KEY);
+
+  function updateConsent(granted) {
+    window.gtag =
+      window.gtag ||
+      function () {
+        (window.dataLayer = window.dataLayer || []).push(arguments);
+      };
+    window.gtag('consent', 'update', {
+      ad_storage: granted ? 'granted' : 'denied',
+      ad_user_data: granted ? 'granted' : 'denied',
+      ad_personalization: granted ? 'granted' : 'denied',
+      analytics_storage: granted ? 'granted' : 'denied',
+    });
+  }
+
+  if (!stored) {
+    banner?.removeAttribute('hidden');
+  } else {
+    updateConsent(stored === 'granted');
+  }
+
+  document.querySelector('[data-consent-accept]')?.addEventListener('click', () => {
+    localStorage.setItem(KEY, 'granted');
+    updateConsent(true);
+    banner?.setAttribute('hidden', '');
+  });
+
+  document.querySelector('[data-consent-decline]')?.addEventListener('click', () => {
+    localStorage.setItem(KEY, 'denied');
+    updateConsent(false);
+    banner?.setAttribute('hidden', '');
+  });
+</script>

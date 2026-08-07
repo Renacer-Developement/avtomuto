@@ -1,0 +1,119 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { getBlogPosts } from '../../data/blog';
+import { breadcrumbSchema } from '../../utils/schema';
+
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Блог', href: '/blog' },
+];
+
+const posts = await getBlogPosts();
+const [featured, ...rest] = posts;
+---
+
+<Layout
+  title="Блог AvtoMuto"
+  description="Корисні статті про ремонт, сертифікацію, розмитнення та обслуговування авто від команди AvtoMuto."
+  path="/blog"
+  schema={breadcrumbSchema(crumbs)}
+>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="container" data-animate>
+    <h1>Блог</h1>
+
+    {featured && (
+      <a href={`/blog/${featured.slug}`} class="featured-post">
+        <time datetime={featured.date}>{new Date(featured.date).toLocaleDateString('uk-UA')}</time>
+        <h2>{featured.title}</h2>
+        <p>{featured.excerpt}</p>
+        <span class="featured-post__more">Читати статтю</span>
+      </a>
+    )}
+
+    {rest.length > 0 && (
+      <div class="posts">
+        {rest.map((post) => (
+          <a href={`/blog/${post.slug}`} class="post-card">
+            <time datetime={post.date}>{new Date(post.date).toLocaleDateString('uk-UA')}</time>
+            <h2>{post.title}</h2>
+            <p>{post.excerpt}</p>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</Layout>
+
+<style>
+  section {
+    padding-block: var(--space-5) var(--space-8);
+  }
+
+  .featured-post {
+    display: block;
+    margin-top: var(--space-5);
+    padding: var(--space-6);
+    background: var(--color-black);
+    color: var(--color-white);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    max-width: 720px;
+  }
+
+  .featured-post time {
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .featured-post h2 {
+    margin-top: var(--space-2);
+  }
+
+  .featured-post p {
+    color: #d9d9d9;
+    margin-bottom: var(--space-3);
+  }
+
+  .featured-post__more {
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  .posts {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 720px;
+    margin-top: var(--space-5);
+  }
+
+  .post-card {
+    display: block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    text-decoration: none;
+    color: var(--color-black);
+  }
+
+  .post-card time {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .post-card p {
+    color: var(--color-gray-mid);
+    margin: var(--space-1) 0 0;
+  }
+
+  .post-card:hover h2 {
+    color: var(--color-accent);
+  }
+</style>

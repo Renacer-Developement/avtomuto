@@ -1,0 +1,123 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import type { TeamMember } from '../data/site';
+import { telHref, waHref, viberHref, tgHref } from '../data/site';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  member: TeamMember;
+  photo?: ImageMetadata;
+}
+
+const { member, photo } = Astro.props;
+---
+
+<div class="team-card" data-animate>
+  <div class="team-card__photo">
+    {photo ? (
+      <Image
+        src={photo}
+        alt={`${member.name} — ${member.role}, AvtoMuto`}
+        width={320}
+        height={320}
+        format="avif"
+        quality={80}
+        fit="cover"
+        position="top"
+      />
+    ) : (
+      <div class="team-card__photo-placeholder" aria-hidden="true">
+        <Icon name="team" size={56} />
+      </div>
+    )}
+  </div>
+  <h3 class="team-card__name">{member.name}</h3>
+  <p class="team-card__role">{member.role}</p>
+  <div class="team-card__actions">
+    <a href={telHref(member.phone)} class="btn btn-primary team-card__call" data-gtm-event="click_phone">
+      <Icon name="phone" size={16} /> {member.phoneDisplay}
+    </a>
+    <div class="team-card__messengers">
+      <a href={waHref(member.phone)} aria-label={`WhatsApp ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer">
+        <Icon name="whatsapp" size={20} />
+      </a>
+      <a href={viberHref(member.phone)} aria-label={`Viber ${member.name}`} data-gtm-event="click_messenger">
+        <Icon name="viber" size={20} />
+      </a>
+      <a href={tgHref(member.phone)} aria-label={`Telegram ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer">
+        <Icon name="telegram" size={20} />
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .team-card {
+    text-align: center;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .team-card__photo {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto var(--space-3);
+    background: var(--color-gray-light);
+  }
+
+  .team-card__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .team-card__photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .team-card__name {
+    margin-bottom: var(--space-1);
+  }
+
+  .team-card__role {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+    min-height: 2.6em;
+  }
+
+  .team-card__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .team-card__call {
+    width: 100%;
+  }
+
+  .team-card__messengers {
+    display: flex;
+    gap: var(--space-3);
+  }
+
+  .team-card__messengers a {
+    color: var(--color-accent);
+    transition: color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .team-card__messengers a:hover {
+    color: var(--color-accent-dark);
+    transform: translateY(-2px);
+  }
+</style>

@@ -1,0 +1,189 @@
+---
+import Icon from './Icon.astro';
+import { SERVICES } from '../data/services';
+import { SITE, TEAM, telHref } from '../data/site';
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__col">
+      <span class="header__logo-mark footer__logo">Avto<span class="header__logo-accent">Muto</span></span>
+      <p class="footer__desc">{SITE.description}</p>
+      <div class="footer__social">
+        <a href={SITE.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram AvtoMuto">
+          <Icon name="instagram" size={22} />
+        </a>
+        <a href={SITE.social.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok AvtoMuto">
+          <Icon name="tiktok" size={22} />
+        </a>
+      </div>
+    </div>
+
+    <div class="footer__col">
+      <h3 class="footer__title">Послуги</h3>
+      <ul class="footer__links">
+        {SERVICES.map((s) => (
+          <li><a href={`/poslugy/${s.slug}`}>{s.title}</a></li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="footer__col">
+      <h3 class="footer__title">Контакти</h3>
+      <ul class="footer__contacts">
+        {Object.values(TEAM).map((member) => (
+          <li>
+            <a href={telHref(member.phone)} data-gtm-event="click_phone">
+              <Icon name="phone" size={16} />
+              {member.phoneDisplay}
+            </a>
+            <span class="footer__contact-role">{member.name} — {member.role}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="footer__address">
+        <Icon name="map-pin" size={16} /> {SITE.address.full}
+      </p>
+      <p class="footer__hours">
+        <Icon name="clock" size={16} /> Евакуатор: {SITE.hours.evacuator}<br />
+        Інші послуги: {SITE.hours.general}
+      </p>
+    </div>
+
+    <div class="footer__col">
+      <h3 class="footer__title">Компанія</h3>
+      <ul class="footer__links">
+        <li><a href="/pro-nas">Про нас</a></li>
+        <li><a href="/kontakty">Контакти</a></li>
+        <li><a href="/blog">Блог</a></li>
+        <li><a href="/polityka-konfidentsiynosti">Політика конфіденційності</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container footer__bottom">
+    <p>© {currentYear} {SITE.name}. Усі права захищено.</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--color-black);
+    color: var(--color-white);
+    padding-block: var(--space-7) var(--space-5);
+  }
+
+  .footer__grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .footer__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .footer__grid {
+      grid-template-columns: 1.4fr 1fr 1.2fr 1fr;
+    }
+  }
+
+  .footer__logo {
+    display: inline-block;
+    margin-bottom: var(--space-3);
+  }
+
+  .footer__desc {
+    color: #c9c9c9;
+    font-size: var(--fs-sm);
+    max-width: 32ch;
+  }
+
+  .footer__social {
+    display: flex;
+    gap: var(--space-3);
+  }
+
+  .footer__social a {
+    color: var(--color-white);
+  }
+
+  .footer__social a:hover {
+    color: var(--color-accent);
+  }
+
+  .footer__title {
+    font-size: var(--fs-base);
+    margin-bottom: var(--space-3);
+    color: var(--color-accent);
+  }
+
+  .footer__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+    font-size: var(--fs-sm);
+  }
+
+  .footer__links a {
+    color: #d9d9d9;
+    text-decoration: none;
+  }
+
+  .footer__links a:hover {
+    color: var(--color-white);
+    text-decoration: underline;
+  }
+
+  .footer__contacts {
+    list-style: none;
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+    font-size: var(--fs-sm);
+  }
+
+  .footer__contacts a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-white);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .footer__contacts a:hover {
+    color: var(--color-accent);
+  }
+
+  .footer__contact-role {
+    display: block;
+    color: #a0a0a0;
+    font-size: 0.8rem;
+  }
+
+  .footer__address,
+  .footer__hours {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    color: #c9c9c9;
+    font-size: var(--fs-sm);
+  }
+
+  .footer__bottom {
+    border-top: 1px solid #2c2c2c;
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    color: #888;
+    font-size: var(--fs-sm);
+  }
+</style>

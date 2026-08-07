@@ -1,0 +1,89 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE } from '../data/site';
+import { breadcrumbSchema } from '../utils/schema';
+
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Політика конфіденційності', href: '/polityka-konfidentsiynosti' },
+];
+---
+
+<Layout
+  title="Політика конфіденційності"
+  description="Політика конфіденційності AvtoMuto: обробка персональних даних, використання cookies та Google Analytics."
+  path="/polityka-konfidentsiynosti"
+  schema={breadcrumbSchema(crumbs)}
+>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="container policy" data-animate>
+    <h1>Політика конфіденційності</h1>
+    <p>Дата останнього оновлення: 22.07.2026</p>
+
+    <h2>1. Загальні положення</h2>
+    <p>
+      Ця Політика конфіденційності описує, як {SITE.name} ({SITE.legalForm}) обробляє персональні дані
+      відвідувачів сайту {SITE.domain}. Використовуючи сайт, ви погоджуєтесь з умовами цієї Політики.
+    </p>
+
+    <h2>2. Які дані ми збираємо</h2>
+    <p>При заповненні форми зворотного зв'язку на сторінці «Контакти» ми отримуємо: ім'я, номер телефону,
+      тему звернення та текст повідомлення. Ці дані надсилаються напряму відповідальному співробітнику
+      в Telegram/Viber і використовуються виключно для обробки вашого звернення.</p>
+
+    <h2>3. Файли cookie та аналітика</h2>
+    <p>
+      Сайт використовує Google Analytics 4 та Google Tag Manager для аналізу відвідуваності та поведінки
+      користувачів. Ці сервіси встановлюють cookie-файли лише після вашої явної згоди в cookie-банері
+      (Google Consent Mode v2). Ви можете відхилити використання аналітичних cookies — базовий функціонал
+      сайту при цьому залишається доступним.
+    </p>
+
+    <h2>4. Мета обробки даних</h2>
+    <ul>
+      <li>Обробка заявок і звернень клієнтів</li>
+      <li>Аналіз відвідуваності сайту для покращення його роботи</li>
+      <li>Комунікація з клієнтом щодо обраної послуги</li>
+    </ul>
+
+    <h2>5. Передача даних третім особам</h2>
+    <p>
+      Дані форми зворотного зв'язку передаються виключно через Telegram Bot API для доставки повідомлення
+      відповідальному співробітнику. Дані аналітики обробляються Google відповідно до
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">політики конфіденційності Google</a>.
+      Ми не продаємо та не передаємо персональні дані третім особам у маркетингових цілях.
+    </p>
+
+    <h2>6. Ваші права</h2>
+    <p>Ви маєте право запросити інформацію про те, які дані ми зберігаємо, вимагати їх виправлення або
+      видалення. Для цього зв'яжіться з нами через сторінку «Контакти».</p>
+
+    <h2>7. Контакти</h2>
+    <p>З питань обробки персональних даних звертайтесь: {SITE.address.full}.</p>
+  </section>
+</Layout>
+
+<style>
+  .policy {
+    padding-block: var(--space-5) var(--space-8);
+    max-width: 75ch;
+  }
+
+  .policy h2 {
+    margin-top: var(--space-5);
+    font-size: var(--fs-lg);
+  }
+
+  .policy p,
+  .policy li {
+    color: var(--color-gray-mid);
+  }
+
+  .policy a {
+    color: var(--color-accent);
+  }
+</style>

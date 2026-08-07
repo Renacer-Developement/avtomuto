@@ -1,0 +1,201 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import Icon from '../../../components/Icon.astro';
+import ContactCard from '../../../components/ContactCard.astro';
+import RelatedServices from '../../../components/RelatedServices.astro';
+import { getServiceBySlug } from '../../../data/services';
+import { EVAKUATOR_CITIES, getEvakuatorCityBySlug } from '../../../data/evakuator-cities';
+import { TEAM, telHref } from '../../../data/site';
+import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
+
+export function getStaticPaths() {
+  return EVAKUATOR_CITIES.map((city) => ({
+    params: { city: city.slug },
+    props: { city },
+  }));
+}
+
+const { city } = Astro.props;
+const evakuator = getServiceBySlug('evakuator')!;
+const responsible = TEAM[evakuator.responsible];
+const path = `/poslugy/evakuator/${city.slug}`;
+
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: evakuator.title, href: '/poslugy/evakuator' },
+  { label: city.name, href: path },
+];
+
+const title = `Евакуатор у ${city.nameLocative} — цілодобово`;
+const description = `Виклик евакуатора в ${city.nameLocative} та навколишніх населених пунктах — цілодобово, 24/7. ${city.intro}`;
+
+const faqItems = [city.extraFaq, ...evakuator.faq];
+const ctaLabel = evakuator.ctaLabel ?? 'Викликати евакуатор';
+const schema = [
+  breadcrumbSchema(crumbs),
+  serviceSchema({ ...evakuator, title, description, areaServed: city.name }, path),
+];
+const faq = faqSchema(faqItems);
+if (faq) schema.push(faq);
+
+const otherCities = EVAKUATOR_CITIES.filter((c) => c.slug !== city.slug);
+---
+
+<Layout title={title} description={description} path={path} schema={schema} serviceSlug={`evakuator-${city.slug}`}>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="hero container" data-animate>
+    <div class="hero__icon">
+      <Icon name="tow-truck" size={40} />
+    </div>
+    <h1>Евакуатор у {city.nameLocative}</h1>
+    <p class="lead">{city.intro}</p>
+    <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+      <Icon name="phone" size={18} /> {ctaLabel}
+    </a>
+  </section>
+
+  <section class="container info-row" data-animate>
+    <div class="info-card">
+      <Icon name="map-pin" size={22} />
+      <div>
+        <strong>Відстань від бази</strong>
+        <span>{city.distanceKm} від с. Рудники</span>
+      </div>
+    </div>
+    <div class="info-card">
+      <Icon name="region" size={22} />
+      <div>
+        <strong>Маршрут виїзду</strong>
+        <span>{city.road}</span>
+      </div>
+    </div>
+    <div class="info-card">
+      <Icon name="clock" size={22} />
+      <div>
+        <strong>Графік</strong>
+        <span>Цілодобово, 24/7, без вихідних</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="container note" data-animate>
+    <p>{city.coverageNote}</p>
+  </section>
+
+  <section class="container">
+    <ContactCard member={responsible} eyebrow="Потрібен евакуатор просто зараз?" ctaLabel={ctaLabel} />
+  </section>
+
+  <section class="container">
+    <FaqAccordion items={faqItems} />
+  </section>
+
+  <section class="container other-cities" data-animate>
+    <h2>Також виїжджаємо в:</h2>
+    <div class="other-cities__list">
+      <a href="/poslugy/evakuator">Рудники (база)</a>
+      {otherCities.map((c) => (
+        <a href={`/poslugy/evakuator/${c.slug}`}>{c.name}</a>
+      ))}
+    </div>
+  </section>
+
+  {evakuator.related && <RelatedServices slugs={evakuator.related} />}
+</Layout>
+
+<style>
+  .hero {
+    text-align: center;
+    max-width: 700px;
+    margin-inline: auto;
+    padding-block: var(--space-6);
+  }
+
+  .hero__icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--color-black);
+    color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-4);
+  }
+
+  .lead {
+    color: var(--color-gray-mid);
+    margin-bottom: var(--space-4);
+  }
+
+  .info-row {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+    padding-block: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .info-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .info-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-accent);
+  }
+
+  .info-card div {
+    display: flex;
+    flex-direction: column;
+    color: var(--color-black);
+  }
+
+  .info-card span {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .note {
+    max-width: 700px;
+    color: var(--color-gray-mid);
+    padding-block: var(--space-3);
+  }
+
+  .other-cities {
+    padding-block: var(--space-5) var(--space-7);
+  }
+
+  .other-cities__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .other-cities__list a {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--color-black);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+
+  .other-cities__list a:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+</style>

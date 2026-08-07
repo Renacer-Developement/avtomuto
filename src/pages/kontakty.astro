@@ -1,0 +1,297 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import ContactForm from '../components/ContactForm.astro';
+import Icon from '../components/Icon.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+import { SITE, TEAM, telHref, waHref, viberHref, tgHref } from '../data/site';
+import { breadcrumbSchema } from '../utils/schema';
+import type { FaqItem } from '../data/services';
+
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Контакти', href: '/kontakty' },
+];
+
+const mapSrc = `https://www.google.com/maps?q=${SITE.geo.lat},${SITE.geo.lng}&z=14&output=embed`;
+
+const contactFaq: FaqItem[] = [
+  {
+    question: 'Чи потрібно записуватися заздалегідь?',
+    answer:
+      'Бажано зателефонувати або написати перед приїздом — так ми встигнемо підготуватися і вам не доведеться чекати.',
+  },
+  {
+    question: 'Яким способом зв’язку краще скористатися?',
+    answer:
+      'Найшвидше — зателефонувати. Якщо незручно говорити, напишіть у WhatsApp, Viber чи Telegram — кнопки поруч із кожним номером.',
+  },
+  {
+    question: 'Не знаю, до кого саме звертатися. Що робити?',
+    answer:
+      'Зателефонуйте Ігорю — він підкаже, з ким з колег краще поговорити щодо вашого питання, або скористайтеся формою нижче.',
+  },
+  {
+    question: 'Як швидко ви відповідаєте на заявку з форми?',
+    answer:
+      'Повідомлення з форми надходить напряму відповідальному майстру в Telegram чи Viber — зазвичай відповідаємо протягом робочого дня.',
+  },
+];
+---
+
+<Layout
+  title="Контакти"
+  description="Контакти AvtoMuto: адреса СТО у с. Рудники, телефони майстрів за напрямками, форма зв'язку та соцмережі."
+  path="/kontakty"
+  schema={breadcrumbSchema(crumbs)}
+>
+  <div class="kontakty-page">
+    <div class="container">
+      <Breadcrumbs items={crumbs} />
+    </div>
+
+    <section class="intro container" data-animate>
+      <h1>Контакти</h1>
+      <p>
+        Оберіть майстра за напрямком і зателефонуйте — це найшвидший спосіб. Не впевнені, до кого
+        звертатися? Зателефонуйте Ігорю, він підкаже, з ким краще поговорити.
+      </p>
+    </section>
+
+    <section class="masters" aria-label="Майстри AvtoMuto" data-animate>
+      <div class="container masters__grid">
+        {Object.values(TEAM).map((member) => (
+          <div class="master-card">
+            <span class="master-card__avatar"><Icon name="team" size={26} /></span>
+            <h2 class="master-card__name">{member.name}</h2>
+            <p class="master-card__role">{member.role}</p>
+            <a href={telHref(member.phone)} class="btn btn-primary master-card__call" data-gtm-event="click_phone">
+              <Icon name="phone" size={16} /> {member.phoneDisplay}
+            </a>
+            <div class="master-card__messengers">
+              <a href={waHref(member.phone)} aria-label={`WhatsApp ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={20} /></a>
+              <a href={viberHref(member.phone)} aria-label={`Viber ${member.name}`} data-gtm-event="click_messenger"><Icon name="viber" size={20} /></a>
+              <a href={tgHref(member.phone)} aria-label={`Telegram ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="telegram" size={20} /></a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="container place" data-animate>
+      <h2>СТО в Рудниках</h2>
+      <p class="address"><Icon name="map-pin" size={18} /> {SITE.address.full}</p>
+      <p class="hours">
+        <Icon name="clock" size={18} />
+        Евакуатор: {SITE.hours.evacuator}<br />
+        Інші послуги: {SITE.hours.general}
+      </p>
+      <div class="social">
+        <a href={SITE.social.instagram} target="_blank" rel="noopener noreferrer">
+          <Icon name="instagram" size={20} /> Instagram
+        </a>
+        <a href={SITE.social.tiktok} target="_blank" rel="noopener noreferrer">
+          <Icon name="tiktok" size={20} /> TikTok
+        </a>
+      </div>
+    </section>
+
+    <section class="container map-form" data-animate>
+      <div class="place__map">
+        <iframe
+          src={mapSrc}
+          width="100%"
+          height="100%"
+          style="border:0"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Розташування AvtoMuto на карті"
+        ></iframe>
+      </div>
+      <div class="form-card">
+        <h2>Або напишіть нам</h2>
+        <p class="form-card__hint">Заповніть коротку форму — ми самі зателефонуємо вам у робочий час.</p>
+        <ContactForm />
+      </div>
+    </section>
+
+    <section class="container faq" data-animate>
+      <FaqAccordion items={contactFaq} />
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .kontakty-page {
+    font-size: 1.08rem;
+    line-height: 1.7;
+  }
+
+  .intro {
+    padding-block: var(--space-5) var(--space-6);
+  }
+
+  .intro p {
+    max-width: 65ch;
+    color: var(--color-gray-mid);
+    margin-top: var(--space-3);
+  }
+
+  .masters {
+    background: var(--color-gray-light);
+    padding-block: var(--space-6);
+  }
+
+  .masters__grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .masters__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .master-card {
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-2);
+  }
+
+  .master-card__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-white);
+    margin-bottom: var(--space-1);
+  }
+
+  .master-card__name {
+    font-size: var(--fs-lg);
+    margin-bottom: 0;
+  }
+
+  .master-card__role {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+    min-height: 2.6em;
+    margin-bottom: var(--space-2);
+  }
+
+  .master-card__call {
+    width: 100%;
+  }
+
+  .master-card__messengers {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+  }
+
+  .master-card__messengers a {
+    color: var(--color-accent);
+    transition: color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .master-card__messengers a:hover {
+    color: var(--color-accent-dark);
+    transform: translateY(-2px);
+  }
+
+  .place {
+    padding-block: var(--space-6) 0;
+  }
+
+  .place h2 {
+    font-size: var(--fs-xl);
+  }
+
+  .address,
+  .hours {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    color: var(--color-gray-mid);
+  }
+
+  .social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .social a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-gray-light);
+    color: var(--color-black);
+    font-weight: 600;
+    transition: color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .social a:hover {
+    color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .map-form {
+    padding-block: var(--space-6);
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  @media (min-width: 768px) {
+    .map-form {
+      grid-template-columns: 1fr 1.2fr;
+    }
+  }
+
+  .place__map {
+    line-height: 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    min-height: 260px;
+  }
+
+  .place__map iframe {
+    height: 100%;
+    min-height: 260px;
+  }
+
+  .form-card {
+    background: var(--color-gray-light);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+  }
+
+  .form-card h2 {
+    font-size: var(--fs-xl);
+  }
+
+  .form-card__hint {
+    color: var(--color-gray-mid);
+    margin-top: calc(var(--space-2) * -1);
+    margin-bottom: var(--space-4);
+  }
+
+  .faq {
+    padding-block: var(--space-6);
+  }
+</style>

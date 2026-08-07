@@ -1,0 +1,407 @@
+---
+import Icon from './Icon.astro';
+import { SERVICES } from '../data/services';
+import { TEAM, telHref } from '../data/site';
+
+const carSales = SERVICES.find((s) => s.slug === 'prodaz-auto');
+const navServices = SERVICES.filter((s) => !s.highlight && s.slug !== 'prodaz-auto');
+const evakuator = SERVICES.find((s) => s.highlight);
+const mainPhone = TEAM.ihor.phone;
+const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
+---
+
+<header class="header" data-header>
+  <div class="container header__inner">
+    <a href="/" class="header__logo" aria-label="AvtoMuto — на головну">
+      <span class="header__logo-mark">Avto<span class="header__logo-accent">Muto</span></span>
+    </a>
+
+    <nav class="header__nav" aria-label="Головна навігація">
+      <ul class="header__nav-list">
+        <li><a href="/">Головна</a></li>
+        <li><a href="/pro-nas">Про нас</a></li>
+        {carSales && <li><a href={`/poslugy/${carSales.slug}`} class="header__nav-sales">{carSales.title}</a></li>}
+        <li class="header__has-mega">
+          <button class="header__mega-trigger" aria-expanded="false" data-mega-trigger>
+            Послуги <Icon name="chevron-down" size={16} />
+          </button>
+          <div class="header__mega" data-mega>
+            <ul class="header__mega-grid">
+              {navServices.map((s) => (
+                <li>
+                  <a href={`/poslugy/${s.slug}`}>{s.title}</a>
+                </li>
+              ))}
+            </ul>
+            {evakuator && (
+              <a href={`/poslugy/${evakuator.slug}`} class="header__mega-evakuator">
+                <Icon name="tow-truck" size={20} />
+                {evakuator.title} — 24/7
+              </a>
+            )}
+          </div>
+        </li>
+        <li><a href="/kontakty">Контакти</a></li>
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      <a href={telHref(mainPhone)} class="btn btn-primary header__call" data-gtm-event="click_phone">
+        <Icon name="phone" size={18} />
+        <span class="header__call-text">{mainPhoneDisplay}</span>
+      </a>
+      <button class="header__burger" aria-label="Відкрити меню" aria-expanded="false" data-drawer-trigger>
+        <Icon name="menu" size={26} />
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="drawer" data-drawer aria-hidden="true">
+  <div class="drawer__backdrop" data-drawer-close></div>
+  <div class="drawer__panel" role="dialog" aria-modal="true" aria-label="Меню">
+    <div class="drawer__top">
+      <span class="header__logo-mark">Avto<span class="header__logo-accent">Muto</span></span>
+      <button class="drawer__close" aria-label="Закрити меню" data-drawer-close>
+        <Icon name="close" size={26} />
+      </button>
+    </div>
+    <ul class="drawer__list">
+      <li><a href="/">Головна</a></li>
+      <li><a href="/pro-nas">Про нас</a></li>
+      {carSales && (
+        <li>
+          <a href={`/poslugy/${carSales.slug}`} class="drawer__sales">
+            <Icon name="car-sale" size={18} /> {carSales.title}
+          </a>
+        </li>
+      )}
+      <li class="drawer__group-title">Послуги</li>
+      {SERVICES.map((s) => (
+        <li>
+          <a href={`/poslugy/${s.slug}`} class={s.highlight ? 'drawer__evakuator' : ''}>
+            {s.highlight && <Icon name="tow-truck" size={18} />}
+            {s.title}
+          </a>
+        </li>
+      ))}
+      <li><a href="/kontakty">Контакти</a></li>
+    </ul>
+    <a href={telHref(mainPhone)} class="btn btn-primary drawer__call" data-gtm-event="click_phone">
+      <Icon name="phone" size={18} /> {mainPhoneDisplay}
+    </a>
+  </div>
+</div>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--color-white);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--header-height);
+    gap: var(--space-4);
+  }
+
+  .header__logo {
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .header__logo-mark {
+    font-size: var(--fs-lg);
+    font-weight: 800;
+    color: var(--color-black);
+    letter-spacing: -0.02em;
+  }
+
+  .header__logo-accent {
+    color: var(--color-accent);
+  }
+
+  .header__nav {
+    display: none;
+  }
+
+  .header__nav-list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-weight: 600;
+  }
+
+  .header__nav-list > li > a {
+    text-decoration: none;
+    color: var(--color-black);
+    transition: color var(--transition-fast);
+  }
+
+  .header__nav-sales {
+    color: var(--color-accent) !important;
+  }
+
+  .header__nav-list > li > a:hover {
+    color: var(--color-accent);
+  }
+
+  .header__has-mega {
+    position: relative;
+  }
+
+  .header__mega-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    background: none;
+    border: none;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    color: var(--color-black);
+  }
+
+  .header__mega-trigger:hover {
+    color: var(--color-accent);
+  }
+
+  .header__mega {
+    position: absolute;
+    top: calc(100% + var(--space-4));
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(560px, 90vw);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+    padding: var(--space-4);
+    display: none;
+  }
+
+  .header__has-mega.is-open .header__mega {
+    display: block;
+  }
+
+  .header__mega-grid {
+    list-style: none;
+    margin: 0 0 var(--space-3);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .header__mega-grid a {
+    text-decoration: none;
+    color: var(--color-black);
+    font-weight: 500;
+    font-size: var(--fs-sm);
+    display: block;
+    padding: var(--space-1) 0;
+  }
+
+  .header__mega-grid a:hover {
+    color: var(--color-accent);
+  }
+
+  .header__mega-evakuator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: var(--color-black);
+    color: var(--color-white);
+    text-decoration: none;
+    font-weight: 700;
+    padding: var(--space-3);
+    border-radius: var(--radius-sm);
+    border-top: 3px solid var(--color-accent);
+  }
+
+  .header__mega-evakuator:hover {
+    background: #000;
+  }
+
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .header__call {
+    display: none;
+  }
+
+  .header__burger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-black);
+    padding: var(--space-2);
+    line-height: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .header__nav {
+      display: block;
+    }
+    .header__call {
+      display: inline-flex;
+    }
+    .header__burger {
+      display: none;
+    }
+  }
+
+  /* drawer */
+  .drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .drawer[data-open='true'] {
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .drawer__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 20, 20, 0.5);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+  }
+
+  .drawer[data-open='true'] .drawer__backdrop {
+    opacity: 1;
+  }
+
+  .drawer__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: min(360px, 85vw);
+    background: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-4);
+    transform: translateX(100%);
+    transition: transform var(--transition-base);
+    overflow-y: auto;
+  }
+
+  .drawer[data-open='true'] .drawer__panel {
+    transform: translateX(0);
+  }
+
+  .drawer__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-5);
+  }
+
+  .drawer__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-black);
+  }
+
+  .drawer__list {
+    list-style: none;
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    flex: 1;
+  }
+
+  .drawer__list li a {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+    color: var(--color-black);
+    font-weight: 600;
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: var(--fs-lg);
+  }
+
+  .drawer__group-title {
+    padding-top: var(--space-3);
+    font-size: var(--fs-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-gray-mid);
+    font-weight: 700;
+  }
+
+  .drawer__evakuator {
+    color: var(--color-accent) !important;
+  }
+
+  .drawer__sales {
+    color: var(--color-accent) !important;
+  }
+
+  .drawer__call {
+    width: 100%;
+  }
+
+  @media (min-width: 1024px) {
+    .header__burger,
+    .drawer {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const megaHost = document.querySelector('[data-mega-trigger]')?.closest('.header__has-mega');
+  const megaTrigger = document.querySelector('[data-mega-trigger]');
+  megaTrigger?.addEventListener('click', () => {
+    const isOpen = megaHost?.classList.toggle('is-open');
+    megaTrigger.setAttribute('aria-expanded', String(!!isOpen));
+  });
+  document.addEventListener('click', (e) => {
+    if (megaHost && !megaHost.contains(e.target)) {
+      megaHost.classList.remove('is-open');
+      megaTrigger?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  const drawer = document.querySelector('[data-drawer]');
+  const drawerTrigger = document.querySelector('[data-drawer-trigger]');
+  const drawerClosers = document.querySelectorAll('[data-drawer-close]');
+
+  function openDrawer() {
+    drawer?.setAttribute('data-open', 'true');
+    drawer?.setAttribute('aria-hidden', 'false');
+    drawerTrigger?.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    drawer?.setAttribute('data-open', 'false');
+    drawer?.setAttribute('aria-hidden', 'true');
+    drawerTrigger?.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  drawerTrigger?.addEventListener('click', openDrawer);
+  drawerClosers.forEach((el) => el.addEventListener('click', closeDrawer));
+</script>

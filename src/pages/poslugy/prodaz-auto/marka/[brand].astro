@@ -1,0 +1,129 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
+import CarCard from '../../../../components/CarCard.astro';
+import RelatedServices from '../../../../components/RelatedServices.astro';
+import { getServiceBySlug } from '../../../../data/services';
+import { TEAM, telHref } from '../../../../data/site';
+import { getCarListings, brandSlug, type CarListing } from '../../../../lib/cars';
+import { serviceSchema, breadcrumbSchema } from '../../../../utils/schema';
+
+export async function getStaticPaths() {
+  const cars = await getCarListings();
+  const brandNames = [...new Set(cars.map((c) => c.name).filter(Boolean))];
+  return brandNames.map((brand) => ({
+    params: { brand: brandSlug(brand) },
+    props: { brand, cars: cars.filter((c) => c.name === brand) },
+  }));
+}
+
+interface Props {
+  brand: string;
+  cars: CarListing[];
+}
+
+const { brand, cars } = Astro.props;
+const service = getServiceBySlug('prodaz-auto')!;
+const responsible = TEAM[service.responsible];
+const path = `/poslugy/prodaz-auto/marka/${brandSlug(brand)}`;
+
+const title = `Автомобілі ${brand} — купити в Рудниках біля Стрия`;
+const description = `${brand} в наявності: ${cars.length} авто. Перевірені, розмитнені автомобілі ${brand}, готові до реєстрації. AvtoMuto, с. Рудники, Львівська область.`;
+
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: service.title, href: '/poslugy/prodaz-auto' },
+  { label: brand, href: path },
+];
+const schema = [breadcrumbSchema(crumbs), serviceSchema({ ...service, title, description }, path)];
+
+const allCars = await getCarListings();
+const otherBrands = [...new Set(allCars.map((c) => c.name).filter((n) => n !== brand))].sort();
+---
+
+<Layout title={title} description={description} path={path} schema={schema} serviceSlug={service.slug}>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="container catalog-page" data-animate>
+    <h1>Автомобілі {brand}</h1>
+    <p class="lead">
+      {cars.length} {cars.length === 1 ? 'автомобіль' : 'автомобілі'} {brand} в наявності — перевірені технічно,
+      розмитнені та готові до реєстрації. Оглянути можна особисто на СТО в с. Рудники.
+    </p>
+  </section>
+
+  <section class="container">
+    <div class="brand-catalog__grid">
+      {cars.map((car) => (
+        <CarCard car={car} layout="grid" />
+      ))}
+    </div>
+  </section>
+
+  {otherBrands.length > 0 && (
+    <section class="container other-brands" data-animate>
+      <h2>Інші марки в наявності</h2>
+      <div class="other-brands__list">
+        <a href="/poslugy/prodaz-auto">Весь каталог</a>
+        {otherBrands.map((b) => (
+          <a href={`/poslugy/prodaz-auto/marka/${brandSlug(b)}`}>{b}</a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {service.related && <RelatedServices slugs={service.related} />}
+</Layout>
+
+<style>
+  .catalog-page {
+    padding-block: var(--space-6) var(--space-4);
+  }
+
+  .lead {
+    color: var(--color-gray-mid);
+    max-width: 65ch;
+  }
+
+  .brand-catalog__grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+    padding-block: var(--space-4);
+  }
+
+  @media (min-width: 640px) {
+    .brand-catalog__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .other-brands {
+    padding-block: var(--space-4) var(--space-6);
+  }
+
+  .other-brands__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .other-brands__list a {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--color-black);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+
+  .other-brands__list a:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+</style>

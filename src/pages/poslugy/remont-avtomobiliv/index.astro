@@ -1,0 +1,122 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Icon from '../../../components/Icon.astro';
+import BenefitsGrid from '../../../components/BenefitsGrid.astro';
+import ProcessSteps from '../../../components/ProcessSteps.astro';
+import ContactCard from '../../../components/ContactCard.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import { getServiceBySlug } from '../../../data/services';
+import { REMONT_CATEGORIES } from '../../../data/remont-categories';
+import { TEAM, telHref } from '../../../data/site';
+import { TEAM_PHOTOS } from '../../../data/team-photos';
+import { serviceSchema, breadcrumbSchema } from '../../../utils/schema';
+
+const service = getServiceBySlug('remont-avtomobiliv')!;
+const responsible = TEAM[service.responsible];
+const responsiblePhoto = TEAM_PHOTOS[service.responsible];
+const path = '/poslugy/remont-avtomobiliv';
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: service.title, href: path },
+];
+const schema = [breadcrumbSchema(crumbs), serviceSchema(service, path)];
+const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджером";
+---
+
+<Layout title={service.title} description={service.shortDescription} path={path} schema={schema} serviceSlug={service.slug}>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="container" data-animate>
+    <h1>{service.title}</h1>
+    <p class="lead">{service.description}</p>
+    <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+      <Icon name="phone" size={18} /> {ctaLabel}
+    </a>
+  </section>
+
+  <section class="container categories" data-animate>
+    <h2>Категорії ремонту</h2>
+    <div class="categories__grid">
+      {REMONT_CATEGORIES.map((cat) => (
+        <a href={`/poslugy/remont-avtomobiliv/${cat.slug}`} class="category-card">
+          <h3>{cat.title}</h3>
+          <p>{cat.description}</p>
+          <span class="category-card__count">{cat.services.length > 0 ? `${cat.services.length} видів робіт` : 'Детальніше'}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  {service.processSteps && <ProcessSteps title="Як проходить ремонт" steps={service.processSteps} />}
+
+  <BenefitsGrid heading={service.benefitsHeading ?? 'Переваги послуги'} items={service.benefits} />
+
+  <section class="container" data-animate>
+    <ContactCard member={responsible} photo={responsiblePhoto} ctaLabel={ctaLabel} />
+  </section>
+
+  <section class="container">
+    <FaqAccordion items={service.faq} />
+  </section>
+</Layout>
+
+<style>
+  section {
+    padding-block: var(--space-5);
+  }
+
+  .lead {
+    color: var(--color-gray-mid);
+    max-width: 65ch;
+    margin-bottom: var(--space-4);
+  }
+
+  .categories__grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+    margin-top: var(--space-4);
+  }
+
+  @media (min-width: 640px) {
+    .categories__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .categories__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .category-card {
+    display: block;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--color-black);
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .category-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-3px);
+  }
+
+  .category-card p {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .category-card__count {
+    font-weight: 700;
+    color: var(--color-accent);
+    font-size: var(--fs-sm);
+  }
+</style>

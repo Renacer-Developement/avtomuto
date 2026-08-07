@@ -1,0 +1,54 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import StickyCallBar from '../components/StickyCallBar.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
+import SiteScripts from '../components/SiteScripts.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  path?: string;
+  image?: string;
+  noindex?: boolean;
+  schema?: object | object[];
+  serviceSlug?: string;
+}
+
+const { title, description, path, image, noindex, schema, serviceSlug } = Astro.props;
+const gtmId = import.meta.env.PUBLIC_GTM_ID;
+const schemaList = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
+---
+
+<!doctype html>
+<html lang="uk">
+  <head>
+    <BaseHead title={title} description={description} path={path} image={image} noindex={noindex} />
+    {schemaList.map((s) => (
+      <script type="application/ld+json" set:html={JSON.stringify(s)} />
+    ))}
+  </head>
+  <body data-service-slug={serviceSlug}>
+    {gtmId && (
+      <noscript>
+        <iframe
+          src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+          height="0"
+          width="0"
+          style="display:none;visibility:hidden"
+          title="GTM"></iframe>
+      </noscript>
+    )}
+    <a href="#main" class="skip-link">Перейти до основного контенту</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <StickyCallBar />
+    <ConsentBanner />
+    <SiteScripts />
+  </body>
+</html>
