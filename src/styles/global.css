@@ -100,6 +100,14 @@ p {
   padding-inline: var(--space-4);
 }
 
+/* Header is `position: fixed` below 1024px (see Header.astro) — reserve the
+   space it would otherwise occupy in normal flow. */
+@media (max-width: 1023.98px) {
+  #main {
+    padding-top: var(--header-height);
+  }
+}
+
 @media (min-width: 768px) {
   .container {
     padding-inline: var(--space-5);

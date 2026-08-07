@@ -101,8 +101,18 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
     z-index: 100;
     background: var(--color-white);
     border-bottom: 1px solid var(--color-border);
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
+  }
+
+  /* iOS Safari unreliably keeps `position: sticky` headers pinned during
+     momentum scrolling, so pin the header with `fixed` below desktop and
+     compensate with padding-top on #main (see global.css). */
+  @media (max-width: 1023.98px) {
+    .header {
+      position: fixed;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
   }
 
   .header__inner {
