@@ -73,6 +73,13 @@ const currentYear = new Date().getFullYear();
     background: var(--color-black);
     color: var(--color-white);
     padding-block: var(--space-7) var(--space-5);
+    padding-bottom: calc(var(--mobile-cta-height) + env(safe-area-inset-bottom, 0px) + var(--space-5));
+  }
+
+  @media (min-width: 1024px) {
+    .footer {
+      padding-bottom: var(--space-5);
+    }
   }
 
   .footer__grid {
