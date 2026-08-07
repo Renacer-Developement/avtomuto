@@ -95,11 +95,14 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
 
 <style>
   .header {
+    position: -webkit-sticky;
     position: sticky;
     top: 0;
     z-index: 100;
     background: var(--color-white);
     border-bottom: 1px solid var(--color-border);
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   .header__inner {
