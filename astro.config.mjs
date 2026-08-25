@@ -4,7 +4,11 @@ import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   site: 'https://avtomuto.com',
-  adapter: vercel(),
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true,
+    },
+  }),
   integrations: [sitemap()],
   i18n: {
     defaultLocale: 'uk',
