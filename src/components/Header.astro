@@ -102,6 +102,11 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
     background: var(--color-white);
     border-bottom: 1px solid var(--color-border);
     box-shadow: inset 0 3px 0 var(--color-accent);
+    /* Захист від floating address-bar у Telegram/Instagram in-app браузерах на iOS —
+       той плаваючий пігулка-бар з URL рендериться поверх сторінки нативним UI застосунку,
+       і його не можна прибрати чи достилізувати з коду сайту. Цей safe-area відступ гарантує,
+       що логотип/меню не опиняються під ним при відкритті шареного лінка. */
+    padding-top: env(safe-area-inset-top, 0px);
   }
 
   .header__inner {

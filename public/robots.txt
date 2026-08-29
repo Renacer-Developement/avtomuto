@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://avtomuto.com/sitemap-index.xml
+Sitemap: https://avtomuto.com.ua/sitemap-index.xml

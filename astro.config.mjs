@@ -3,7 +3,7 @@ import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 
 export default defineConfig({
-  site: 'https://avtomuto.com',
+  site: 'https://avtomuto.com.ua',
   adapter: vercel(),
   integrations: [sitemap()],
   i18n: {
