@@ -166,13 +166,32 @@ import { CONTACT_TOPICS } from '../data/contact-topics';
     setTimeout(() => toast.classList.remove('is-visible'), 4000);
   }
 
+  // Нативні validationMessage залежать від мови/локалі браузера користувача
+  // (частина форм показувала англійський текст) — тому формуємо повідомлення самі.
+  function getErrorMessage(field) {
+    const v = field.validity;
+    if (v.valueMissing) {
+      return field.tagName === 'SELECT' ? 'Оберіть тему звернення' : "Це поле обов'язкове";
+    }
+    if (field.id === 'name') {
+      if (v.tooShort) return `Мінімум 2 символи (зараз ${field.value.length})`;
+      if (v.patternMismatch) return "Ім'я має містити хоча б одну літеру";
+    }
+    if (field.id === 'phone') {
+      if (v.tooShort || v.patternMismatch) return 'Введіть коректний номер телефону (7–15 цифр)';
+      if (v.tooLong) return 'Забагато символів у номері телефону';
+    }
+    if (v.tooLong) return `Максимум ${field.maxLength} символів`;
+    return 'Перевірте правильність заповнення поля';
+  }
+
   function validateField(field) {
     const wrapper = field.closest('.field');
     const errorEl = wrapper?.querySelector('.field__error');
     const valid = field.checkValidity();
     wrapper?.classList.toggle('is-invalid', !valid);
     if (errorEl) {
-      errorEl.textContent = valid ? '' : field.validationMessage;
+      errorEl.textContent = valid ? '' : getErrorMessage(field);
     }
     return valid;
   }
