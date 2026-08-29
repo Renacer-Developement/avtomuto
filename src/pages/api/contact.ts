@@ -1,6 +1,12 @@
 import type { APIRoute } from 'astro';
+import { CONTACT_TOPICS } from '../../data/contact-topics';
 
 export const prerender = false;
+
+// Ім'я: 2-80 символів, хоча б одна літера (блокує спам на кшталт "123" чи "...").
+const NAME_RE = /^(?=.*[A-Za-zА-Яа-яІіЇїЄєҐґ]).{2,80}$/;
+// Телефон: дозволені символи +, цифри, пробіли, дужки, дефіс; 7-15 цифр всередині.
+const PHONE_RE = /^(?=(?:\D*\d){7,15}\D*$)[+0-9 ()-]{7,20}$/;
 
 function escapeHtml(value: string): string {
   return value
@@ -17,6 +23,17 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'invalid_json' }), { status: 400 });
   }
 
+  // Honeypot — приховане поле, яке живі користувачі ніколи не заповнюють.
+  // Якщо воно непорожнє — це бот; тихо повертаємо "успіх", нічого не надсилаючи,
+  // щоб не підказувати боту, що його відфільтровано.
+  const honeypot = typeof body.company === 'string' ? body.company.trim() : '';
+  if (honeypot) {
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const name = typeof body.name === 'string' ? body.name.trim().slice(0, 200) : '';
   const phone = typeof body.phone === 'string' ? body.phone.trim().slice(0, 40) : '';
   const topic = typeof body.topic === 'string' ? body.topic.trim().slice(0, 200) : '';
@@ -24,6 +41,18 @@ export const POST: APIRoute = async ({ request }) => {
 
   if (!name || !phone || !topic) {
     return new Response(JSON.stringify({ error: 'missing_fields' }), { status: 422 });
+  }
+
+  if (!NAME_RE.test(name)) {
+    return new Response(JSON.stringify({ error: 'invalid_name' }), { status: 422 });
+  }
+
+  if (!PHONE_RE.test(phone)) {
+    return new Response(JSON.stringify({ error: 'invalid_phone' }), { status: 422 });
+  }
+
+  if (!(CONTACT_TOPICS as readonly string[]).includes(topic)) {
+    return new Response(JSON.stringify({ error: 'invalid_topic' }), { status: 422 });
   }
 
   const botToken = import.meta.env.TELEGRAM_BOT_TOKEN;

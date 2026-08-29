@@ -1,16 +1,38 @@
 ---
+import { CONTACT_TOPICS } from '../data/contact-topics';
 ---
 
 <form class="contact-form" data-contact-form novalidate>
   <div class="field">
     <label for="name">Ім'я *</label>
-    <input type="text" id="name" name="name" required minlength="2" autocomplete="name" />
+    <input
+      type="text"
+      id="name"
+      name="name"
+      required
+      minlength="2"
+      maxlength="80"
+      pattern="^(?=.*[A-Za-zА-Яа-яІіЇїЄєҐґ]).+$"
+      title="Ім'я має містити хоча б одну літеру"
+      autocomplete="name"
+    />
     <span class="field__error" data-error-for="name"></span>
   </div>
 
   <div class="field">
     <label for="phone">Телефон *</label>
-    <input type="tel" id="phone" name="phone" required pattern="^[+0-9 ()-]{7,20}$" autocomplete="tel" placeholder="+380 XX XXX XX XX" />
+    <input
+      type="tel"
+      id="phone"
+      name="phone"
+      required
+      minlength="7"
+      maxlength="20"
+      pattern="^(?=(?:\D*\d){7,15}\D*$)[+0-9 ()-]{7,20}$"
+      title="Телефон має містити від 7 до 15 цифр"
+      autocomplete="tel"
+      placeholder="+380 XX XXX XX XX"
+    />
     <span class="field__error" data-error-for="phone"></span>
   </div>
 
@@ -18,23 +40,19 @@
     <label for="topic">Тема звернення *</label>
     <select id="topic" name="topic" required>
       <option value="">Оберіть тему</option>
-      <option>Ремонт автомобілів</option>
-      <option>Автозапчастини</option>
-      <option>Продаж коліс</option>
-      <option>Сертифікація автомобілів</option>
-      <option>Розмитнення</option>
-      <option>Пригон автомобілів</option>
-      <option>Продаж авто</option>
-      <option>Мийка та детейлінг</option>
-      <option>Евакуатор</option>
-      <option>Інше питання</option>
+      {CONTACT_TOPICS.map((topic) => <option>{topic}</option>)}
     </select>
     <span class="field__error" data-error-for="topic"></span>
   </div>
 
   <div class="field">
     <label for="message">Повідомлення</label>
-    <textarea id="message" name="message" rows="4"></textarea>
+    <textarea id="message" name="message" rows="4" maxlength="2000"></textarea>
+  </div>
+
+  <div class="field field--hp" aria-hidden="true">
+    <label for="company">Компанія</label>
+    <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
   </div>
 
   <button type="submit" class="btn btn-primary contact-form__submit">Надіслати заявку</button>
@@ -89,6 +107,16 @@
 
   .field.is-invalid .field__error {
     display: block;
+  }
+
+  /* Honeypot-поле проти ботів — не display:none (деякі боти це ігнорують),
+     а винесене за межі екрана, невидиме для живих користувачів. */
+  .field--hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
 
   .contact-form__submit {
