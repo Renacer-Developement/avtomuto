@@ -1,0 +1,357 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Icon from '../../../components/Icon.astro';
+import ContactCard from '../../../components/ContactCard.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import RelatedServices from '../../../components/RelatedServices.astro';
+import CarCard from '../../../components/CarCard.astro';
+import { getServiceBySlug } from '../../../data/services';
+import { TEAM, telHref } from '../../../data/site';
+import { TEAM_PHOTOS } from '../../../data/team-photos';
+import { getBlogPosts } from '../../../data/blog';
+import { getCarListings } from '../../../lib/cars';
+import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
+
+const service = getServiceBySlug('pryhon-avtomobiliv')!;
+const responsible = TEAM[service.responsible];
+const responsiblePhoto = TEAM_PHOTOS[service.responsible];
+const path = '/poslugy/pryhon-avtomobiliv';
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: service.title, href: path },
+];
+const schema = [breadcrumbSchema(crumbs), serviceSchema(service, path)];
+const faq = faqSchema(service.faq);
+if (faq) schema.push(faq);
+const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджером";
+
+const stepIcons = ['clipboard', 'zoom', 'check', 'tow-truck'];
+const benefitIcons = ['region', 'clipboard', 'zoom', 'tow-truck'];
+
+const readyCars = (await getCarListings()).filter((c) => c.status === 'available').slice(0, 3);
+
+const posts = await getBlogPosts();
+const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
+---
+
+<Layout
+  title={service.title}
+  description={service.shortDescription}
+  path={path}
+  schema={schema}
+  serviceSlug={service.slug}
+>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="hero container" data-animate>
+    <p class="eyebrow"><Icon name={service.icon} size={16} /> Послуга</p>
+    <h1>{service.title}</h1>
+    <p class="lead">{service.description}</p>
+    <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+      <Icon name="phone" size={18} /> {ctaLabel}
+    </a>
+
+    <div class="route" aria-hidden="true">
+      <svg viewBox="0 0 900 170" fill="none" xmlns="http://www.w3.org/2000/svg" class="route__svg">
+        <line x1="90" y1="80" x2="810" y2="80" stroke="var(--color-border)" stroke-width="3" stroke-dasharray="10 9" />
+        <circle cx="60" cy="80" r="15" fill="#141414" />
+        <circle cx="840" cy="80" r="15" fill="var(--color-accent)" />
+        <g transform="translate(400,58)" stroke="#141414" stroke-width="2.5" stroke-linejoin="round" fill="none">
+          <path d="M0 32 L0 21 C0 15 5 11 11 11 L21 11 C25 4 33 0 43 0 L60 0 C70 0 78 4 82 11 L92 11 C99 11 104 16 104 23 L104 32" />
+          <line x1="0" y1="32" x2="104" y2="32" />
+          <circle cx="25" cy="32" r="9.5" fill="var(--color-white)" />
+          <circle cx="82" cy="32" r="9.5" fill="var(--color-white)" />
+        </g>
+      </svg>
+      <div class="route__labels">
+        <span>США · Європа</span>
+        <span>Рудники, Львівська обл.</span>
+      </div>
+    </div>
+  </section>
+
+  {service.processSteps && (
+    <section class="container journey" data-animate>
+      <p class="eyebrow">Як проходить пригін</p>
+      <h2>Чотири кроки під ключ</h2>
+      <div class="journey__strip">
+        {service.processSteps.map((step, i) => (
+          <div class="journey__stub">
+            <Icon name={stepIcons[i] ?? 'check'} size={26} class="journey__icon" />
+            <span class="journey__label">Крок {i + 1}</span>
+            <h3>{step.title}</h3>
+            <p>{step.text}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="container benefits" data-animate>
+    <p class="eyebrow">{service.benefitsHeading ?? 'Переваги послуги'}</p>
+    <h2>Чому пригін варто замовити у нас</h2>
+    <ul class="benefits__list">
+      {service.benefits.map((item, i) => (
+        <li>
+          <Icon name={benefitIcons[i] ?? 'check'} size={22} class="benefits__icon" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  {readyCars.length > 0 && (
+    <section class="container ready-cars" data-animate>
+      <p class="eyebrow">Не хочете чекати?</p>
+      <h2>Готові авто вже в наявності</h2>
+      <p class="lead">У нас вже є перевірені авто в наявності — можна оглянути й купити просто зараз:</p>
+      <div class="ready-cars__list">
+        {readyCars.map((car) => (
+          <CarCard car={car} layout="list" />
+        ))}
+      </div>
+      <a href="/poslugy/prodaz-auto" class="btn btn-outline">Переглянути всі авто в наявності</a>
+    </section>
+  )}
+
+  <section class="container" data-animate>
+    <ContactCard member={responsible} photo={responsiblePhoto} ctaLabel={ctaLabel} />
+  </section>
+
+  <section class="container">
+    <FaqAccordion items={service.faq} />
+  </section>
+
+  {relatedPosts.length > 0 && (
+    <section class="container blog-links" data-animate>
+      <h2>Статті по темі</h2>
+      <div class="blog-links__list">
+        {relatedPosts.map((post) => (
+          <a href={`/blog/${post.slug}`} class="blog-links__card">
+            <strong>{post.title}</strong>
+            <span>{post.excerpt}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {service.related && <RelatedServices slugs={service.related} />}
+
+  <section class="final-cta" data-animate>
+    <div class="container final-cta__inner">
+      <p class="eyebrow">Готові замовити пригін?</p>
+      <h2>Скажіть критерії авто — підберемо варіанти зі США чи Європи</h2>
+      <p>Зателефонуйте Володимиру — узгодимо марку, модель, бюджет і терміни доставки до Рудників.</p>
+      <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+        <Icon name="phone" size={18} /> {ctaLabel}
+      </a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  section {
+    padding-block: var(--space-5);
+  }
+
+  .hero {
+    padding-block: var(--space-7) var(--space-6);
+  }
+
+  .lead {
+    color: var(--color-gray-mid);
+    max-width: 65ch;
+    margin-bottom: var(--space-4);
+  }
+
+  .route {
+    margin-top: var(--space-7);
+  }
+
+  .route__svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .route__labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: calc(var(--space-2) * -1);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--color-gray-mid);
+  }
+
+  .route__labels span:last-child {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .journey .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .journey__strip {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-top: var(--space-5);
+    border: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 800px) {
+    .journey__strip {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .journey__stub {
+    padding: var(--space-5);
+    border-top: 2px dashed var(--color-border);
+  }
+
+  .journey__strip > .journey__stub:first-child {
+    border-top: none;
+  }
+
+  @media (min-width: 800px) {
+    .journey__stub {
+      border-top: none;
+      border-left: 2px dashed var(--color-border);
+    }
+
+    .journey__strip > .journey__stub:first-child {
+      border-left: none;
+    }
+  }
+
+  .journey__stub :global(.journey__icon) {
+    color: var(--color-accent);
+    margin-bottom: var(--space-3);
+  }
+
+  .journey__label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--color-gray-mid);
+    margin-bottom: var(--space-1);
+  }
+
+  .journey__stub h3 {
+    font-size: var(--fs-lg);
+    margin-bottom: var(--space-1);
+  }
+
+  .journey__stub p {
+    margin: 0;
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .benefits .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .benefits__list {
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+    max-width: 70ch;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .benefits__list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 600;
+  }
+
+  .benefits__list :global(.benefits__icon) {
+    color: var(--color-accent);
+    flex-shrink: 0;
+  }
+
+  .ready-cars .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .ready-cars .lead {
+    margin-bottom: var(--space-4);
+  }
+
+  .ready-cars__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: var(--space-4) 0 var(--space-5);
+    max-width: 70ch;
+  }
+
+  .blog-links__list {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .blog-links__list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .blog-links__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-top: 2px solid var(--color-accent);
+    text-decoration: none;
+    color: var(--color-black);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .blog-links__card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  .blog-links__card span {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .final-cta {
+    background: var(--color-gray-light);
+    padding-block: var(--space-7);
+    margin-top: var(--space-6);
+  }
+
+  .final-cta__inner {
+    max-width: 60ch;
+  }
+
+  .final-cta .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .final-cta p:not(.eyebrow) {
+    color: var(--color-gray-mid);
+  }
+
+  .final-cta .btn {
+    margin-top: var(--space-4);
+  }
+</style>

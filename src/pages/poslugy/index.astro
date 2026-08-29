@@ -24,11 +24,12 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
   </div>
 
   <section class="container" data-animate>
+    <p class="eyebrow">AvtoMuto</p>
     <h1>Наші послуги</h1>
     <p class="lead">Дев’ять напрямків роботи AvtoMuto — від планового ТО до термінового виклику евакуатора.</p>
     <div class="grid">
-      {gridServices.map((s) => (
-        <ServiceCard service={s} />
+      {gridServices.map((s, i) => (
+        <ServiceCard service={s} index={i} />
       ))}
     </div>
   </section>
@@ -48,20 +49,13 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
   }
 
   .grid {
-    display: grid;
-    gap: var(--space-4);
-    grid-template-columns: 1fr;
+    border-bottom: 1px solid var(--color-border);
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 800px) {
     .grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .grid {
-      grid-template-columns: repeat(3, 1fr);
+      column-count: 2;
+      column-gap: var(--space-6);
     }
   }
 </style>

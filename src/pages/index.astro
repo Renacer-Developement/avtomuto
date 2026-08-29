@@ -23,7 +23,9 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
   <section class="hero" data-animate>
     <div class="container hero__inner">
       <div class="hero__text">
-        <h1>Ремонт, продаж і евакуатор авто в Рудниках — під ключ, 24/7</h1>
+        <span class="index-mark hero__index" aria-hidden="true">24/7</span>
+        <p class="eyebrow">Рудники · Львівська обл.</p>
+        <h1>Ремонт, продаж і <span class="hero__highlight">евакуатор</span> авто — під ключ</h1>
         <p>
           Ремонт, запчастини, продаж авто та коліс, сертифікація й розмитнення — AvtoMuto обслуговує клієнтів
           із с. Рудники, Стрия, Дрогобича та Львова.
@@ -35,17 +37,34 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
           <a href="/poslugy" class="btn btn-outline hero__outline">Усі послуги</a>
         </div>
       </div>
-      <div class="hero__media">
-        <Image
-          src={stoPhoto}
-          alt="СТО AvtoMuto — будівля автосервісу з мийкою в с. Рудники"
-          width={800}
-          height={600}
-          format="avif"
-          quality={80}
-          loading="eager"
-          fetchpriority="high"
-        />
+      <figure class="hero__media">
+        <div class="offset-block">
+          <Image
+            src={stoPhoto}
+            alt="СТО AvtoMuto — будівля автосервісу з мийкою в с. Рудники"
+            width={800}
+            height={600}
+            format="avif"
+            quality={80}
+            loading="eager"
+            fetchpriority="high"
+          />
+        </div>
+        <figcaption>СТО AvtoMuto — с. Рудники, Стрийський район</figcaption>
+      </figure>
+    </div>
+    <div class="container hero__stats">
+      <div class="hero__stat">
+        <strong>11</strong>
+        <span>майстрів</span>
+      </div>
+      <div class="hero__stat">
+        <strong>10</strong>
+        <span>напрямків послуг</span>
+      </div>
+      <div class="hero__stat">
+        <strong>24/7</strong>
+        <span>евакуатор</span>
       </div>
     </div>
   </section>
@@ -56,10 +75,11 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
 
   <section class="services" data-animate>
     <div class="container">
+      <p class="eyebrow">Чим ми займаємось</p>
       <h2>Наші послуги</h2>
       <div class="services__grid">
-        {gridServices.map((s) => (
-          <ServiceCard service={s} />
+        {gridServices.map((s, i) => (
+          <ServiceCard service={s} index={i} />
         ))}
       </div>
     </div>
@@ -69,6 +89,7 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
 
   <section class="final-cta" data-animate>
     <div class="container final-cta__inner">
+      <p class="eyebrow">Маєте питання?</p>
       <h2>Потрібна консультація по вашому авто?</h2>
       <p>Зателефонуйте — підкажемо, яка послуга підійде саме вам, і назвемо орієнтовний термін виконання.</p>
       <a href="/kontakty" class="btn btn-primary">Написати нам</a>
@@ -78,24 +99,44 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
 
 <style>
   .hero {
-    padding-block: var(--space-7);
+    padding-block: var(--space-7) var(--space-6);
   }
 
   .hero__inner {
     display: grid;
-    gap: var(--space-6);
-    align-items: center;
+    gap: var(--space-6) var(--space-7);
   }
 
   @media (min-width: 900px) {
     .hero__inner {
-      grid-template-columns: 1.1fr 1fr;
+      grid-template-columns: 5fr 7fr;
+      align-items: start;
     }
   }
 
-  .hero__text p {
+  .hero__text {
+    position: relative;
+    padding-top: var(--space-3);
+  }
+
+  .hero__index {
+    position: absolute;
+    top: -1.6rem;
+    left: -0.2rem;
+    z-index: -1;
+  }
+
+  .eyebrow {
+    margin-bottom: var(--space-3);
+  }
+
+  .hero__highlight {
+    color: var(--color-accent);
+  }
+
+  .hero__text > p:not(.eyebrow) {
     color: var(--color-gray-mid);
-    max-width: 52ch;
+    max-width: 42ch;
   }
 
   .hero__actions {
@@ -115,12 +156,57 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
     color: var(--color-white);
   }
 
+  .hero__media {
+    margin: 0;
+  }
+
   .hero__media img {
-    border-radius: var(--radius-md);
+    display: block;
+    border-radius: 0;
     width: 100%;
     height: auto;
     object-fit: cover;
     aspect-ratio: 4 / 3;
+  }
+
+  .hero__media figcaption {
+    margin-top: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--color-gray-mid);
+  }
+
+  .hero__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .hero__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-4) var(--space-4) 0 0;
+  }
+
+  .hero__stat:not(:first-child) {
+    border-left: 1px solid var(--color-border);
+    padding-left: var(--space-4);
+  }
+
+  .hero__stat strong {
+    font-family: var(--font-heading);
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    color: var(--color-black);
+    line-height: 1;
+  }
+
+  .hero__stat span {
+    font-size: var(--fs-sm);
+    color: var(--color-gray-mid);
   }
 
   .services {
@@ -128,40 +214,36 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
   }
 
   .services h2 {
-    text-align: center;
+    max-width: 20ch;
     margin-bottom: var(--space-5);
   }
 
   .services__grid {
-    display: grid;
-    gap: var(--space-4);
-    grid-template-columns: 1fr;
+    border-bottom: 1px solid var(--color-border);
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 800px) {
     .services__grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .services__grid {
-      grid-template-columns: repeat(3, 1fr);
+      column-count: 2;
+      column-gap: var(--space-6);
     }
   }
 
   .final-cta {
     background: var(--color-gray-light);
+    border-top: 1px solid var(--color-border);
     padding-block: var(--space-7);
   }
 
   .final-cta__inner {
-    text-align: center;
-    max-width: 600px;
-    margin-inline: auto;
+    max-width: 60ch;
   }
 
-  .final-cta p {
+  .final-cta .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .final-cta p:not(.eyebrow) {
     color: var(--color-gray-mid);
   }
 </style>

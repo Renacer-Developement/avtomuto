@@ -21,16 +21,16 @@ import { TEAM, telHref } from '../data/site';
 
 <style>
   .not-found {
-    text-align: center;
     padding-block: var(--space-8);
   }
 
   .not-found__code {
     display: block;
+    font-family: var(--font-heading);
     font-size: clamp(4rem, 8vw, 8rem);
-    font-weight: 800;
+    font-weight: 700;
     color: var(--color-accent);
-    line-height: 1;
+    line-height: 0.85;
   }
 
   .not-found p {
@@ -39,7 +39,6 @@ import { TEAM, telHref } from '../data/site';
 
   .not-found__actions {
     display: flex;
-    justify-content: center;
     gap: var(--space-3);
     flex-wrap: wrap;
     margin-bottom: var(--space-5);

@@ -230,10 +230,9 @@ const photoProps = layout === 'grid' ? { href: detailUrl, 'aria-label': carTitle
   .car-card__status {
     position: absolute;
     top: var(--space-3);
-    right: -2.2rem;
-    transform: rotate(45deg);
-    width: 9rem;
-    padding: 0.3rem 0;
+    right: var(--space-3);
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
     text-align: center;
     background: var(--color-accent);
     color: var(--color-white);
@@ -241,6 +240,7 @@ const photoProps = layout === 'grid' ? { href: detailUrl, 'aria-label': carTitle
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    white-space: nowrap;
   }
 
   .car-card__vin {

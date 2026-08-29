@@ -11,7 +11,7 @@ export function organizationSchema() {
     alternateName: SITE.brandVariants,
     url: SITE.domain,
     description: SITE.description,
-    image: `${SITE.domain}/images/og-default.svg`,
+    image: `${SITE.domain}/images/og-default.png`,
     address: {
       '@type': 'PostalAddress',
       streetAddress: SITE.address.settlement,

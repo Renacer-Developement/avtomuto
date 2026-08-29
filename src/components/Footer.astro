@@ -70,8 +70,9 @@ const currentYear = new Date().getFullYear();
 
 <style>
   .footer {
-    background: var(--color-black);
+    background: var(--color-black-deep);
     color: var(--color-white);
+    border-top: 3px solid var(--color-accent);
     padding-block: var(--space-7) var(--space-5);
     padding-bottom: calc(var(--mobile-cta-height) + env(safe-area-inset-bottom, 0px) + var(--space-5));
   }
@@ -125,7 +126,10 @@ const currentYear = new Date().getFullYear();
   }
 
   .footer__title {
-    font-size: var(--fs-base);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     margin-bottom: var(--space-3);
     color: var(--color-accent);
   }

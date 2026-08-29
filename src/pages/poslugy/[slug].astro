@@ -13,14 +13,23 @@ import { SERVICES } from '../../data/services';
 import { TEAM, telHref } from '../../data/site';
 import { TEAM_PHOTOS } from '../../data/team-photos';
 import { SERVICE_PHOTOS } from '../../data/service-photos';
-import { EVAKUATOR_CITIES } from '../../data/evakuator-cities';
 import { getBlogPosts } from '../../data/blog';
 import { serviceSchema, breadcrumbSchema, faqSchema } from '../../utils/schema';
 
-// prodaz-auto має власну виділену сторінку-каталог (poslugy/prodaz-auto/index.astro),
-// а не generic service-шаблон — так само як remont-avtomobiliv.
+// Деякі послуги мають власні виділені сторінки (poslugy/<slug>/index.astro), а не generic
+// service-шаблон — так само як remont-avtomobiliv.
 export function getStaticPaths() {
-  return SERVICES.filter((s) => !s.hasSubcategories && s.slug !== 'prodaz-auto').map((service) => ({
+  return SERVICES.filter(
+    (s) =>
+      !s.hasSubcategories &&
+      s.slug !== 'prodaz-auto' &&
+      s.slug !== 'prodazh-kolis' &&
+      s.slug !== 'rozmytnennia' &&
+      s.slug !== 'myika-deteiling' &&
+      s.slug !== 'avtozapchastyny' &&
+      s.slug !== 'pryhon-avtomobiliv' &&
+      s.slug !== 'evakuator',
+  ).map((service) => ({
     params: { slug: service.slug },
     props: { service },
   }));
@@ -60,9 +69,10 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
 
   <section class="hero-service container" data-animate>
     <div class="hero-service__text">
-      <div class={`hero-service__icon ${service.highlight ? 'hero-service__icon--highlight' : ''}`}>
-        <Icon name={service.icon} size={32} />
-      </div>
+      <p class="eyebrow">
+        <Icon name={service.icon} size={16} />
+        {service.type === 'product' ? 'Товар' : 'Послуга'}
+      </p>
       <h1>{service.title}</h1>
       <p class="lead">{service.description}</p>
       <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
@@ -71,7 +81,9 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
     </div>
     <div class="hero-service__media">
       {servicePhoto ? (
-        <Image src={servicePhoto} alt={service.title} width={640} height={480} format="avif" quality={80} fit="cover" />
+        <div class="offset-block">
+          <Image src={servicePhoto} alt={service.title} width={640} height={480} format="avif" quality={80} fit="cover" />
+        </div>
       ) : (
         <div class="hero-service__media-placeholder" aria-hidden="true">
           <span>Фото додається</span>
@@ -97,21 +109,6 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
   <section class="container">
     <FaqAccordion items={service.faq} />
   </section>
-
-  {service.slug === 'evakuator' && (
-    <section class="container cities-section" data-animate>
-      <h2>Виїзд евакуатора по містах</h2>
-      <p class="lead">Детальніше про виїзд, орієнтовний час прибуття та маршрут до кожного напрямку:</p>
-      <div class="cities-section__list">
-        {EVAKUATOR_CITIES.map((c) => (
-          <a href={`/poslugy/evakuator/${c.slug}`} class="cities-section__card">
-            <Icon name="map-pin" size={20} />
-            <span>Евакуатор у {c.nameLocative}</span>
-          </a>
-        ))}
-      </div>
-    </section>
-  )}
 
   {relatedPosts.length > 0 && (
     <section class="container blog-links" data-animate>
@@ -143,33 +140,20 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
 <style>
   .hero-service {
     display: grid;
-    gap: var(--space-5);
-    align-items: center;
+    gap: var(--space-6);
     padding-block: var(--space-6);
     grid-template-columns: 1fr;
   }
 
   @media (min-width: 900px) {
     .hero-service {
-      grid-template-columns: 1.2fr 1fr;
+      grid-template-columns: 5fr 7fr;
+      align-items: start;
     }
   }
 
-  .hero-service__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: var(--radius-md);
-    background: var(--color-gray-light);
-    color: var(--color-accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .hero-service .eyebrow {
     margin-bottom: var(--space-3);
-  }
-
-  .hero-service__icon--highlight {
-    background: var(--color-black);
-    color: var(--color-white);
   }
 
   .lead {
@@ -178,9 +162,8 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
     margin-bottom: var(--space-4);
   }
 
-  .hero-service__media {
+  .hero-service__media .offset-block {
     aspect-ratio: 4 / 3;
-    border-radius: var(--radius-md);
     overflow: hidden;
   }
 
@@ -200,38 +183,6 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
     background: var(--color-gray-light);
     color: var(--color-gray-mid);
     font-size: var(--fs-sm);
-  }
-
-  .cities-section {
-    padding-block: var(--space-5);
-  }
-
-  .cities-section .lead {
-    margin-bottom: var(--space-4);
-  }
-
-  .cities-section__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-
-  .cities-section__card {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    text-decoration: none;
-    color: var(--color-black);
-    font-weight: 600;
-    transition: border-color var(--transition-fast), color var(--transition-fast);
-  }
-
-  .cities-section__card:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
   }
 
   .blog-links {
@@ -257,7 +208,7 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
     gap: var(--space-1);
     padding: var(--space-4);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-top: 2px solid var(--color-accent);
     text-decoration: none;
     color: var(--color-black);
     transition: border-color var(--transition-fast), box-shadow var(--transition-fast);

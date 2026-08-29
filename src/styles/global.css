@@ -2,12 +2,15 @@
   --color-accent: #ff6b00;
   --color-accent-dark: #cc5500;
   --color-black: #141414;
+  --color-black-deep: #0c0c0c;
   --color-white: #ffffff;
   --color-gray-light: #f4f4f4;
   --color-gray-mid: #6b6b6b;
   --color-border: #e2e2e2;
 
-  --font-base: 'Inter', 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-base: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Oswald', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
   /* fluid typography — clamp(min, preferred, max) */
   --fs-sm: clamp(0.85rem, 0.8rem + 0.2vw, 0.95rem);
@@ -72,17 +75,21 @@ h1,
 h2,
 h3,
 h4 {
-  line-height: 1.15;
+  font-family: var(--font-heading);
+  line-height: 1.05;
   margin: 0 0 var(--space-3);
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 h1 {
   font-size: var(--fs-3xl);
+  font-weight: 700;
 }
 
 h2 {
   font-size: var(--fs-2xl);
+  font-weight: 700;
 }
 
 h3 {
@@ -210,4 +217,71 @@ p {
   html {
     scroll-behavior: auto;
   }
+}
+
+/* ---------------------------------------------------------------------
+   Editorial system utilities — shared across the whole site.
+   No pills, no blurred blobs, no floating drop-shadow cards. Print/
+   editorial devices instead: kickers, ruled dividers, oversized index
+   numerals, hard-edged offset color blocks.
+   --------------------------------------------------------------------- */
+
+/* Kicker label — a short caps line above a heading, plain text + a rule,
+   never a pill/badge shape. */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.eyebrow::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 2px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* Oversized faint index numeral — a magazine-spread section number.
+   Usage: <span class="index-mark">01</span> positioned by the parent. */
+.index-mark {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(4rem, 3rem + 6vw, 9rem);
+  line-height: 0.8;
+  color: var(--color-black);
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
+}
+
+.index-mark--on-dark {
+  color: var(--color-white);
+  opacity: 0.08;
+}
+
+/* Hard-edged offset block — a flat solid rectangle set behind an element
+   with a fixed pixel offset. Replaces blurred "glow" decoration. */
+.offset-block {
+  position: relative;
+}
+
+.offset-block::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+  transform: translate(14px, 14px);
+  z-index: -1;
+}
+
+.offset-block--ink::before {
+  background: var(--color-black);
 }

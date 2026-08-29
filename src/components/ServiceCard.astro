@@ -4,91 +4,95 @@ import type { Service } from '../data/services';
 
 interface Props {
   service: Service;
+  index?: number;
 }
 
-const { service } = Astro.props;
+const { service, index } = Astro.props;
+const num = index != null ? String(index + 1).padStart(2, '0') : null;
 ---
 
-<a
-  href={`/poslugy/${service.slug}`}
-  class={`service-card ${service.highlight ? 'service-card--highlight' : ''}`}
-  aria-label={service.title}
-  data-animate
->
-  <span class="service-card__icon" aria-hidden="true">
-    <Icon name={service.icon} size={28} />
+<a href={`/poslugy/${service.slug}`} class="service-row" data-animate>
+  {num && <span class="service-row__num" aria-hidden="true">{num}</span>}
+  <Icon name={service.icon} size={22} class="service-row__icon" />
+  <span class="service-row__body">
+    <span class="service-row__title">{service.title}</span>
+    <span class="service-row__desc">{service.shortDescription}</span>
   </span>
-  <h3 class="service-card__title">{service.title}</h3>
-  <p class="service-card__desc">{service.shortDescription}</p>
-  <span class="service-card__more" aria-hidden="true">
-    Детальніше <Icon name="arrow" size={16} />
-  </span>
+  <Icon name="arrow" size={18} class="service-row__arrow" />
 </a>
 
 <style>
-  .service-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+  .service-row {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: start;
+    gap: var(--space-3) var(--space-4);
+    padding-block: var(--space-4);
+    border-top: 1px solid var(--color-border);
     text-decoration: none;
     color: var(--color-black);
-    background: var(--color-white);
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    break-inside: avoid;
   }
 
-  .service-card:hover {
-    border-color: var(--color-accent);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-    transform: translateY(-3px);
-  }
-
-  .service-card--highlight {
-    background: var(--color-black);
-    color: var(--color-white);
-    border-color: var(--color-black);
-  }
-
-  .service-card--highlight .service-card__icon {
-    background: var(--color-accent);
-    color: var(--color-white);
-  }
-
-  .service-card__icon {
-    width: 52px;
-    height: 52px;
-    border-radius: var(--radius-sm);
-    background: var(--color-gray-light);
-    color: var(--color-accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .service-card__title {
+  .service-row__num {
+    font-family: var(--font-heading);
+    font-weight: 700;
     font-size: var(--fs-lg);
-    margin: 0;
+    color: #bdbdbd;
+    line-height: 1.4;
+    transition: color var(--transition-fast);
   }
 
-  .service-card__desc {
+  .service-row:hover .service-row__num {
+    color: var(--color-accent);
+  }
+
+  .service-row :global(.service-row__icon) {
+    color: var(--color-accent);
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .service-row__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .service-row__title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--fs-lg);
+  }
+
+  .service-row__desc {
     font-size: var(--fs-sm);
     color: var(--color-gray-mid);
-    margin: 0;
-    flex: 1;
   }
 
-  .service-card--highlight .service-card__desc {
-    color: #d9d9d9;
+  .service-row :global(.service-row__arrow) {
+    color: var(--color-gray-mid);
+    margin-top: 6px;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast), color var(--transition-fast);
   }
 
-  .service-card__more {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    font-weight: 700;
+  .service-row:hover :global(.service-row__arrow) {
+    opacity: 1;
+    transform: translateX(0);
     color: var(--color-accent);
-    font-size: var(--fs-sm);
+  }
+
+  @media (max-width: 480px) {
+    .service-row {
+      grid-template-columns: auto 1fr;
+    }
+
+    .service-row :global(.service-row__icon),
+    .service-row :global(.service-row__arrow) {
+      display: none;
+    }
   }
 </style>

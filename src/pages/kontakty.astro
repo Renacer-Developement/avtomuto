@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import ContactForm from '../components/ContactForm.astro';
@@ -7,6 +8,7 @@ import FaqAccordion from '../components/FaqAccordion.astro';
 import { SITE, TEAM, telHref, waHref, viberHref, tgHref } from '../data/site';
 import { breadcrumbSchema } from '../utils/schema';
 import type { FaqItem } from '../data/services';
+import stoPhoto from '../assets/images/sto-photo.png';
 
 const crumbs = [
   { label: 'Головна', href: '/' },
@@ -51,48 +53,78 @@ const contactFaq: FaqItem[] = [
     </div>
 
     <section class="intro container" data-animate>
+      <span class="index-mark intro__index" aria-hidden="true">01</span>
+      <p class="eyebrow">Рудники · Львівська обл.</p>
       <h1>Контакти</h1>
       <p>
         Оберіть майстра за напрямком і зателефонуйте — це найшвидший спосіб. Не впевнені, до кого
         звертатися? Зателефонуйте Ігорю, він підкаже, з ким краще поговорити.
       </p>
+      <a href={telHref(TEAM.ihor.phone)} class="btn btn-primary intro__cta" data-gtm-event="click_phone">
+        <Icon name="phone" size={18} /> {TEAM.ihor.phoneDisplay}
+      </a>
     </section>
 
     <section class="masters" aria-label="Майстри AvtoMuto" data-animate>
-      <div class="container masters__grid">
-        {Object.values(TEAM).map((member) => (
-          <div class="master-card">
-            <span class="master-card__avatar"><Icon name="team" size={26} /></span>
-            <h2 class="master-card__name">{member.name}</h2>
-            <p class="master-card__role">{member.role}</p>
-            <a href={telHref(member.phone)} class="btn btn-primary master-card__call" data-gtm-event="click_phone">
-              <Icon name="phone" size={16} /> {member.phoneDisplay}
-            </a>
-            <div class="master-card__messengers">
-              <a href={waHref(member.phone)} aria-label={`WhatsApp ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={20} /></a>
-              <a href={viberHref(member.phone)} aria-label={`Viber ${member.name}`} data-gtm-event="click_messenger"><Icon name="viber" size={20} /></a>
-              <a href={tgHref(member.phone)} aria-label={`Telegram ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="telegram" size={20} /></a>
+      <div class="container">
+        <p class="eyebrow masters__eyebrow">До кого звертатись</p>
+        <div class="masters__list">
+          {Object.values(TEAM).map((member) => (
+            <div class="master-row">
+              <div class="master-row__info">
+                <p class="master-row__name">{member.name}</p>
+                <p class="master-row__role">{member.role}</p>
+              </div>
+              <div class="master-row__actions">
+                <a href={telHref(member.phone)} class="master-row__call" data-gtm-event="click_phone">
+                  <Icon name="phone" size={18} /> {member.phoneDisplay}
+                </a>
+                <div class="master-row__messengers">
+                  <a href={waHref(member.phone)} aria-label={`WhatsApp ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={20} /></a>
+                  <a href={viberHref(member.phone)} aria-label={`Viber ${member.name}`} data-gtm-event="click_messenger"><Icon name="viber" size={20} /></a>
+                  <a href={tgHref(member.phone)} aria-label={`Telegram ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="telegram" size={20} /></a>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
 
     <section class="container place" data-animate>
-      <h2>СТО в Рудниках</h2>
-      <p class="address"><Icon name="map-pin" size={18} /> {SITE.address.full}</p>
-      <p class="hours">
-        <Icon name="clock" size={18} />
-        Евакуатор: {SITE.hours.evacuator}<br />
-        Інші послуги: {SITE.hours.general}
-      </p>
-      <div class="social">
-        <a href={SITE.social.instagram} target="_blank" rel="noopener noreferrer">
-          <Icon name="instagram" size={20} /> Instagram
-        </a>
-        <a href={SITE.social.tiktok} target="_blank" rel="noopener noreferrer">
-          <Icon name="tiktok" size={20} /> TikTok
-        </a>
+      <div class="place__grid">
+        <div class="place__text">
+          <span class="index-mark place__index" aria-hidden="true">02</span>
+          <p class="eyebrow">Де нас знайти</p>
+          <h2>СТО в Рудниках</h2>
+          <p class="address"><Icon name="map-pin" size={18} /> {SITE.address.full}</p>
+          <p class="hours">
+            <Icon name="clock" size={18} />
+            Евакуатор: {SITE.hours.evacuator}<br />
+            Інші послуги: {SITE.hours.general}
+          </p>
+          <div class="social">
+            <a href={SITE.social.instagram} target="_blank" rel="noopener noreferrer">
+              <Icon name="instagram" size={20} /> Instagram
+            </a>
+            <a href={SITE.social.tiktok} target="_blank" rel="noopener noreferrer">
+              <Icon name="tiktok" size={20} /> TikTok
+            </a>
+          </div>
+        </div>
+        <figure class="place__media">
+          <div class="offset-block">
+            <Image
+              src={stoPhoto}
+              alt="СТО AvtoMuto — будівля автосервісу з мийкою в с. Рудники"
+              width={640}
+              height={480}
+              format="avif"
+              quality={80}
+              loading="lazy"
+            />
+          </div>
+        </figure>
       </div>
     </section>
 
@@ -109,13 +141,15 @@ const contactFaq: FaqItem[] = [
         ></iframe>
       </div>
       <div class="form-card">
-        <h2>Або напишіть нам</h2>
+        <p class="eyebrow">Не хочете дзвонити?</p>
+        <h2>Напишіть нам</h2>
         <p class="form-card__hint">Заповніть коротку форму — ми самі зателефонуємо вам у робочий час.</p>
         <ContactForm />
       </div>
     </section>
 
     <section class="container faq" data-animate>
+      <span class="index-mark faq__index" aria-hidden="true">03</span>
       <FaqAccordion items={contactFaq} />
     </section>
   </div>
@@ -128,7 +162,15 @@ const contactFaq: FaqItem[] = [
   }
 
   .intro {
-    padding-block: var(--space-5) var(--space-6);
+    position: relative;
+    padding-block: var(--space-6) var(--space-6);
+  }
+
+  .intro__index {
+    position: absolute;
+    top: -1.2rem;
+    left: -0.2rem;
+    z-index: -1;
   }
 
   .intro p {
@@ -137,80 +179,121 @@ const contactFaq: FaqItem[] = [
     margin-top: var(--space-3);
   }
 
+  .intro__cta {
+    margin-top: var(--space-4);
+  }
+
   .masters {
-    background: var(--color-gray-light);
+    background: var(--color-black);
+    color: var(--color-white);
     padding-block: var(--space-6);
   }
 
-  .masters__grid {
-    display: grid;
-    gap: var(--space-4);
-    grid-template-columns: 1fr;
+  .masters__eyebrow {
+    color: var(--color-accent);
+    margin-bottom: var(--space-4);
   }
 
-  @media (min-width: 768px) {
-    .masters__grid {
-      grid-template-columns: repeat(3, 1fr);
+  .masters__list {
+    border-top: 1px solid #2c2c2c;
+  }
+
+  .master-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+    border-bottom: 1px solid #2c2c2c;
+  }
+
+  @media (min-width: 700px) {
+    .master-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-5);
     }
   }
 
-  .master-card {
-    background: var(--color-white);
-    border-radius: var(--radius-md);
-    padding: var(--space-5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-2);
-  }
-
-  .master-card__avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    color: var(--color-white);
+  .master-row__name {
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 1.3rem + 1vw, 2.25rem);
+    font-weight: 700;
     margin-bottom: var(--space-1);
+    color: var(--color-white);
   }
 
-  .master-card__name {
-    font-size: var(--fs-lg);
+  .master-row__role {
+    color: #a8a8a8;
+    font-size: var(--fs-sm);
     margin-bottom: 0;
   }
 
-  .master-card__role {
-    color: var(--color-gray-mid);
-    font-size: var(--fs-sm);
-    min-height: 2.6em;
-    margin-bottom: var(--space-2);
+  .master-row__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-shrink: 0;
   }
 
-  .master-card__call {
-    width: 100%;
+  .master-row__call {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-heading);
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--transition-fast);
   }
 
-  .master-card__messengers {
+  .master-row__call:hover {
+    color: var(--color-white);
+  }
+
+  .master-row__messengers {
     display: flex;
     gap: var(--space-3);
-    margin-top: var(--space-2);
+    padding-left: var(--space-4);
+    border-left: 1px solid #2c2c2c;
   }
 
-  .master-card__messengers a {
-    color: var(--color-accent);
+  .master-row__messengers a {
+    color: #a8a8a8;
     transition: color var(--transition-fast), transform var(--transition-fast);
   }
 
-  .master-card__messengers a:hover {
-    color: var(--color-accent-dark);
+  .master-row__messengers a:hover {
+    color: var(--color-accent);
     transform: translateY(-2px);
   }
 
   .place {
     padding-block: var(--space-6) 0;
+  }
+
+  .place__grid {
+    display: grid;
+    gap: var(--space-6) var(--space-7);
+  }
+
+  @media (min-width: 800px) {
+    .place__grid {
+      grid-template-columns: 7fr 5fr;
+      align-items: start;
+    }
+  }
+
+  .place__text {
+    position: relative;
+  }
+
+  .place__index {
+    position: absolute;
+    top: -1.4rem;
+    left: -0.2rem;
+    z-index: -1;
   }
 
   .place h2 {
@@ -225,6 +308,13 @@ const contactFaq: FaqItem[] = [
     color: var(--color-gray-mid);
   }
 
+  .place__media img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
+  }
+
   .social {
     display: flex;
     flex-wrap: wrap;
@@ -237,7 +327,6 @@ const contactFaq: FaqItem[] = [
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-md);
     background: var(--color-gray-light);
     color: var(--color-black);
     font-weight: 600;
@@ -265,7 +354,6 @@ const contactFaq: FaqItem[] = [
 
   .place__map {
     line-height: 0;
-    border-radius: var(--radius-md);
     overflow: hidden;
     min-height: 260px;
   }
@@ -277,8 +365,11 @@ const contactFaq: FaqItem[] = [
 
   .form-card {
     background: var(--color-gray-light);
-    border-radius: var(--radius-md);
     padding: var(--space-5);
+  }
+
+  .form-card .eyebrow {
+    margin-bottom: var(--space-2);
   }
 
   .form-card h2 {
@@ -287,11 +378,19 @@ const contactFaq: FaqItem[] = [
 
   .form-card__hint {
     color: var(--color-gray-mid);
-    margin-top: calc(var(--space-2) * -1);
     margin-bottom: var(--space-4);
   }
 
   .faq {
+    position: relative;
     padding-block: var(--space-6);
+    overflow: hidden;
+  }
+
+  .faq__index {
+    position: absolute;
+    top: var(--space-5);
+    right: 0;
+    z-index: -1;
   }
 </style>

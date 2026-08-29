@@ -101,6 +101,7 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
     z-index: 100;
     background: var(--color-white);
     border-bottom: 1px solid var(--color-border);
+    box-shadow: inset 0 3px 0 var(--color-accent);
   }
 
   .header__inner {
@@ -117,10 +118,11 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
   }
 
   .header__logo-mark {
-    font-size: var(--fs-lg);
-    font-weight: 800;
+    font-family: var(--font-heading);
+    font-size: calc(var(--fs-lg) * 1.35);
+    font-weight: 700;
     color: var(--color-black);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 
   .header__logo-accent {
@@ -142,9 +144,22 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
   }
 
   .header__nav-list > li > a {
+    position: relative;
     text-decoration: none;
     color: var(--color-black);
+    padding-bottom: 3px;
     transition: color var(--transition-fast);
+  }
+
+  .header__nav-list > li > a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-accent);
+    transition: right var(--transition-base);
   }
 
   .header__nav-sales {
@@ -153,6 +168,10 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
 
   .header__nav-list > li > a:hover {
     color: var(--color-accent);
+  }
+
+  .header__nav-list > li > a:hover::after {
+    right: 0;
   }
 
   .header__has-mega {
@@ -184,6 +203,7 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
     width: min(560px, 90vw);
     background: var(--color-white);
     border: 1px solid var(--color-border);
+    border-top: 3px solid var(--color-accent);
     border-radius: var(--radius-md);
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
     padding: var(--space-4);

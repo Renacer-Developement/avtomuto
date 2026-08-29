@@ -1,21 +1,17 @@
 ---
-import Icon from './Icon.astro';
-
 const stats = [
-  { icon: 'wrench', value: '10', label: 'напрямків послуг під одним дахом' },
-  { icon: 'team', value: '11', label: 'досвідчених майстрів своєї справи' },
-  { icon: 'clock', value: '24/7', label: 'виклик евакуатора без вихідних' },
-  { icon: 'region', value: 'Львівська обл.', label: 'вся зона обслуговування' },
+  { value: '10', label: 'напрямків послуг під одним дахом' },
+  { value: '11', label: 'досвідчених майстрів своєї справи' },
+  { value: '24/7', label: 'виклик евакуатора без вихідних' },
+  { value: 'Львівська обл.', label: 'вся зона обслуговування' },
 ];
 ---
 
 <section class="stats" aria-label="AvtoMuto у цифрах" data-animate>
   <div class="container stats__grid">
-    {stats.map((s) => (
+    {stats.map((s, i) => (
       <div class="stats__card">
-        <span class="stats__icon">
-          <Icon name={s.icon} size={26} />
-        </span>
+        <span class="stats__index">{String(i + 1).padStart(2, '0')}</span>
         <span class="stats__value">{s.value}</span>
         <span class="stats__label">{s.label}</span>
       </div>
@@ -25,7 +21,7 @@ const stats = [
 
 <style>
   .stats {
-    background: var(--color-black);
+    background: var(--color-black-deep);
     padding-block: var(--space-7);
   }
 
@@ -41,12 +37,12 @@ const stats = [
   }
 
   .stats__card {
-    padding: var(--space-5) var(--space-4);
+    padding: var(--space-5) var(--space-4) var(--space-4);
+    border-top: 2px solid var(--color-accent);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-2);
-    transition: background var(--transition-base);
   }
 
   @media (min-width: 768px) {
@@ -55,24 +51,17 @@ const stats = [
     }
   }
 
-  .stats__card:hover {
-    background: #1e1e1e;
-  }
-
-  .stats__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    color: var(--color-white);
+  .stats__index {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: #777;
   }
 
   .stats__value {
+    font-family: var(--font-heading);
     font-size: var(--fs-2xl);
-    font-weight: 800;
+    font-weight: 700;
     color: var(--color-white);
     line-height: 1.1;
   }

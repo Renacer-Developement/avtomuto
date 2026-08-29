@@ -43,39 +43,57 @@ const showFilters = cars.length > 1;
             </button>
           </div>
 
-          <select id="filter-status" class="car-filter-select">
-            <option value="">Статус: всі</option>
-            {statusOrder.map((status) => <option value={status}>{CAR_STATUS_LABELS[status]}</option>)}
-          </select>
-          {brands.length > 1 && (
-            <select id="filter-brand" class="car-filter-select">
-              <option value="">Марка: всі</option>
-              {brands.map((b) => <option value={b}>{b}</option>)}
+          <div class="car-filter-field">
+            <label class="car-filter-label" for="filter-status">Статус</label>
+            <select id="filter-status" class="car-filter-select">
+              <option value="">Всі статуси</option>
+              {statusOrder.map((status) => <option value={status}>{CAR_STATUS_LABELS[status]}</option>)}
             </select>
+          </div>
+          {brands.length > 1 && (
+            <div class="car-filter-field">
+              <label class="car-filter-label" for="filter-brand">Марка</label>
+              <select id="filter-brand" class="car-filter-select">
+                <option value="">Всі марки</option>
+                {brands.map((b) => <option value={b}>{b}</option>)}
+              </select>
+            </div>
           )}
           {bodyTypes.length > 1 && (
-            <select id="filter-body" class="car-filter-select">
-              <option value="">Кузов: всі</option>
-              {bodyTypes.map((b) => <option value={b}>{b}</option>)}
-            </select>
+            <div class="car-filter-field">
+              <label class="car-filter-label" for="filter-body">Кузов</label>
+              <select id="filter-body" class="car-filter-select">
+                <option value="">Всі кузови</option>
+                {bodyTypes.map((b) => <option value={b}>{b}</option>)}
+              </select>
+            </div>
           )}
           {fuelTypes.length > 1 && (
-            <select id="filter-fuel" class="car-filter-select">
-              <option value="">Пальне: всі</option>
-              {fuelTypes.map((f) => <option value={f}>{f}</option>)}
-            </select>
+            <div class="car-filter-field">
+              <label class="car-filter-label" for="filter-fuel">Пальне</label>
+              <select id="filter-fuel" class="car-filter-select">
+                <option value="">Всі типи</option>
+                {fuelTypes.map((f) => <option value={f}>{f}</option>)}
+              </select>
+            </div>
           )}
-          <div class="car-catalog__filters-range">
-            <input id="filter-price-min" class="car-filter-input" type="number" inputmode="numeric" placeholder="Ціна від, $" />
-            <input id="filter-price-max" class="car-filter-input" type="number" inputmode="numeric" placeholder="Ціна до, $" />
+          <div class="car-filter-field">
+            <span class="car-filter-label">Ціна, $</span>
+            <div class="car-catalog__filters-range">
+              <input id="filter-price-min" class="car-filter-input" type="number" inputmode="numeric" placeholder="Від" />
+              <input id="filter-price-max" class="car-filter-input" type="number" inputmode="numeric" placeholder="До" />
+            </div>
           </div>
-          <div class="car-catalog__filters-range">
-            <input id="filter-mileage-min" class="car-filter-input" type="number" inputmode="numeric" placeholder="Пробіг від, км" />
-            <input id="filter-mileage-max" class="car-filter-input" type="number" inputmode="numeric" placeholder="Пробіг до, км" />
+          <div class="car-filter-field">
+            <span class="car-filter-label">Пробіг, км</span>
+            <div class="car-catalog__filters-range">
+              <input id="filter-mileage-min" class="car-filter-input" type="number" inputmode="numeric" placeholder="Від" />
+              <input id="filter-mileage-max" class="car-filter-input" type="number" inputmode="numeric" placeholder="До" />
+            </div>
           </div>
 
           <div class="car-catalog__filters-actions">
-            <button type="button" id="filter-reset" class="car-filter-reset">Скинути</button>
+            <button type="button" id="filter-reset" class="car-filter-reset">Скинути фільтри</button>
             <button type="button" class="btn btn-primary car-catalog__filters-apply" id="filters-apply">Показати авто</button>
           </div>
         </div>
@@ -263,10 +281,28 @@ const showFilters = cars.length > 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-bottom: var(--space-3);
+    border-bottom: 2px solid var(--color-black);
   }
 
   .car-catalog__filters-header h3 {
     margin: 0;
+    font-family: var(--font-heading);
+  }
+
+  .car-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .car-filter-label {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-gray-mid);
   }
 
   .car-catalog__filters-close {
@@ -304,11 +340,18 @@ const showFilters = cars.length > 1;
     width: 100%;
     padding: var(--space-3);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
+    border-radius: 0;
     background: var(--color-white);
     font-size: var(--fs-base);
     font-family: var(--font-base);
     color: var(--color-black);
+    transition: border-color var(--transition-fast);
+  }
+
+  .car-filter-select:focus-visible,
+  .car-filter-input:focus-visible {
+    outline: none;
+    border-color: var(--color-accent);
   }
 
   .car-catalog__filters-actions {

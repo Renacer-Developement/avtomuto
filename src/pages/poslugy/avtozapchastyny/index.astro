@@ -1,0 +1,407 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Icon from '../../../components/Icon.astro';
+import ContactCard from '../../../components/ContactCard.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import RelatedServices from '../../../components/RelatedServices.astro';
+import { getServiceBySlug } from '../../../data/services';
+import { TEAM, telHref } from '../../../data/site';
+import { TEAM_PHOTOS } from '../../../data/team-photos';
+import { getBlogPosts } from '../../../data/blog';
+import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
+
+const service = getServiceBySlug('avtozapchastyny')!;
+const responsible = TEAM[service.responsible];
+const responsiblePhoto = TEAM_PHOTOS[service.responsible];
+const path = '/poslugy/avtozapchastyny';
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: service.title, href: path },
+];
+const schema = [breadcrumbSchema(crumbs), serviceSchema(service, path)];
+const faq = faqSchema(service.faq);
+if (faq) schema.push(faq);
+const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджером";
+
+const categories = [
+  { icon: 'brake', label: 'Гальмівна система' },
+  { icon: 'suspension', label: 'Підвіска' },
+  { icon: 'engine', label: 'Двигун' },
+  { icon: 'filter', label: 'Фільтри та мастила' },
+  { icon: 'battery', label: 'Акумулятори' },
+  { icon: 'gearbox', label: 'Трансмісія' },
+];
+
+const posts = await getBlogPosts();
+const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
+---
+
+<Layout
+  title={service.title}
+  description={service.shortDescription}
+  path={path}
+  schema={schema}
+  serviceSlug={service.slug}
+>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="hero container" data-animate>
+    <p class="eyebrow eyebrow--center"><Icon name={service.icon} size={16} /> Товар</p>
+    <h1>{service.title}</h1>
+    <p class="lead">{service.description}</p>
+    <a href={telHref(responsible.phone)} class="lookup" data-gtm-event="click_phone">
+      <Icon name="zoom" size={20} class="lookup__icon" />
+      <span class="lookup__placeholder">Скажіть VIN-код або назву запчастини</span>
+      <span class="lookup__btn">{ctaLabel} <Icon name="arrow" size={16} /></span>
+    </a>
+  </section>
+
+  {service.processSteps && (
+    <section class="container pipeline-section" data-animate>
+      <p class="eyebrow">Як це працює</p>
+      <h2>Від запиту до запчастини — три кроки</h2>
+      <ol class="pipeline">
+        {service.processSteps.map((step, i) => (
+          <li class="pipeline__step">
+            <span class="pipeline__node">{i + 1}</span>
+            <h3>{step.title}</h3>
+            <p>{step.text}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )}
+
+  <section class="container categories" data-animate>
+    <p class="eyebrow">Підбираємо деталі для</p>
+    <h2>Основні категорії запчастин</h2>
+    <div class="categories__list">
+      {categories.map((c) => (
+        <div class="category-chip">
+          <Icon name={c.icon} size={22} />
+          <span>{c.label}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="container benefits" data-animate>
+    <p class="eyebrow">{service.benefitsHeading ?? 'Переваги послуги'}</p>
+    <h2>Чому обирають нас для підбору запчастин</h2>
+    <div class="benefits__grid">
+      {service.benefits.map((item, i) => (
+        <div class="benefit-block">
+          <span class="benefit-block__num">{String(i + 1).padStart(2, '0')}</span>
+          <p>{item}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="container" data-animate>
+    <ContactCard member={responsible} photo={responsiblePhoto} ctaLabel={ctaLabel} />
+  </section>
+
+  <section class="container">
+    <FaqAccordion items={service.faq} />
+  </section>
+
+  {relatedPosts.length > 0 && (
+    <section class="container blog-links" data-animate>
+      <h2>Статті по темі</h2>
+      <div class="blog-links__list">
+        {relatedPosts.map((post) => (
+          <a href={`/blog/${post.slug}`} class="blog-links__card">
+            <strong>{post.title}</strong>
+            <span>{post.excerpt}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {service.related && <RelatedServices slugs={service.related} />}
+
+  <section class="final-cta" data-animate>
+    <div class="container final-cta__inner">
+      <p class="eyebrow">Потрібна деталь?</p>
+      <h2>Надішліть VIN — підберемо оригінал або якісний аналог</h2>
+      <p>Зателефонуйте або напишіть Ігорю в месенджер — назве наявність і ціну ще до вашого приїзду.</p>
+      <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+        <Icon name="phone" size={18} /> {ctaLabel}
+      </a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  section {
+    padding-block: var(--space-5);
+  }
+
+  .hero {
+    padding-block: var(--space-7) var(--space-6);
+    text-align: center;
+    max-width: 720px;
+  }
+
+  .eyebrow--center {
+    justify-content: center;
+  }
+
+  .hero .lead {
+    margin-inline: auto;
+  }
+
+  .lead {
+    color: var(--color-gray-mid);
+    max-width: 60ch;
+    margin-bottom: var(--space-5);
+  }
+
+  .lookup {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    max-width: 560px;
+    margin: 0 auto;
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+    border: 2px solid var(--color-black);
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--color-gray-mid);
+    text-align: left;
+  }
+
+  .lookup :global(.lookup__icon) {
+    color: var(--color-gray-mid);
+    flex-shrink: 0;
+  }
+
+  .lookup__placeholder {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--fs-sm);
+  }
+
+  .lookup__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    background: var(--color-accent);
+    color: var(--color-white);
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    padding: var(--space-2) var(--space-4);
+    border-radius: 999px;
+    transition: background var(--transition-fast);
+  }
+
+  .lookup:hover .lookup__btn {
+    background: var(--color-accent-dark);
+  }
+
+  @media (max-width: 560px) {
+    .lookup {
+      flex-wrap: wrap;
+      border-radius: var(--radius-md);
+    }
+
+    .lookup__btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .pipeline-section .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .pipeline {
+    list-style: none;
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 800px) {
+    .pipeline {
+      position: relative;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-5);
+    }
+
+    .pipeline::before {
+      content: '';
+      position: absolute;
+      top: 22px;
+      left: calc(100% / 6);
+      right: calc(100% / 6);
+      height: 2px;
+      background: var(--color-border);
+      z-index: 0;
+    }
+  }
+
+  .pipeline__step {
+    position: relative;
+    z-index: 1;
+  }
+
+  .pipeline__node {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: var(--space-3);
+    background: var(--color-black);
+    color: var(--color-white);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--fs-lg);
+    border-radius: 50%;
+  }
+
+  .pipeline__step h3 {
+    font-size: var(--fs-lg);
+    margin-bottom: var(--space-1);
+  }
+
+  .pipeline__step p {
+    margin: 0;
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .categories .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .categories__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .category-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-weight: 600;
+    color: var(--color-black);
+  }
+
+  .category-chip :global(svg) {
+    color: var(--color-accent);
+  }
+
+  .benefits .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .benefits__grid {
+    display: grid;
+    gap: 0;
+    grid-template-columns: 1fr;
+    margin-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 640px) {
+    .benefits__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .benefit-block {
+    padding: var(--space-5) var(--space-5) var(--space-6);
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .benefit-block__num {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(2rem, 1.6rem + 1.5vw, 2.75rem);
+    color: #d6d6d6;
+    line-height: 1;
+    margin-bottom: var(--space-2);
+  }
+
+  .benefit-block p {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--fs-lg);
+  }
+
+  .blog-links__list {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .blog-links__list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .blog-links__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-top: 2px solid var(--color-accent);
+    text-decoration: none;
+    color: var(--color-black);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .blog-links__card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  .blog-links__card span {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .final-cta {
+    background: var(--color-gray-light);
+    padding-block: var(--space-7);
+    margin-top: var(--space-6);
+  }
+
+  .final-cta__inner {
+    max-width: 60ch;
+  }
+
+  .final-cta .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .final-cta p:not(.eyebrow) {
+    color: var(--color-gray-mid);
+  }
+
+  .final-cta .btn {
+    margin-top: var(--space-4);
+  }
+</style>

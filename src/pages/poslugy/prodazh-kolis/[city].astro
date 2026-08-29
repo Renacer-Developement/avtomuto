@@ -6,52 +6,52 @@ import Icon from '../../../components/Icon.astro';
 import ContactCard from '../../../components/ContactCard.astro';
 import RelatedServices from '../../../components/RelatedServices.astro';
 import { getServiceBySlug } from '../../../data/services';
-import { EVAKUATOR_CITIES, getEvakuatorCityBySlug } from '../../../data/evakuator-cities';
+import { KOLISA_CITIES } from '../../../data/kolisa-cities';
 import { TEAM, telHref } from '../../../data/site';
 import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
 
 export function getStaticPaths() {
-  return EVAKUATOR_CITIES.map((city) => ({
+  return KOLISA_CITIES.map((city) => ({
     params: { city: city.slug },
     props: { city },
   }));
 }
 
 const { city } = Astro.props;
-const evakuator = getServiceBySlug('evakuator')!;
-const responsible = TEAM[evakuator.responsible];
-const path = `/poslugy/evakuator/${city.slug}`;
+const kolisa = getServiceBySlug('prodazh-kolis')!;
+const responsible = TEAM[kolisa.responsible];
+const path = `/poslugy/prodazh-kolis/${city.slug}`;
 
 const crumbs = [
   { label: 'Головна', href: '/' },
   { label: 'Послуги', href: '/poslugy' },
-  { label: evakuator.title, href: '/poslugy/evakuator' },
+  { label: kolisa.title, href: '/poslugy/prodazh-kolis' },
   { label: city.name, href: path },
 ];
 
-const title = `Евакуатор у ${city.nameLocative} — цілодобово`;
-const description = `Виклик евакуатора в ${city.nameLocative} та навколишніх населених пунктах — цілодобово, 24/7. ${city.intro}`;
+const title = `Шини та диски R16 у ${city.nameLocative} — купити`;
+const description = `Шини та диски радіусів R13–R20, зокрема R16, для клієнтів з ${city.nameLocative}. ${city.intro}`;
 
-const faqItems = [city.extraFaq, ...evakuator.faq];
-const ctaLabel = evakuator.ctaLabel ?? 'Викликати евакуатор';
+const faqItems = [city.extraFaq, ...kolisa.faq];
+const ctaLabel = kolisa.ctaLabel ?? 'Підібрати колеса';
 const schema = [
   breadcrumbSchema(crumbs),
-  serviceSchema({ ...evakuator, title, description, areaServed: city.name }, path),
+  serviceSchema({ ...kolisa, title, description, areaServed: city.name }, path),
 ];
 const faq = faqSchema(faqItems);
 if (faq) schema.push(faq);
 
-const otherCities = EVAKUATOR_CITIES.filter((c) => c.slug !== city.slug);
+const otherCities = KOLISA_CITIES.filter((c) => c.slug !== city.slug);
 ---
 
-<Layout title={title} description={description} path={path} schema={schema} serviceSlug={`evakuator-${city.slug}`}>
+<Layout title={title} description={description} path={path} schema={schema} serviceSlug={`prodazh-kolis-${city.slug}`}>
   <div class="container">
     <Breadcrumbs items={crumbs} />
   </div>
 
   <section class="hero container" data-animate>
-    <p class="eyebrow"><Icon name="tow-truck" size={16} /> Евакуатор · 24/7</p>
-    <h1>Евакуатор у {city.nameLocative}</h1>
+    <p class="eyebrow"><Icon name="tire" size={16} /> Шини та диски</p>
+    <h1>Шини та диски R16 у {city.nameLocative}</h1>
     <p class="lead">{city.intro}</p>
     <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
       <Icon name="phone" size={18} /> {ctaLabel}
@@ -60,27 +60,23 @@ const otherCities = EVAKUATOR_CITIES.filter((c) => c.slug !== city.slug);
 
   <section class="container info-row" data-animate>
     <div class="info-card">
-      <span class="info-card__label">Відстань від бази</span>
+      <span class="info-card__label">Відстань до СТО</span>
       <strong>{city.distanceKm}</strong>
       <span class="info-card__note">від с. Рудники</span>
     </div>
     <div class="info-card">
-      <span class="info-card__label">Маршрут виїзду</span>
+      <span class="info-card__label">Маршрут</span>
       <strong class="info-card__text">{city.road}</strong>
     </div>
     <div class="info-card">
-      <span class="info-card__label">Графік</span>
-      <strong>Цілодобово</strong>
-      <span class="info-card__note">24/7, без вихідних</span>
+      <span class="info-card__label">Радіуси в наявності</span>
+      <strong>R13–R20</strong>
+      <span class="info-card__note">включно з R16</span>
     </div>
   </section>
 
-  <section class="container note" data-animate>
-    <p>{city.coverageNote}</p>
-  </section>
-
   <section class="container">
-    <ContactCard member={responsible} eyebrow="Потрібен евакуатор просто зараз?" ctaLabel={ctaLabel} />
+    <ContactCard member={responsible} eyebrow="Потрібні шини чи диски?" ctaLabel={ctaLabel} />
   </section>
 
   <section class="container">
@@ -88,16 +84,16 @@ const otherCities = EVAKUATOR_CITIES.filter((c) => c.slug !== city.slug);
   </section>
 
   <section class="container other-cities" data-animate>
-    <h2>Також виїжджаємо в:</h2>
+    <h2>Також обслуговуємо:</h2>
     <div class="other-cities__list">
-      <a href="/poslugy/evakuator">Рудники (база)</a>
+      <a href="/poslugy/prodazh-kolis">Рудники (база)</a>
       {otherCities.map((c) => (
-        <a href={`/poslugy/evakuator/${c.slug}`}>{c.name}</a>
+        <a href={`/poslugy/prodazh-kolis/${c.slug}`}>{c.name}</a>
       ))}
     </div>
   </section>
 
-  {evakuator.related && <RelatedServices slugs={evakuator.related} />}
+  {kolisa.related && <RelatedServices slugs={kolisa.related} />}
 </Layout>
 
 <style>
@@ -163,12 +159,6 @@ const otherCities = EVAKUATOR_CITIES.filter((c) => c.slug !== city.slug);
   .info-card__note {
     color: var(--color-gray-mid);
     font-size: var(--fs-sm);
-  }
-
-  .note {
-    max-width: 700px;
-    color: var(--color-gray-mid);
-    padding-block: var(--space-3);
   }
 
   .other-cities {

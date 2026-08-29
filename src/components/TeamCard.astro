@@ -11,24 +11,27 @@ interface Props {
 }
 
 const { member, photo } = Astro.props;
+const initial = member.name.charAt(0);
 ---
 
 <div class="team-card" data-animate>
   <div class="team-card__photo">
     {photo ? (
-      <Image
-        src={photo}
-        alt={`${member.name} — ${member.role}, AvtoMuto`}
-        width={320}
-        height={320}
-        format="avif"
-        quality={80}
-        fit="cover"
-        position="top"
-      />
+      <div class="offset-block">
+        <Image
+          src={photo}
+          alt={`${member.name} — ${member.role}, AvtoMuto`}
+          width={320}
+          height={400}
+          format="avif"
+          quality={80}
+          fit="cover"
+          position="top"
+        />
+      </div>
     ) : (
       <div class="team-card__photo-placeholder" aria-hidden="true">
-        <Icon name="team" size={56} />
+        <span>{initial}</span>
       </div>
     )}
   </div>
@@ -54,25 +57,26 @@ const { member, photo } = Astro.props;
 
 <style>
   .team-card {
-    text-align: center;
-    padding: var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-4);
   }
 
   .team-card__photo {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin: 0 auto var(--space-3);
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    margin: 0 0 var(--space-4);
     background: var(--color-gray-light);
   }
 
+  .team-card__photo .offset-block,
   .team-card__photo img {
     width: 100%;
     height: 100%;
+  }
+
+  .team-card__photo img {
     object-fit: cover;
+    display: block;
   }
 
   .team-card__photo-placeholder {
@@ -82,7 +86,14 @@ const { member, photo } = Astro.props;
     align-items: center;
     justify-content: center;
     background: var(--color-black);
-    color: var(--color-white);
+  }
+
+  .team-card__photo-placeholder span {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(3.5rem, 3rem + 3vw, 5rem);
+    color: var(--color-accent);
+    line-height: 1;
   }
 
   .team-card__name {
@@ -98,12 +109,14 @@ const { member, photo } = Astro.props;
   .team-card__actions {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-3);
+    margin-top: var(--space-2);
   }
 
   .team-card__call {
     width: 100%;
+    justify-content: center;
   }
 
   .team-card__messengers {

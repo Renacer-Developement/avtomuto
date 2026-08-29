@@ -24,10 +24,11 @@ const [featured, ...rest] = posts;
   </div>
 
   <section class="container" data-animate>
+    <p class="eyebrow">AvtoMuto</p>
     <h1>Блог</h1>
 
     {featured && (
-      <a href={`/blog/${featured.slug}`} class="featured-post">
+      <a href={`/blog/${featured.slug}`} class="featured-post offset-block">
         <time datetime={featured.date}>{new Date(featured.date).toLocaleDateString('uk-UA')}</time>
         <h2>{featured.title}</h2>
         <p>{featured.excerpt}</p>
@@ -56,13 +57,13 @@ const [featured, ...rest] = posts;
 
   .featured-post {
     display: block;
-    margin-top: var(--space-5);
+    margin-top: var(--space-7);
+    margin-bottom: var(--space-2);
     padding: var(--space-6);
     background: var(--color-black);
     color: var(--color-white);
-    border-radius: var(--radius-md);
     text-decoration: none;
-    max-width: 720px;
+    max-width: 680px;
   }
 
   .featured-post time {
@@ -88,17 +89,15 @@ const [featured, ...rest] = posts;
   }
 
   .posts {
-    display: grid;
-    gap: var(--space-4);
-    max-width: 720px;
+    max-width: 680px;
     margin-top: var(--space-5);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .post-card {
     display: block;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    padding-block: var(--space-4);
     text-decoration: none;
     color: var(--color-black);
   }

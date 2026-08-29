@@ -72,18 +72,25 @@ const aboutFaq: FaqItem[] = [
     </div>
 
     <section class="story container" data-animate>
-      <h1>Про AvtoMuto</h1>
-      <p>
-        AvtoMuto — автосервіс повного циклу в с. Рудники, Стрийський район, Львівська область. Ми починали з
-        ремонту автомобілів. Сьогодні пропонуємо клієнтам зі Стрия, Дрогобича, Львова та навколишніх міст
-        повний спектр послуг: технічне обслуговування та ремонт, пригон, сертифікацію й розмитнення, продаж
-        авто, а також евакуатор, який працює цілодобово.
-      </p>
-      <p>
-        Наша мета проста: з будь-яким питанням щодо авто ви можете звернутися в одне місце. Ми чесно
-        розкажемо, що потрібно зробити, скільки це коштуватиме і скільки часу займе, а потім якісно виконаємо
-        роботу.
-      </p>
+      <div class="story__text">
+        <span class="index-mark story__index" aria-hidden="true">01</span>
+        <p class="eyebrow">Рудники · Львівська обл.</p>
+        <h1>Про AvtoMuto</h1>
+        <p>
+          AvtoMuto — автосервіс повного циклу в с. Рудники, Стрийський район, Львівська область. Ми
+          починали з ремонту автомобілів. Сьогодні пропонуємо клієнтам зі Стрия, Дрогобича, Львова та
+          навколишніх міст повний спектр послуг: технічне обслуговування та ремонт, пригон, сертифікацію й
+          розмитнення, продаж авто, а також евакуатор, який працює цілодобово.
+        </p>
+        <p>
+          Наша мета проста: з будь-яким питанням щодо авто ви можете звернутися в одне місце. Ми чесно
+          розкажемо, що потрібно зробити, скільки це коштуватиме і скільки часу займе, а потім якісно
+          виконаємо роботу.
+        </p>
+        <a href={telHref(TEAM.ihor.phone)} class="btn btn-primary story__cta" data-gtm-event="click_phone">
+          <Icon name="phone" size={18} /> Зателефонувати нам
+        </a>
+      </div>
       <ul class="trust-list">
         {trustPoints.map((point) => (
           <li>
@@ -97,6 +104,8 @@ const aboutFaq: FaqItem[] = [
     <ProcessSteps title="Як ми працюємо" steps={howWeWork} />
 
     <section class="team container" data-animate>
+      <span class="index-mark team__index" aria-hidden="true">02</span>
+      <p class="eyebrow">Хто виконує роботу</p>
       <h2>Наша команда</h2>
       <p class="team__intro">
         Кожен майстер відповідає за свій напрямок — ви завжди спілкуєтесь напряму з людиною, яка виконує
@@ -110,6 +119,8 @@ const aboutFaq: FaqItem[] = [
     </section>
 
     <section class="equipment container" data-animate>
+      <span class="index-mark equipment__index" aria-hidden="true">03</span>
+      <p class="eyebrow">На СТО</p>
       <h2>Обладнання станції</h2>
       <p>
         СТО обладнане сучасним діагностичним устаткуванням: комп’ютерна діагностика двигуна, підвіски та
@@ -117,8 +128,26 @@ const aboutFaq: FaqItem[] = [
         початком ремонту — і заздалегідь розказати вам, що саме потрібно зробити.
       </p>
       <div class="equipment__gallery">
-        <Image src={equipmentStoPhoto} alt="Діагностичне обладнання та підйомник на СТО AvtoMuto" width={480} height={320} format="avif" quality={80} fit="cover" loading="lazy" />
-        <Image src={equipmentBayPhoto} alt="Майстер AvtoMuto готує колесо в ремонтному боксі" width={480} height={320} format="avif" quality={80} fit="cover" position="top" loading="lazy" />
+        <div class="offset-block">
+          <Image src={equipmentStoPhoto} alt="Діагностичне обладнання та підйомник на СТО AvtoMuto" width={480} height={320} format="avif" quality={80} fit="cover" loading="lazy" />
+        </div>
+        <div class="offset-block offset-block--ink">
+          <Image src={equipmentBayPhoto} alt="Майстер AvtoMuto готує колесо в ремонтному боксі" width={480} height={320} format="avif" quality={80} fit="cover" position="top" loading="lazy" />
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta" data-animate>
+      <div class="container final-cta__inner">
+        <p class="eyebrow">Готові довірити авто нам?</p>
+        <h2>Зателефонуйте — розкажемо, що саме потрібно вашому авто</h2>
+        <p>Без кол-центру: одразу зв'яжетесь з майстром, який виконуватиме роботу, і почуєте чесну ціну та термін ще до початку ремонту.</p>
+        <div class="final-cta__actions">
+          <a href={telHref(TEAM.ihor.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+            <Icon name="phone" size={18} /> {TEAM.ihor.phoneDisplay}
+          </a>
+          <a href="/kontakty" class="btn btn-outline final-cta__outline">Усі контакти</a>
+        </div>
       </div>
     </section>
 
@@ -142,6 +171,7 @@ const aboutFaq: FaqItem[] = [
   .team,
   .equipment {
     padding-block: var(--space-6);
+    position: relative;
   }
 
   .story p,
@@ -151,13 +181,30 @@ const aboutFaq: FaqItem[] = [
     color: var(--color-gray-mid);
   }
 
+  .story__text {
+    position: relative;
+    padding-top: var(--space-3);
+    max-width: 70ch;
+  }
+
+  .story__index {
+    position: absolute;
+    top: -1.6rem;
+    left: -0.2rem;
+    z-index: -1;
+  }
+
+  .story__cta {
+    margin-top: var(--space-4);
+  }
+
   .trust-list {
     list-style: none;
-    margin: var(--space-5) 0 0;
+    margin: var(--space-6) 0 0;
     padding: 0;
     display: grid;
-    gap: var(--space-3);
-    max-width: 70ch;
+    gap: 0;
+    border-top: 1px solid var(--color-border);
   }
 
   @media (min-width: 640px) {
@@ -166,26 +213,60 @@ const aboutFaq: FaqItem[] = [
     }
   }
 
+  @media (min-width: 1000px) {
+    .trust-list {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
   .trust-list li {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-gray-light);
-    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
     font-weight: 600;
+  }
+
+  @media (min-width: 640px) {
+    .trust-list li {
+      border-right: 1px solid var(--color-border);
+      padding-right: var(--space-4);
+    }
+
+    .trust-list li:nth-child(even) {
+      padding-left: var(--space-4);
+    }
+
+    .trust-list li:last-child {
+      border-right: none;
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .trust-list li:nth-child(even) {
+      padding-left: var(--space-3);
+    }
+
+    .trust-list li:nth-child(4n) {
+      border-right: none;
+    }
   }
 
   .trust-list__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
     flex-shrink: 0;
-    border-radius: 50%;
-    background: var(--color-accent);
-    color: var(--color-white);
+    color: var(--color-accent);
+  }
+
+  .team__index,
+  .equipment__index {
+    position: absolute;
+    top: var(--space-4);
+    right: 0;
+    z-index: -1;
   }
 
   .team__grid {
@@ -203,9 +284,9 @@ const aboutFaq: FaqItem[] = [
 
   .equipment__gallery {
     display: grid;
-    gap: var(--space-3);
+    gap: var(--space-5);
     grid-template-columns: 1fr;
-    margin-top: var(--space-4);
+    margin-top: var(--space-5);
   }
 
   @media (min-width: 640px) {
@@ -215,11 +296,46 @@ const aboutFaq: FaqItem[] = [
   }
 
   .equipment__gallery img {
-    border-radius: var(--radius-md);
     width: 100%;
     height: auto;
     object-fit: cover;
     aspect-ratio: 3 / 2;
+  }
+
+  .final-cta {
+    background: var(--color-gray-light);
+    border-top: 1px solid var(--color-border);
+    padding-block: var(--space-7);
+  }
+
+  .final-cta__inner {
+    max-width: 60ch;
+  }
+
+  .final-cta .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .final-cta p:not(.eyebrow) {
+    color: var(--color-gray-mid);
+  }
+
+  .final-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .final-cta__outline {
+    color: var(--color-black);
+    border-color: var(--color-black);
+  }
+
+  .final-cta__outline:hover,
+  .final-cta__outline:focus-visible {
+    background: var(--color-black);
+    color: var(--color-white);
   }
 
   .faq {

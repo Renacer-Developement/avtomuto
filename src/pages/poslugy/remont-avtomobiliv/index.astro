@@ -2,7 +2,6 @@
 import Layout from '../../../layouts/Layout.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import Icon from '../../../components/Icon.astro';
-import BenefitsGrid from '../../../components/BenefitsGrid.astro';
 import ProcessSteps from '../../../components/ProcessSteps.astro';
 import ContactCard from '../../../components/ContactCard.astro';
 import FaqAccordion from '../../../components/FaqAccordion.astro';
@@ -23,6 +22,21 @@ const crumbs = [
 ];
 const schema = [breadcrumbSchema(crumbs), serviceSchema(service, path)];
 const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджером";
+
+const categoryIcons: Record<string, string> = {
+  'servisne-to': 'filter',
+  'halmivna-systema': 'brake',
+  pidviska: 'suspension',
+  'rulove-keruvannia': 'steering',
+  dvyhun: 'engine',
+  'palyvna-systema': 'fuel',
+  'vykhlopna-systema': 'exhaust',
+  zcheplennia: 'clutch',
+  transmisiia: 'gearbox',
+  'kompiuterna-diahnostyka': 'diagnostics',
+};
+
+const benefitIcons = ['wrench', 'diagnostics', 'clock', 'parts'];
 ---
 
 <Layout title={service.title} description={service.shortDescription} path={path} schema={schema} serviceSlug={service.slug}>
@@ -30,22 +44,66 @@ const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджеро�
     <Breadcrumbs items={crumbs} />
   </div>
 
-  <section class="container" data-animate>
-    <h1>{service.title}</h1>
-    <p class="lead">{service.description}</p>
-    <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
-      <Icon name="phone" size={18} /> {ctaLabel}
-    </a>
+  <section class="hero" data-animate>
+    <div class="container hero__inner">
+      <div class="hero__text">
+        <span class="index-mark hero__index" aria-hidden="true">01</span>
+        <p class="eyebrow"><Icon name={service.icon} size={16} /> Послуга</p>
+        <h1>{service.title}</h1>
+        <p class="lead">{service.description}</p>
+        <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+          <Icon name="phone" size={18} /> {ctaLabel}
+        </a>
+      </div>
+      <figure class="hero__media" aria-hidden="true">
+        <svg viewBox="0 0 440 340" fill="none" xmlns="http://www.w3.org/2000/svg" class="hero__illustration">
+          <line x1="20" y1="292" x2="420" y2="292" stroke="var(--color-border)" stroke-width="2" />
+          <line x1="70" y1="292" x2="70" y2="60" stroke="#141414" stroke-width="3" />
+          <line x1="330" y1="292" x2="330" y2="60" stroke="#141414" stroke-width="3" />
+          <rect x="52" y="52" width="36" height="10" rx="2" fill="#141414" />
+          <rect x="312" y="52" width="36" height="10" rx="2" fill="#141414" />
+          <path
+            d="M96 224 L96 200 C96 186 108 176 122 176 L156 176 C164 152 186 134 214 134 L266 134 C292 134 312 152 320 176 L346 176 C362 176 374 190 374 206 L374 224"
+            stroke="#141414"
+            stroke-width="3"
+            stroke-linejoin="round"
+          />
+          <line x1="96" y1="224" x2="374" y2="224" stroke="#141414" stroke-width="3" />
+          <line x1="156" y1="176" x2="156" y2="140" stroke="#141414" stroke-width="2.5" />
+          <line x1="292" y1="176" x2="292" y2="140" stroke="#141414" stroke-width="2.5" />
+          <circle cx="150" cy="224" r="30" stroke="#141414" stroke-width="3" fill="var(--color-white)" />
+          <circle cx="150" cy="224" r="10" stroke="#141414" stroke-width="2.5" />
+          <circle cx="316" cy="224" r="30" stroke="#141414" stroke-width="3" fill="var(--color-white)" />
+          <circle cx="316" cy="224" r="10" stroke="#141414" stroke-width="2.5" />
+          <path d="M60 176 L44 176" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" />
+          <path d="M60 176 C40 176 40 156 60 156 L96 156" stroke="var(--color-accent)" stroke-width="3" fill="none" stroke-linecap="round" />
+          <circle cx="38" cy="176" r="5" stroke="var(--color-accent)" stroke-width="3" />
+          <g transform="translate(190 92) rotate(-20)" stroke="var(--color-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="-4" y="-24" width="8" height="16" rx="3" transform="rotate(45)" />
+            <circle cx="-13" cy="9" r="8.4" />
+            <line x1="0" y1="-14" x2="1" y2="4" />
+          </g>
+        </svg>
+        <figcaption>Комп'ютерна діагностика перед початком ремонту</figcaption>
+      </figure>
+    </div>
   </section>
 
   <section class="container categories" data-animate>
+    <span class="index-mark categories__index" aria-hidden="true">02</span>
+    <p class="eyebrow">Що ремонтуємо</p>
     <h2>Категорії ремонту</h2>
     <div class="categories__grid">
-      {REMONT_CATEGORIES.map((cat) => (
-        <a href={`/poslugy/remont-avtomobiliv/${cat.slug}`} class="category-card">
-          <h3>{cat.title}</h3>
-          <p>{cat.description}</p>
-          <span class="category-card__count">{cat.services.length > 0 ? `${cat.services.length} видів робіт` : 'Детальніше'}</span>
+      {REMONT_CATEGORIES.map((cat, i) => (
+        <a href={`/poslugy/remont-avtomobiliv/${cat.slug}`} class="category-row">
+          <span class="category-row__num">{String(i + 1).padStart(2, '0')}</span>
+          <Icon name={categoryIcons[cat.slug] ?? 'wrench'} size={26} class="category-row__icon" />
+          <span class="category-row__body">
+            <span class="category-row__title">{cat.title}</span>
+            <span class="category-row__desc">{cat.description}</span>
+            <span class="category-row__count">{cat.services.length > 0 ? `${cat.services.length} видів робіт` : 'Детальніше'}</span>
+          </span>
+          <Icon name="arrow" size={18} class="category-row__arrow" />
         </a>
       ))}
     </div>
@@ -53,7 +111,19 @@ const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджеро�
 
   {service.processSteps && <ProcessSteps title="Як проходить ремонт" steps={service.processSteps} />}
 
-  <BenefitsGrid heading={service.benefitsHeading ?? 'Переваги послуги'} items={service.benefits} />
+  <section class="container benefits" data-animate>
+    <span class="index-mark benefits__index" aria-hidden="true">03</span>
+    <p class="eyebrow">Чому обирають нас</p>
+    <h2>{service.benefitsHeading ?? 'Переваги послуги'}</h2>
+    <ul class="benefits__list">
+      {service.benefits.map((item, i) => (
+        <li>
+          <Icon name={benefitIcons[i] ?? 'check'} size={22} class="benefits__icon" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
 
   <section class="container" data-animate>
     <ContactCard member={responsible} photo={responsiblePhoto} ctaLabel={ctaLabel} />
@@ -69,54 +139,185 @@ const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджеро�
     padding-block: var(--space-5);
   }
 
+  .hero {
+    position: relative;
+    padding-block: var(--space-6);
+  }
+
+  .hero__inner {
+    display: grid;
+    gap: var(--space-6) var(--space-7);
+  }
+
+  @media (min-width: 900px) {
+    .hero__inner {
+      grid-template-columns: 6fr 6fr;
+      align-items: center;
+    }
+  }
+
+  .hero__text {
+    position: relative;
+    padding-top: var(--space-3);
+  }
+
+  .hero__index {
+    position: absolute;
+    top: -1.6rem;
+    left: -0.2rem;
+    z-index: -1;
+  }
+
+  .hero__media {
+    margin: 0;
+  }
+
+  .hero__illustration {
+    width: 100%;
+    height: auto;
+  }
+
+  .hero__media figcaption {
+    margin-top: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--color-gray-mid);
+    text-align: center;
+  }
+
   .lead {
     color: var(--color-gray-mid);
     max-width: 65ch;
     margin-bottom: var(--space-4);
   }
 
+  .categories {
+    position: relative;
+  }
+
+  .categories__index {
+    position: absolute;
+    top: var(--space-4);
+    right: 0;
+    z-index: -1;
+  }
+
+  .categories .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
   .categories__grid {
-    display: grid;
-    gap: var(--space-4);
-    grid-template-columns: 1fr;
     margin-top: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 800px) {
     .categories__grid {
-      grid-template-columns: repeat(2, 1fr);
+      column-count: 2;
+      column-gap: var(--space-6);
     }
   }
 
-  @media (min-width: 1024px) {
-    .categories__grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  .category-card {
-    display: block;
-    padding: var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+  .category-row {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: start;
+    gap: var(--space-3) var(--space-4);
+    padding-block: var(--space-4);
+    border-top: 1px solid var(--color-border);
     text-decoration: none;
     color: var(--color-black);
-    transition: border-color var(--transition-fast), transform var(--transition-fast);
+    break-inside: avoid;
   }
 
-  .category-card:hover {
-    border-color: var(--color-accent);
-    transform: translateY(-3px);
+  .category-row__num {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--fs-lg);
+    color: #bdbdbd;
   }
 
-  .category-card p {
+  .category-row :global(.category-row__icon) {
+    color: var(--color-accent);
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .category-row__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .category-row__title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--fs-lg);
+  }
+
+  .category-row__desc {
     color: var(--color-gray-mid);
     font-size: var(--fs-sm);
   }
 
-  .category-card__count {
+  .category-row__count {
     font-weight: 700;
     color: var(--color-accent);
     font-size: var(--fs-sm);
+    margin-top: 2px;
+  }
+
+  .category-row:hover .category-row__num {
+    color: var(--color-accent);
+  }
+
+  .category-row :global(.category-row__arrow) {
+    color: var(--color-gray-mid);
+    margin-top: 6px;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast), color var(--transition-fast);
+  }
+
+  .category-row:hover :global(.category-row__arrow) {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--color-accent);
+  }
+
+  .benefits {
+    position: relative;
+  }
+
+  .benefits__index {
+    position: absolute;
+    top: var(--space-4);
+    right: 0;
+    z-index: -1;
+  }
+
+  .benefits__list {
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+    max-width: 70ch;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .benefits__list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 600;
+  }
+
+  .benefits__list :global(.benefits__icon) {
+    color: var(--color-accent);
+    flex-shrink: 0;
   }
 </style>

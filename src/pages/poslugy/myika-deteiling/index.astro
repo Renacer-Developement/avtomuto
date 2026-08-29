@@ -1,0 +1,393 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Icon from '../../../components/Icon.astro';
+import ContactCard from '../../../components/ContactCard.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import RelatedServices from '../../../components/RelatedServices.astro';
+import { getServiceBySlug } from '../../../data/services';
+import { TEAM, telHref } from '../../../data/site';
+import { TEAM_PHOTOS } from '../../../data/team-photos';
+import { getBlogPosts } from '../../../data/blog';
+import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
+
+const service = getServiceBySlug('myika-deteiling')!;
+const responsible = TEAM[service.responsible];
+const responsiblePhoto = TEAM_PHOTOS[service.responsible];
+const path = '/poslugy/myika-deteiling';
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: service.title, href: path },
+];
+const schema = [breadcrumbSchema(crumbs), serviceSchema(service, path)];
+const faq = faqSchema(service.faq);
+if (faq) schema.push(faq);
+const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджером";
+
+const optionIcons = ['droplet', 'spray', 'sparkle', 'shield'];
+const benefitIcons = ['droplet', 'spray', 'sparkle'];
+
+const posts = await getBlogPosts();
+const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
+---
+
+<Layout
+  title={service.title}
+  description={service.shortDescription}
+  path={path}
+  schema={schema}
+  serviceSlug={service.slug}
+>
+  <div class="container">
+    <Breadcrumbs items={crumbs} />
+  </div>
+
+  <section class="hero" data-animate>
+    <div class="container hero__inner">
+      <div class="hero__text">
+        <span class="index-mark hero__index" aria-hidden="true">01</span>
+        <p class="eyebrow"><Icon name={service.icon} size={16} /> Послуга</p>
+        <h1>{service.title}</h1>
+        <p class="lead">{service.description}</p>
+        <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+          <Icon name="phone" size={18} /> {ctaLabel}
+        </a>
+      </div>
+      <figure class="hero__media" aria-hidden="true">
+        <svg viewBox="0 0 440 340" fill="none" xmlns="http://www.w3.org/2000/svg" class="hero__illustration">
+          <line x1="20" y1="292" x2="420" y2="292" stroke="var(--color-border)" stroke-width="2" />
+          <path
+            d="M96 224 L96 200 C96 186 108 176 122 176 L156 176 C164 152 186 134 214 134 L266 134 C292 134 312 152 320 176 L346 176 C362 176 374 190 374 206 L374 224"
+            stroke="#141414"
+            stroke-width="3"
+            stroke-linejoin="round"
+          />
+          <line x1="96" y1="224" x2="374" y2="224" stroke="#141414" stroke-width="3" />
+          <line x1="156" y1="176" x2="156" y2="140" stroke="#141414" stroke-width="2.5" />
+          <line x1="292" y1="176" x2="292" y2="140" stroke="#141414" stroke-width="2.5" />
+          <circle cx="150" cy="224" r="30" stroke="#141414" stroke-width="3" fill="var(--color-white)" />
+          <circle cx="150" cy="224" r="10" stroke="#141414" stroke-width="2.5" />
+          <circle cx="316" cy="224" r="30" stroke="#141414" stroke-width="3" fill="var(--color-white)" />
+          <circle cx="316" cy="224" r="10" stroke="#141414" stroke-width="2.5" />
+
+          <g stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round">
+            <line x1="40" y1="70" x2="88" y2="118" />
+            <line x1="64" y1="58" x2="113" y2="112" />
+            <line x1="20" y1="88" x2="68" y2="138" />
+          </g>
+          <g fill="var(--color-accent)" stroke="none">
+            <circle cx="94" cy="128" r="4" />
+            <circle cx="119" cy="120" r="3.4" />
+            <circle cx="74" cy="146" r="4.4" />
+          </g>
+
+          <g fill="none" stroke="var(--color-border)" stroke-width="2.5">
+            <circle cx="48" cy="272" r="11" />
+            <circle cx="70" cy="284" r="15" />
+            <circle cx="92" cy="266" r="8" />
+            <circle cx="104" cy="282" r="6" />
+          </g>
+
+          <path d="M248 90 L251.5 100 L262 103 L251.5 106 L248 116 L244.5 106 L234 103 L244.5 100Z" fill="var(--color-accent)" stroke="none" />
+          <path d="M336 148 L338 154 L344 156 L338 158 L336 164 L334 158 L328 156 L334 154Z" fill="var(--color-accent)" stroke="none" />
+        </svg>
+        <figcaption>Ручна мийка та детейлінг кузова й салону</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  {service.optionCards && (
+    <section class="container options" data-animate>
+      <span class="index-mark options__index" aria-hidden="true">02</span>
+      <p class="eyebrow">{service.optionCardsHeading ?? 'Види послуг'}</p>
+      <h2>Що входить у детейлінг</h2>
+      <div class="options__grid">
+        {service.optionCards.map((opt, i) => (
+          <div class="option-tile">
+            <Icon name={optionIcons[i] ?? 'check'} size={30} class="option-tile__icon" />
+            <h3>{opt.title}</h3>
+            <p>{opt.text}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="container benefits" data-animate>
+    <span class="index-mark benefits__index" aria-hidden="true">03</span>
+    <p class="eyebrow">{service.benefitsHeading ?? 'Переваги послуги'}</p>
+    <h2>Чому обирають наш детейлінг</h2>
+    <ul class="benefits__list">
+      {service.benefits.map((item, i) => (
+        <li>
+          <Icon name={benefitIcons[i] ?? 'check'} size={22} class="benefits__icon" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="container" data-animate>
+    <ContactCard member={responsible} photo={responsiblePhoto} ctaLabel={ctaLabel} />
+  </section>
+
+  <section class="container">
+    <FaqAccordion items={service.faq} />
+  </section>
+
+  {relatedPosts.length > 0 && (
+    <section class="container blog-links" data-animate>
+      <h2>Статті по темі</h2>
+      <div class="blog-links__list">
+        {relatedPosts.map((post) => (
+          <a href={`/blog/${post.slug}`} class="blog-links__card">
+            <strong>{post.title}</strong>
+            <span>{post.excerpt}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {service.related && <RelatedServices slugs={service.related} />}
+
+  <section class="final-cta" data-animate>
+    <div class="container final-cta__inner">
+      <p class="eyebrow">Готові до блиску?</p>
+      <h2>Запишіться на мийку чи повний детейлінг</h2>
+      <p>Зателефонуйте Андрію — узгодимо зручний час і розкажемо, що входить у вибраний варіант.</p>
+      <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+        <Icon name="phone" size={18} /> {ctaLabel}
+      </a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  section {
+    padding-block: var(--space-5);
+  }
+
+  .hero {
+    position: relative;
+    padding-block: var(--space-6);
+  }
+
+  .hero__inner {
+    display: grid;
+    gap: var(--space-6) var(--space-7);
+  }
+
+  @media (min-width: 900px) {
+    .hero__inner {
+      grid-template-columns: 6fr 6fr;
+      align-items: center;
+    }
+  }
+
+  .hero__text {
+    position: relative;
+    padding-top: var(--space-3);
+  }
+
+  .hero__index {
+    position: absolute;
+    top: -1.6rem;
+    left: -0.2rem;
+    z-index: -1;
+  }
+
+  .lead {
+    color: var(--color-gray-mid);
+    max-width: 60ch;
+    margin-bottom: var(--space-4);
+  }
+
+  .hero__media {
+    margin: 0;
+  }
+
+  .hero__illustration {
+    width: 100%;
+    height: auto;
+  }
+
+  .hero__media figcaption {
+    margin-top: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--color-gray-mid);
+    text-align: center;
+  }
+
+  .options,
+  .benefits {
+    position: relative;
+  }
+
+  .options__index,
+  .benefits__index {
+    position: absolute;
+    top: var(--space-4);
+    right: 0;
+    z-index: -1;
+  }
+
+  .options .eyebrow,
+  .benefits .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .options__grid {
+    display: grid;
+    gap: 0;
+    grid-template-columns: 1fr;
+    margin-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 640px) {
+    .options__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .options__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .option-tile {
+    padding: var(--space-5) var(--space-4) var(--space-5) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 640px) {
+    .option-tile {
+      padding-right: var(--space-4);
+    }
+
+    .option-tile:nth-child(odd) {
+      border-right: 1px solid var(--color-border);
+      padding-left: 0;
+    }
+
+    .option-tile:nth-child(even) {
+      padding-left: var(--space-4);
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .option-tile {
+      border-right: 1px solid var(--color-border) !important;
+      padding-left: var(--space-4) !important;
+    }
+
+    .option-tile:first-child {
+      padding-left: 0 !important;
+    }
+
+    .option-tile:last-child {
+      border-right: none !important;
+    }
+  }
+
+  .option-tile :global(.option-tile__icon) {
+    color: var(--color-accent);
+    margin-bottom: var(--space-3);
+  }
+
+  .option-tile h3 {
+    font-size: var(--fs-lg);
+    margin-bottom: var(--space-2);
+  }
+
+  .option-tile p {
+    margin: 0;
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .benefits__list {
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+    max-width: 70ch;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .benefits__list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 600;
+  }
+
+  .benefits__list :global(.benefits__icon) {
+    color: var(--color-accent);
+    flex-shrink: 0;
+  }
+
+  .blog-links__list {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .blog-links__list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .blog-links__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-top: 2px solid var(--color-accent);
+    text-decoration: none;
+    color: var(--color-black);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .blog-links__card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  .blog-links__card span {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  .final-cta {
+    background: var(--color-gray-light);
+    padding-block: var(--space-7);
+    margin-top: var(--space-6);
+  }
+
+  .final-cta__inner {
+    max-width: 60ch;
+  }
+
+  .final-cta .eyebrow {
+    margin-bottom: var(--space-2);
+  }
+
+  .final-cta p:not(.eyebrow) {
+    color: var(--color-gray-mid);
+  }
+
+  .final-cta .btn {
+    margin-top: var(--space-4);
+  }
+</style>
