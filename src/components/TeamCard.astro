@@ -11,37 +11,32 @@ interface Props {
 }
 
 const { member, photo } = Astro.props;
-const initial = member.name.charAt(0);
 ---
 
-<div class="team-card" data-animate>
-  <div class="team-card__photo">
-    {photo ? (
-      <div class="offset-block">
-        <Image
-          src={photo}
-          alt={`${member.name} — ${member.role}, AvtoMuto`}
-          width={320}
-          height={400}
-          format="avif"
-          quality={80}
-          fit="cover"
-          position="top"
-        />
-      </div>
-    ) : (
-      <div class="team-card__photo-placeholder" aria-hidden="true">
-        <span>{initial}</span>
-      </div>
-    )}
+<div class="team-row" data-animate>
+  {photo && (
+    <div class="team-row__photo">
+      <Image
+        src={photo}
+        alt={`${member.name} — ${member.role}, AvtoMuto`}
+        width={160}
+        height={160}
+        format="avif"
+        quality={80}
+        fit="cover"
+        position="top"
+      />
+    </div>
+  )}
+  <div class="team-row__info">
+    <p class="team-row__name">{member.name}</p>
+    <p class="team-row__role">{member.role}</p>
   </div>
-  <h3 class="team-card__name">{member.name}</h3>
-  <p class="team-card__role">{member.role}</p>
-  <div class="team-card__actions">
-    <a href={telHref(member.phone)} class="btn btn-primary team-card__call" data-gtm-event="click_phone">
-      <Icon name="phone" size={16} /> {member.phoneDisplay}
+  <div class="team-row__actions">
+    <a href={telHref(member.phone)} class="team-row__call" data-gtm-event="click_phone">
+      <Icon name="phone" size={18} /> {member.phoneDisplay}
     </a>
-    <div class="team-card__messengers">
+    <div class="team-row__messengers">
       <a href={waHref(member.phone)} aria-label={`WhatsApp ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer">
         <Icon name="whatsapp" size={20} />
       </a>
@@ -56,81 +51,91 @@ const initial = member.name.charAt(0);
 </div>
 
 <style>
-  .team-card {
+  .team-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    padding-block: var(--space-5);
     border-top: 1px solid var(--color-border);
-    padding-top: var(--space-4);
   }
 
-  .team-card__photo {
-    width: 100%;
-    aspect-ratio: 4 / 5;
-    margin: 0 0 var(--space-4);
-    background: var(--color-gray-light);
+  .team-row__photo {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
   }
 
-  .team-card__photo .offset-block,
-  .team-card__photo img {
+  .team-row__photo img {
     width: 100%;
     height: 100%;
-  }
-
-  .team-card__photo img {
     object-fit: cover;
     display: block;
   }
 
-  .team-card__photo-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-black);
+  .team-row__info {
+    flex: 1;
+    min-width: 180px;
   }
 
-  .team-card__photo-placeholder span {
+  .team-row__name {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: clamp(3.5rem, 3rem + 3vw, 5rem);
-    color: var(--color-accent);
-    line-height: 1;
+    font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+    margin-bottom: 2px;
   }
 
-  .team-card__name {
-    margin-bottom: var(--space-1);
-  }
-
-  .team-card__role {
+  .team-row__role {
     color: var(--color-gray-mid);
     font-size: var(--fs-sm);
-    min-height: 2.6em;
+    margin: 0;
   }
 
-  .team-card__actions {
+  .team-row__actions {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3);
-    margin-top: var(--space-2);
+    align-items: center;
+    gap: var(--space-4);
+    flex-shrink: 0;
   }
 
-  .team-card__call {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .team-card__messengers {
-    display: flex;
-    gap: var(--space-3);
-  }
-
-  .team-card__messengers a {
+  .team-row__call {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-heading);
+    font-size: var(--fs-lg);
+    font-weight: 700;
     color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .team-row__call:hover {
+    color: var(--color-accent-dark);
+  }
+
+  .team-row__messengers {
+    display: flex;
+    gap: var(--space-3);
+    padding-left: var(--space-4);
+    border-left: 1px solid var(--color-border);
+  }
+
+  .team-row__messengers a {
+    color: var(--color-gray-mid);
     transition: color var(--transition-fast), transform var(--transition-fast);
   }
 
-  .team-card__messengers a:hover {
-    color: var(--color-accent-dark);
+  .team-row__messengers a:hover {
+    color: var(--color-accent);
     transform: translateY(-2px);
+  }
+
+  @media (max-width: 480px) {
+    .team-row__actions {
+      width: 100%;
+      justify-content: space-between;
+    }
   }
 </style>
