@@ -148,6 +148,15 @@ const showFilters = cars.length > 1;
   const filtersClose = document.getElementById('filters-close');
   const filtersApply = document.getElementById('filters-apply');
 
+  // position:fixed елементи потрапляють у containing block найближчого предка з
+  // transform — а секції [data-animate] отримують transform: translateY(0) одразу
+  // після появи (навіть нульовий translate створює containing block за specою).
+  // Через це мобільна bottom-sheet панель фільтрів "падала" на місце своєї секції
+  // замість того, щоб прилипати до низу viewport. Переносимо панель і бекдроп у
+  // <body> — той самий прийом, що вже застосований для .toast у ContactForm.astro.
+  if (filtersBackdrop) document.body.appendChild(filtersBackdrop);
+  if (filtersPanel) document.body.appendChild(filtersPanel);
+
   function applyFilters() {
     let visibleCount = 0;
     items.forEach((item) => {
