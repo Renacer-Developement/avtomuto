@@ -37,8 +37,8 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
 ---
 
 <Layout
-  title={service.title}
-  description={service.shortDescription}
+  title={service.metaTitle ?? service.title}
+  description={service.metaDescription ?? service.shortDescription}
   path={path}
   schema={schema}
   serviceSlug={service.slug}

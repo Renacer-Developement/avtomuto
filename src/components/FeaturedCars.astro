@@ -1,46 +1,41 @@
 ---
 import CarCard from './CarCard.astro';
-import Icon from './Icon.astro';
 import { getCarListings } from '../lib/cars';
-import { telHref, type TeamMember } from '../data/site';
+import type { TeamMember } from '../data/site';
 
 interface Props {
   responsible: TeamMember;
 }
 
-const { responsible } = Astro.props;
-const cars = (await getCarListings()).slice(0, 3);
+const { responsible: _responsible } = Astro.props;
+// На головній показуємо лише авто в наявності — продані чи ще не привезені
+// сюди не потрапляють. Якщо таких немає, секцію ховаємо повністю замість
+// показувати порожній стан.
+const cars = (await getCarListings()).filter((c) => c.status === 'available').slice(0, 3);
 ---
 
-<section class="featured-cars" aria-label="Продаж автомобілів" data-animate>
-  <div class="container">
-    <div class="featured-cars__head">
-      <div>
-        <p class="featured-cars__eyebrow">Продаж авто</p>
-        <h2>Автомобілі в наявності</h2>
-        <p class="featured-cars__desc">Перевірені авто під ключ: підбір, огляд, оформлення. Онови авто вже цього тижня.</p>
+{cars.length > 0 && (
+  <section class="featured-cars" aria-label="Продаж автомобілів" data-animate>
+    <div class="container">
+      <div class="featured-cars__head">
+        <div>
+          <p class="featured-cars__eyebrow">Продаж авто</p>
+          <h2>Автомобілі в наявності</h2>
+          <p class="featured-cars__desc">Перевірені авто під ключ: підбір, огляд, оформлення. Онови авто вже цього тижня.</p>
+        </div>
+        <a href="/poslugy/prodaz-auto" class="btn btn-outline featured-cars__all">Усі авто в наявності</a>
       </div>
-      <a href="/poslugy/prodaz-auto" class="btn btn-outline featured-cars__all">Усі авто в наявності</a>
-    </div>
 
-    {cars.length > 0 ? (
       <div class="featured-cars__list">
         {cars.map((car) => (
           <CarCard car={car} layout="list" />
         ))}
       </div>
-    ) : (
-      <div class="featured-cars__empty">
-        <p>Каталог зараз оновлюється. Зателефонуйте — розкажемо, які авто є в наявності просто зараз, і надішлемо фото.</p>
-        <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
-          <Icon name="phone" size={18} /> {responsible.phoneDisplay}
-        </a>
-      </div>
-    )}
 
-    <a href="/poslugy/prodaz-auto" class="btn btn-outline featured-cars__all featured-cars__all--mobile">Усі авто в наявності</a>
-  </div>
-</section>
+      <a href="/poslugy/prodaz-auto" class="btn btn-outline featured-cars__all featured-cars__all--mobile">Усі авто в наявності</a>
+    </div>
+  </section>
+)}
 
 <style>
   .featured-cars {
@@ -124,5 +119,12 @@ const cars = (await getCarListings()).slice(0, 3);
     margin-inline: auto;
     color: var(--color-gray-mid);
     margin-bottom: var(--space-4);
+  }
+
+  .featured-cars__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
   }
 </style>

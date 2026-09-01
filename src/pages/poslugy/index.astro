@@ -15,7 +15,7 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
 
 <Layout
   title="Послуги AvtoMuto — ремонт, СТО, продаж авто, евакуатор"
-  description="Усі послуги AvtoMuto в Рудниках: ремонт авто, автозапчастини, продаж коліс, сертифікація, розмитнення, пригон авто, дилінг, детейлінг та евакуатор 24/7."
+  description="Усі послуги AvtoMuto в Рудниках: ремонт авто, автозапчастини, продаж коліс, сертифікація, пригон авто, продаж авто, мийка та детейлінг, евакуатор 24/7."
   path="/poslugy"
   schema={breadcrumbSchema(crumbs)}
 >
@@ -26,7 +26,7 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
   <section class="container" data-animate>
     <p class="eyebrow">AvtoMuto</p>
     <h1>Наші послуги</h1>
-    <p class="lead">Дев’ять напрямків роботи AvtoMuto — від планового ТО до термінового виклику евакуатора.</p>
+    <p class="lead">Вісім напрямків роботи AvtoMuto — від планового ТО до термінового виклику евакуатора.</p>
     <div class="grid">
       {gridServices.map((s, i) => (
         <ServiceCard service={s} index={i} />

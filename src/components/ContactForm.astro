@@ -225,6 +225,8 @@ import { CONTACT_TOPICS } from '../data/contact-topics';
         if (!res.ok) throw new Error('request failed');
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ event: 'form_submit', form_topic: payload.topic });
+        // GA4 recommended event — дає змогу імпортувати заявки з форми як конверсію в Google Ads
+        window.dataLayer.push({ event: 'generate_lead', lead_type: payload.topic });
         showToast('Дякуємо! Ваша заявка надіслана — скоро зв’яжемось.', false);
         form.reset();
       } catch (err) {

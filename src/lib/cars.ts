@@ -1,11 +1,12 @@
 import { hygraphFetch } from './hygraph';
 
-export type CarStatus = 'available' | 'in_transit' | 'on_order';
+export type CarStatus = 'available' | 'in_transit' | 'on_order' | 'sold';
 
 export const CAR_STATUS_LABELS: Record<CarStatus, string> = {
   available: 'В наявності',
   in_transit: 'В дорозі',
   on_order: 'Під замовлення',
+  sold: 'Продано',
 };
 
 export interface CarListing {
@@ -115,7 +116,10 @@ export async function getCarListings(): Promise<CarListing[]> {
   `);
 
   if (!data?.carListings) return [];
-  return data.carListings.map(mapCar);
+  const cars = data.carListings.map(mapCar);
+  // Продані авто лишаються в загальному списку для соціального доказу, але завжди в кінці —
+  // стабільне сортування зберігає порядок createdAt_DESC для решти.
+  return cars.sort((a, b) => Number(a.status === 'sold') - Number(b.status === 'sold'));
 }
 
 export async function getCarBySlug(slugOrId: string): Promise<CarListing | undefined> {

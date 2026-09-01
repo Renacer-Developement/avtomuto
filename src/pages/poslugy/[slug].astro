@@ -24,7 +24,6 @@ export function getStaticPaths() {
       !s.hasSubcategories &&
       s.slug !== 'prodaz-auto' &&
       s.slug !== 'prodazh-kolis' &&
-      s.slug !== 'rozmytnennia' &&
       s.slug !== 'myika-deteiling' &&
       s.slug !== 'avtozapchastyny' &&
       s.slug !== 'pryhon-avtomobiliv' &&
@@ -57,8 +56,8 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
 ---
 
 <Layout
-  title={service.title}
-  description={service.shortDescription}
+  title={service.metaTitle ?? service.title}
+  description={service.metaDescription ?? service.shortDescription}
   path={path}
   schema={schema}
   serviceSlug={service.slug}

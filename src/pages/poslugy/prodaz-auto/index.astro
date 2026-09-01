@@ -7,7 +7,7 @@ import FaqAccordion from '../../../components/FaqAccordion.astro';
 import RelatedServices from '../../../components/RelatedServices.astro';
 import { getServiceBySlug } from '../../../data/services';
 import { TEAM, telHref } from '../../../data/site';
-import { getCarListings } from '../../../lib/cars';
+import { getCarListings, brandSlug } from '../../../lib/cars';
 import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
 
 const service = getServiceBySlug('prodaz-auto')!;
@@ -23,6 +23,7 @@ const faq = faqSchema(service.faq);
 if (faq) schema.push(faq);
 
 const cars = await getCarListings();
+const brands = [...new Set(cars.map((c) => c.name).filter(Boolean))].sort();
 
 const title = 'Автомобілі в наявності — купити в Рудниках';
 const description =
@@ -39,9 +40,14 @@ const description =
     <p class="eyebrow"><Icon name={service.icon} size={16} /> Каталог</p>
     <h1>Автомобілі в наявності — купити в Рудниках</h1>
     <p class="lead">{service.shortDescription}</p>
-    <a href={telHref(responsible.phone)} class="btn btn-primary hero__cta" data-gtm-event="click_phone">
-      <Icon name="phone" size={18} /> {responsible.phoneDisplay}
-    </a>
+    <div class="hero__cta-group">
+      <a href={telHref(responsible.phone)} class="btn btn-primary hero__cta" data-gtm-event="click_phone" data-team-member={responsible.name}>
+        <Icon name="phone" size={18} /> {responsible.phoneDisplay}
+      </a>
+      <a href={telHref(TEAM.volodymyr.phone)} class="btn btn-outline hero__cta" data-gtm-event="click_phone" data-team-member={TEAM.volodymyr.name}>
+        <Icon name="phone" size={18} /> {TEAM.volodymyr.phoneDisplay}
+      </a>
+    </div>
   </section>
 
   <section class="container catalog-page" data-animate>
@@ -50,6 +56,15 @@ const description =
     <h2>Оберіть авто</h2>
 
     <CarCatalog cars={cars} responsible={responsible} />
+
+    {brands.length > 0 && (
+      <nav class="brand-links" aria-label="Автомобілі за маркою">
+        <span class="brand-links__label">Переглянути за маркою:</span>
+        {brands.map((brand) => (
+          <a href={`/poslugy/prodaz-auto/marka/${brandSlug(brand)}`}>{brand}</a>
+        ))}
+      </nav>
+    )}
   </section>
 
   <section class="container">
@@ -72,8 +87,15 @@ const description =
     z-index: -1;
   }
 
-  .hero__cta {
+  .hero__cta-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
     margin-top: var(--space-4);
+  }
+
+  .hero__cta {
+    margin-top: 0;
   }
 
   .catalog-page {
@@ -86,6 +108,36 @@ const description =
     top: var(--space-4);
     right: 0;
     z-index: -1;
+  }
+
+  .brand-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .brand-links__label {
+    font-size: var(--fs-sm);
+    color: var(--color-gray-mid);
+  }
+
+  .brand-links a {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--color-black);
+    text-decoration: none;
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+  }
+
+  .brand-links a:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
   }
 
   .lead {

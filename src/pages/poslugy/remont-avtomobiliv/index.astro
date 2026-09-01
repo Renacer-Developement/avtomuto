@@ -39,7 +39,7 @@ const categoryIcons: Record<string, string> = {
 const benefitIcons = ['wrench', 'diagnostics', 'clock', 'parts'];
 ---
 
-<Layout title={service.title} description={service.shortDescription} path={path} schema={schema} serviceSlug={service.slug}>
+<Layout title={service.metaTitle ?? service.title} description={service.metaDescription ?? service.shortDescription} path={path} schema={schema} serviceSlug={service.slug}>
   <div class="container">
     <Breadcrumbs items={crumbs} />
   </div>

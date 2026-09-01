@@ -12,7 +12,7 @@ import { TEAM, telHref } from '../data/site';
       <h2>Потрібен евакуатор? Працюємо 24/7</h2>
       <p>Виїжджаємо по всій Львівській області — Рудники, Стрий, Дрогобич, Львів та інші населені пункти. Дзвоніть прямо зараз.</p>
     </div>
-    <a href={telHref(TEAM.andriy.phone)} class="btn btn-primary evakuator-banner__cta" data-gtm-event="click_phone">
+    <a href={telHref(TEAM.andriy.phone)} class="btn btn-primary evakuator-banner__cta" data-gtm-event="click_phone" data-team-member={TEAM.andriy.name}>
       <Icon name="phone" size={20} />
       Викликати евакуатор
     </a>

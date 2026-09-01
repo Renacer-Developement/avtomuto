@@ -44,6 +44,17 @@ const specs = [
 
 const otherCars = (await getCarListings()).filter((c) => c.id !== car.id).slice(0, 3);
 const schema = [breadcrumbSchema(crumbs), vehicleSchema(car, path)];
+
+// GA4 ecommerce view_item — переглянута сторінка конкретного авто
+const gtmViewItem = {
+  item_id: car.vin || car.slug,
+  item_name: title,
+  item_brand: car.name,
+  item_variant: car.model,
+  item_category: car.bodyType || undefined,
+  price: car.priceUsd || undefined,
+  currency: 'USD',
+};
 ---
 
 <Layout
@@ -66,9 +77,14 @@ const schema = [breadcrumbSchema(crumbs), vehicleSchema(car, path)];
       </div>
       <div class="car-header__buy">
         {car.priceUsd && <p class="car-hero__price">${car.priceUsd.toLocaleString('uk-UA')}</p>}
-        <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
-          <Icon name="phone" size={18} /> Запитати про це авто
-        </a>
+        <div class="car-header__buy-actions">
+          <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
+            <Icon name="phone" size={18} /> Запитати про це авто
+          </a>
+          <a href={telHref(TEAM.volodymyr.phone)} class="btn btn-outline" data-gtm-event="click_phone">
+            <Icon name="phone" size={18} /> {TEAM.volodymyr.phoneDisplay}
+          </a>
+        </div>
       </div>
     </div>
   </section>
@@ -161,8 +177,9 @@ const schema = [breadcrumbSchema(crumbs), vehicleSchema(car, path)];
     </section>
   )}
 
-  <section class="container" data-animate>
+  <section class="container contact-cards" data-animate>
     <ContactCard member={responsible} eyebrow="Хочете оглянути це авто?" ctaLabel="Запитати про це авто" />
+    <ContactCard member={TEAM.volodymyr} ctaLabel="Запитати про це авто" />
   </section>
 
   {otherCars.length > 0 && (
@@ -180,6 +197,12 @@ const schema = [breadcrumbSchema(crumbs), vehicleSchema(car, path)];
     <a href="/poslugy/prodaz-auto" class="back-link"><Icon name="arrow" size={16} /> Усі авто в наявності</a>
   </div>
 </Layout>
+
+<script define:vars={{ gtmViewItem }}>
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ ecommerce: null });
+  window.dataLayer.push({ event: 'view_item', ecommerce: { items: [gtmViewItem] } });
+</script>
 
 <script>
   const thumbs = document.querySelectorAll<HTMLButtonElement>('.gallery__thumb');
@@ -282,6 +305,12 @@ const schema = [breadcrumbSchema(crumbs), vehicleSchema(car, path)];
   .car-header__buy {
     display: flex;
     flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .car-header__buy-actions {
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-3);
   }
 
@@ -588,6 +617,12 @@ const schema = [breadcrumbSchema(crumbs), vehicleSchema(car, path)];
   .description p {
     max-width: 70ch;
     color: var(--color-gray-mid);
+  }
+
+  .contact-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
   .other-cars {

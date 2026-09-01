@@ -92,11 +92,31 @@ export function vehicleSchema(car: CarListing, path: string) {
           '@type': 'Offer',
           price: car.priceUsd,
           priceCurrency: 'USD',
-          availability: car.status === 'available' ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
+          availability:
+            car.status === 'available'
+              ? 'https://schema.org/InStock'
+              : car.status === 'sold'
+                ? 'https://schema.org/SoldOut'
+                : 'https://schema.org/PreOrder',
           itemCondition: 'https://schema.org/UsedCondition',
           url: `${SITE.domain}${path}`,
         }
       : undefined,
+  };
+}
+
+export function blogPostingSchema(post: { title: string; excerpt: string; date: string }, path: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    author: { '@id': `${SITE.domain}/#organization` },
+    publisher: { '@id': `${SITE.domain}/#organization` },
+    image: `${SITE.domain}/images/og-default.png`,
+    mainEntityOfPage: `${SITE.domain}${path}`,
+    url: `${SITE.domain}${path}`,
   };
 }
 

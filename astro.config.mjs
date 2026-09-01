@@ -4,6 +4,7 @@ import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   site: 'https://avtomuto.com.ua',
+  trailingSlash: 'never',
   adapter: vercel(),
   integrations: [sitemap()],
   i18n: {

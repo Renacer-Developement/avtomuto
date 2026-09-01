@@ -35,9 +35,20 @@ const Wrapper = layout === 'grid' ? 'div' : 'a';
 const wrapperProps = layout === 'grid' ? {} : { href: detailUrl };
 const PhotoTag = layout === 'grid' ? 'a' : 'div';
 const photoProps = layout === 'grid' ? { href: detailUrl, 'aria-label': carTitle(car) } : {};
+
+// GA4 ecommerce select_item — при кліку на конкретне авто зі списку/каталогу
+const gtmItem = JSON.stringify({
+  item_id: car.vin || car.slug,
+  item_name: carTitle(car),
+  item_brand: car.name,
+  item_variant: car.model,
+  item_category: car.bodyType || undefined,
+  price: car.priceUsd || undefined,
+  currency: 'USD',
+});
 ---
 
-<Wrapper class={`car-card car-card--${layout}`} {...wrapperProps}>
+<Wrapper class={`car-card car-card--${layout}`} {...wrapperProps} data-gtm-select-item={layout === 'list' ? gtmItem : undefined}>
   <PhotoTag class="car-card__photo" {...photoProps}>
     {car.photoUrls[0] ? (
       <Image
@@ -54,9 +65,7 @@ const photoProps = layout === 'grid' ? { href: detailUrl, 'aria-label': carTitle
     ) : (
       <Icon name="car-sale" size={28} />
     )}
-    {layout === 'grid' && (
-      <span class="car-card__status">{CAR_STATUS_LABELS[car.status]}</span>
-    )}
+    <span class="car-card__status">{CAR_STATUS_LABELS[car.status]}</span>
     {layout === 'grid' && car.vin && (
       <span class="car-card__vin"><Icon name="car-sale" size={14} /> {car.vin}</span>
     )}
@@ -81,8 +90,9 @@ const photoProps = layout === 'grid' ? { href: detailUrl, 'aria-label': carTitle
     )}
     {layout === 'grid' && (
       <div class="car-card__actions">
-        <a href={detailUrl} class="btn btn-primary car-card__view">Переглянути автомобіль</a>
-        <a href={telHref(TEAM.andriy.phone)} class="btn btn-outline car-card__pick" data-gtm-event="click_phone">Підібрати авто</a>
+        <a href={detailUrl} class="btn btn-primary car-card__view" data-gtm-select-item={gtmItem}>Переглянути автомобіль</a>
+        <a href={telHref(TEAM.andriy.phone)} class="btn btn-outline car-card__pick" data-gtm-event="click_phone" data-team-member={TEAM.andriy.name}>Підібрати авто: {TEAM.andriy.name}</a>
+        <a href={telHref(TEAM.volodymyr.phone)} class="btn btn-outline car-card__pick" data-gtm-event="click_phone" data-team-member={TEAM.volodymyr.name}>Підібрати авто: {TEAM.volodymyr.name}</a>
       </div>
     )}
   </div>

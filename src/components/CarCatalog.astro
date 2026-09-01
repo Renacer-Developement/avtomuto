@@ -2,7 +2,7 @@
 import CarCard from './CarCard.astro';
 import Icon from './Icon.astro';
 import { CAR_STATUS_LABELS, type CarListing, type CarStatus } from '../lib/cars';
-import { telHref, type TeamMember } from '../data/site';
+import { TEAM, telHref, type TeamMember } from '../data/site';
 
 interface Props {
   cars: CarListing[];
@@ -12,13 +12,15 @@ interface Props {
 const { cars, responsible } = Astro.props;
 
 // Фіксований набір статусів — завжди пропонуємо всі три в фільтрі, навіть якщо
-// зараз немає жодного авто в якомусь статусі (напр. "Під замовлення").
+// зараз немає жодного авто в якомусь статусі (напр. "Під замовлення"). "sold" навмисно
+// відсутній тут: продані авто лишаються у списку (в кінці), але без фільтру — окремо
+// вибрати "Продано" не можна, вони видно лише коли обрано "Всі статуси".
 const statusOrder: CarStatus[] = ['available', 'in_transit', 'on_order'];
 
 const brands = [...new Set(cars.map((c) => c.name).filter(Boolean))].sort();
 const bodyTypes = [...new Set(cars.map((c) => c.bodyType).filter((v): v is string => Boolean(v)))].sort();
 const fuelTypes = [...new Set(cars.map((c) => c.fuelType).filter((v): v is string => Boolean(v)))].sort();
-const showFilters = cars.length > 1;
+const showFilters = cars.length > 0;
 ---
 
 {cars.length > 0 ? (
@@ -122,9 +124,14 @@ const showFilters = cars.length > 1;
 ) : (
   <div class="car-catalog__empty-state">
     <p>Каталог зараз оновлюється. Зателефонуйте — розкажемо, які авто є в наявності просто зараз, і надішлемо фото.</p>
-    <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
-      <Icon name="phone" size={18} /> {responsible.phoneDisplay}
-    </a>
+    <div class="car-catalog__empty-actions">
+      <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone" data-team-member={responsible.name}>
+        <Icon name="phone" size={18} /> {responsible.phoneDisplay}
+      </a>
+      <a href={telHref(TEAM.volodymyr.phone)} class="btn btn-outline" data-gtm-event="click_phone" data-team-member={TEAM.volodymyr.name}>
+        <Icon name="phone" size={18} /> {TEAM.volodymyr.phoneDisplay}
+      </a>
+    </div>
   </div>
 )}
 
@@ -149,13 +156,41 @@ const showFilters = cars.length > 1;
   const filtersApply = document.getElementById('filters-apply');
 
   // position:fixed елементи потрапляють у containing block найближчого предка з
-  // transform — а секції [data-animate] отримують transform: translateY(0) одразу
-  // після появи (навіть нульовий translate створює containing block за specою).
-  // Через це мобільна bottom-sheet панель фільтрів "падала" на місце своєї секції
-  // замість того, щоб прилипати до низу viewport. Переносимо панель і бекдроп у
-  // <body> — той самий прийом, що вже застосований для .toast у ContactForm.astro.
-  if (filtersBackdrop) document.body.appendChild(filtersBackdrop);
-  if (filtersPanel) document.body.appendChild(filtersPanel);
+  // transform — а секції [data-animate] отримують transform: translateY(...) одразу
+  // (навіть translateY(0) створює containing block за specою). Через це мобільна
+  // bottom-sheet панель фільтрів "падала" на місце своєї секції замість того, щоб
+  // прилипати до низу viewport. Переносимо панель і бекдроп у <body> — той самий
+  // прийом, що вже застосований для .toast у ContactForm.astro.
+  //
+  // Лише на мобільному: від 768px і вище панель — звичайний елемент у потоці
+  // (position: static, сітка .car-catalog), і перенесення в <body> ламало б її
+  // місце в грід-колонці/рядку. Прив'язуємось не до одноразової перевірки при
+  // завантаженні, а до matchMedia-листенера — інакше зміна орієнтації екрана
+  // чи ресайз вікна через поріг 768px лишають панель у "заскленому" стані:
+  // перенесеною в body на десктопі (без grid-контексту — showable під усім
+  // контентом) або залишеною в сітці на мобільному (position:fixed ламається
+  // об transform предка — панель рендериться в потоці замість оверлея).
+  // Плейсхолдер-коментарі запам'ятовують вихідне місце в розмітці, щоб можна
+  // було повернути панель і бекдроп назад у .car-catalog.
+  const filtersPanelAnchor = filtersPanel ? document.createComment('filters-panel-anchor') : null;
+  const filtersBackdropAnchor = filtersBackdrop ? document.createComment('filters-backdrop-anchor') : null;
+  if (filtersPanel && filtersPanelAnchor) filtersPanel.after(filtersPanelAnchor);
+  if (filtersBackdrop && filtersBackdropAnchor) filtersBackdrop.after(filtersBackdropAnchor);
+
+  const mobileMedia = window.matchMedia('(max-width: 767px)');
+
+  function syncFiltersPosition(isMobile: boolean) {
+    if (isMobile) {
+      if (filtersBackdrop) document.body.appendChild(filtersBackdrop);
+      if (filtersPanel) document.body.appendChild(filtersPanel);
+    } else {
+      if (filtersBackdrop && filtersBackdropAnchor?.parentNode) filtersBackdropAnchor.parentNode.insertBefore(filtersBackdrop, filtersBackdropAnchor);
+      if (filtersPanel && filtersPanelAnchor?.parentNode) filtersPanelAnchor.parentNode.insertBefore(filtersPanel, filtersPanelAnchor);
+    }
+  }
+
+  syncFiltersPosition(mobileMedia.matches);
+  mobileMedia.addEventListener('change', (e) => syncFiltersPosition(e.matches));
 
   function applyFilters() {
     let visibleCount = 0;
@@ -556,5 +591,12 @@ const showFilters = cars.length > 1;
     margin-inline: auto;
     color: var(--color-gray-mid);
     margin-bottom: var(--space-4);
+  }
+
+  .car-catalog__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
   }
 </style>

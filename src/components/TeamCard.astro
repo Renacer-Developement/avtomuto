@@ -33,17 +33,17 @@ const { member, photo } = Astro.props;
     <p class="team-row__role">{member.role}</p>
   </div>
   <div class="team-row__actions">
-    <a href={telHref(member.phone)} class="team-row__call" data-gtm-event="click_phone">
+    <a href={telHref(member.phone)} class="team-row__call" data-gtm-event="click_phone" data-team-member={member.name}>
       <Icon name="phone" size={18} /> {member.phoneDisplay}
     </a>
     <div class="team-row__messengers">
-      <a href={waHref(member.phone)} aria-label={`WhatsApp ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer">
+      <a href={waHref(member.phone)} aria-label={`WhatsApp ${member.name}`} data-gtm-event="click_messenger" data-team-member={member.name} target="_blank" rel="noopener noreferrer">
         <Icon name="whatsapp" size={20} />
       </a>
-      <a href={viberHref(member.phone)} aria-label={`Viber ${member.name}`} data-gtm-event="click_messenger">
+      <a href={viberHref(member.phone)} aria-label={`Viber ${member.name}`} data-gtm-event="click_messenger" data-team-member={member.name}>
         <Icon name="viber" size={20} />
       </a>
-      <a href={tgHref(member.phone)} aria-label={`Telegram ${member.name}`} data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer">
+      <a href={tgHref(member.phone)} aria-label={`Telegram ${member.name}`} data-gtm-event="click_messenger" data-team-member={member.name} target="_blank" rel="noopener noreferrer">
         <Icon name="telegram" size={20} />
       </a>
     </div>

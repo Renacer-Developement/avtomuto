@@ -24,15 +24,39 @@
   // GTM dataLayer events for click-to-call / messenger clicks
   window.dataLayer = window.dataLayer || [];
   document.addEventListener('click', (e) => {
-    const target = e.target.closest ? e.target.closest('[data-gtm-event]') : null;
+    const target = e.target.closest ? e.target.closest('[data-gtm-event], [data-gtm-select-item]') : null;
     if (!target) return;
+
+    // Ecommerce: клік на конкретне авто в каталозі/списку — GA4 recommended select_item
+    const itemJson = target.getAttribute('data-gtm-select-item');
+    if (itemJson) {
+      try {
+        const item = JSON.parse(itemJson);
+        window.dataLayer.push({ ecommerce: null }); // очищення попереднього ecommerce-об'єкта перед новим push
+        window.dataLayer.push({ event: 'select_item', ecommerce: { items: [item] } });
+      } catch {
+        // ігноруємо биту розмітку data-атрибута — не блокуємо клік користувача
+      }
+    }
+
     const eventName = target.getAttribute('data-gtm-event');
-    window.dataLayer.push({ event: eventName, link_url: target.getAttribute('href') });
+    if (!eventName) return;
+    window.dataLayer.push({
+      event: eventName,
+      link_url: target.getAttribute('href'),
+      team_member: target.getAttribute('data-team-member') || undefined,
+    });
   });
 
   // view_service event on service pages
   const serviceSlug = document.body.getAttribute('data-service-slug');
   if (serviceSlug) {
     window.dataLayer.push({ event: 'view_service', service_type: serviceSlug });
+  }
+
+  // view_blog_post event on blog article pages
+  const blogSlug = document.body.getAttribute('data-blog-slug');
+  if (blogSlug) {
+    window.dataLayer.push({ event: 'view_blog_post', post_slug: blogSlug });
   }
 </script>

@@ -12,10 +12,10 @@ const currentYear = new Date().getFullYear();
       <span class="header__logo-mark footer__logo">Avto<span class="header__logo-accent">Muto</span></span>
       <p class="footer__desc">{SITE.description}</p>
       <div class="footer__social">
-        <a href={SITE.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram AvtoMuto">
+        <a href={SITE.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram AvtoMuto" data-gtm-event="click_social">
           <Icon name="instagram" size={22} />
         </a>
-        <a href={SITE.social.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok AvtoMuto">
+        <a href={SITE.social.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok AvtoMuto" data-gtm-event="click_social">
           <Icon name="tiktok" size={22} />
         </a>
       </div>
@@ -35,7 +35,7 @@ const currentYear = new Date().getFullYear();
       <ul class="footer__contacts">
         {Object.values(TEAM).map((member) => (
           <li>
-            <a href={telHref(member.phone)} data-gtm-event="click_phone">
+            <a href={telHref(member.phone)} data-gtm-event="click_phone" data-team-member={member.name}>
               <Icon name="phone" size={16} />
               {member.phoneDisplay}
             </a>

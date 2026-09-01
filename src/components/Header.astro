@@ -1,18 +1,22 @@
 ---
+import { Image } from 'astro:assets';
 import Icon from './Icon.astro';
 import { SERVICES } from '../data/services';
 import { TEAM, telHref } from '../data/site';
+import logo from '../assets/images/logo.png';
 
 const carSales = SERVICES.find((s) => s.slug === 'prodaz-auto');
 const navServices = SERVICES.filter((s) => !s.highlight && s.slug !== 'prodaz-auto');
 const evakuator = SERVICES.find((s) => s.highlight);
 const mainPhone = TEAM.ihor.phone;
 const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
+const mainPhoneMember = TEAM.ihor.name;
 ---
 
 <header class="header" data-header>
   <div class="container header__inner">
     <a href="/" class="header__logo" aria-label="AvtoMuto — на головну">
+      <Image src={logo} alt="AvtoMuto" width={72} height={40} class="header__logo-img" />
       <span class="header__logo-mark">Avto<span class="header__logo-accent">Muto</span></span>
     </a>
 
@@ -46,7 +50,7 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
     </nav>
 
     <div class="header__actions">
-      <a href={telHref(mainPhone)} class="btn btn-primary header__call" data-gtm-event="click_phone">
+      <a href={telHref(mainPhone)} class="btn btn-primary header__call" data-gtm-event="click_phone" data-team-member={mainPhoneMember}>
         <Icon name="phone" size={18} />
         <span class="header__call-text">{mainPhoneDisplay}</span>
       </a>
@@ -61,7 +65,10 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
   <div class="drawer__backdrop" data-drawer-close></div>
   <div class="drawer__panel" role="dialog" aria-modal="true" aria-label="Меню">
     <div class="drawer__top">
-      <span class="header__logo-mark">Avto<span class="header__logo-accent">Muto</span></span>
+      <span class="header__logo drawer__logo">
+        <Image src={logo} alt="AvtoMuto" width={65} height={36} class="header__logo-img" />
+        <span class="header__logo-mark">Avto<span class="header__logo-accent">Muto</span></span>
+      </span>
       <button class="drawer__close" aria-label="Закрити меню" data-drawer-close>
         <Icon name="close" size={26} />
       </button>
@@ -77,17 +84,21 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
         </li>
       )}
       <li class="drawer__group-title">Послуги</li>
-      {SERVICES.map((s) => (
+      {evakuator && (
         <li>
-          <a href={`/poslugy/${s.slug}`} class={s.highlight ? 'drawer__evakuator' : ''}>
-            {s.highlight && <Icon name="tow-truck" size={18} />}
-            {s.title}
+          <a href={`/poslugy/${evakuator.slug}`} class="drawer__evakuator">
+            <Icon name="tow-truck" size={18} /> {evakuator.title}
           </a>
+        </li>
+      )}
+      {SERVICES.filter((s) => !s.highlight).map((s) => (
+        <li>
+          <a href={`/poslugy/${s.slug}`}>{s.title}</a>
         </li>
       ))}
       <li><a href="/kontakty">Контакти</a></li>
     </ul>
-    <a href={telHref(mainPhone)} class="btn btn-primary drawer__call" data-gtm-event="click_phone">
+    <a href={telHref(mainPhone)} class="btn btn-primary drawer__call" data-gtm-event="click_phone" data-team-member={mainPhoneMember}>
       <Icon name="phone" size={18} /> {mainPhoneDisplay}
     </a>
   </div>
@@ -118,8 +129,22 @@ const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
   }
 
   .header__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
     text-decoration: none;
     flex-shrink: 0;
+  }
+
+  .header__logo-img {
+    height: 40px;
+    width: auto;
+  }
+
+  .drawer__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .header__logo-mark {

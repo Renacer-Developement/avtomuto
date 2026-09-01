@@ -37,14 +37,14 @@ const { member, photo, eyebrow = 'Потрібна консультація?', c
     )}
   </div>
   <div class="contact-card__actions">
-    <a href={telHref(member.phone)} class="btn btn-primary contact-card__call" data-gtm-event="click_phone">
+    <a href={telHref(member.phone)} class="btn btn-primary contact-card__call" data-gtm-event="click_phone" data-team-member={member.name}>
       <Icon name="phone" size={18} />
       <strong>{ctaLabel}</strong>
     </a>
     <div class="contact-card__messengers">
-      <a href={waHref(member.phone)} aria-label="WhatsApp" data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={20} /></a>
-      <a href={viberHref(member.phone)} aria-label="Viber" data-gtm-event="click_messenger"><Icon name="viber" size={20} /></a>
-      <a href={tgHref(member.phone)} aria-label="Telegram" data-gtm-event="click_messenger" target="_blank" rel="noopener noreferrer"><Icon name="telegram" size={20} /></a>
+      <a href={waHref(member.phone)} aria-label="WhatsApp" data-gtm-event="click_messenger" data-team-member={member.name} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={20} /></a>
+      <a href={viberHref(member.phone)} aria-label="Viber" data-gtm-event="click_messenger" data-team-member={member.name}><Icon name="viber" size={20} /></a>
+      <a href={tgHref(member.phone)} aria-label="Telegram" data-gtm-event="click_messenger" data-team-member={member.name} target="_blank" rel="noopener noreferrer"><Icon name="telegram" size={20} /></a>
     </div>
   </div>
 </aside>

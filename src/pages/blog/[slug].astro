@@ -4,7 +4,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Icon from '../../components/Icon.astro';
 import { getBlogPosts } from '../../data/blog';
 import { getServiceBySlug } from '../../data/services';
-import { breadcrumbSchema } from '../../utils/schema';
+import { breadcrumbSchema, blogPostingSchema } from '../../utils/schema';
 
 export async function getStaticPaths() {
   const posts = await getBlogPosts();
@@ -22,9 +22,10 @@ const crumbs = [
   { label: post.title, href: path },
 ];
 const relatedService = post.relatedServiceSlug ? getServiceBySlug(post.relatedServiceSlug) : undefined;
+const schema = [breadcrumbSchema(crumbs), blogPostingSchema(post, path)];
 ---
 
-<Layout title={post.title} description={post.excerpt} path={path} schema={breadcrumbSchema(crumbs)}>
+<Layout title={post.title} description={post.excerpt} path={path} schema={schema} blogSlug={post.slug}>
   <div class="container">
     <Breadcrumbs items={crumbs} />
   </div>
