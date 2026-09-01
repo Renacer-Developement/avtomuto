@@ -13,6 +13,10 @@ import { getBlogPosts } from '../../../data/blog';
 import { getCarListings } from '../../../lib/cars';
 import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
 
+// Пререндер вимкнено, щоб список готових авто підхоплював статус з Hygraph свіжими
+// через Vercel ISR (astro.config.mjs), а не застигав до наступного деплою.
+export const prerender = false;
+
 const service = getServiceBySlug('pryhon-avtomobiliv')!;
 const responsible = TEAM[service.responsible];
 const responsiblePhoto = TEAM_PHOTOS[service.responsible];

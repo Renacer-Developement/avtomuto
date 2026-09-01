@@ -6,18 +6,18 @@ import ContactCard from '../../../components/ContactCard.astro';
 import CarCard from '../../../components/CarCard.astro';
 import { getServiceBySlug } from '../../../data/services';
 import { TEAM, telHref } from '../../../data/site';
-import { getCarListings, CAR_STATUS_LABELS, carTitle, carMetaDescription } from '../../../lib/cars';
+import { getCarBySlug, getCarListings, CAR_STATUS_LABELS, carTitle, carMetaDescription } from '../../../lib/cars';
 import { breadcrumbSchema, vehicleSchema } from '../../../utils/schema';
 
-export async function getStaticPaths() {
-  const cars = await getCarListings();
-  return cars.map((car) => ({
-    params: { car: car.slug },
-    props: { car },
-  }));
+// Пререндер вимкнено, щоб статус і ціна авто підхоплювались з Hygraph свіжими
+// через Vercel ISR (astro.config.mjs), а не застигали в білді до наступного деплою.
+export const prerender = false;
+
+const car = await getCarBySlug(Astro.params.car!);
+if (!car) {
+  return Astro.redirect('/404');
 }
 
-const { car } = Astro.props;
 const service = getServiceBySlug('prodaz-auto')!;
 const responsible = TEAM[service.responsible];
 const path = `/poslugy/prodaz-auto/${car.slug}`;
@@ -286,7 +286,7 @@ const gtmViewItem = {
   @media (min-width: 768px) {
     .car-header__row {
       flex-direction: row;
-      align-items: flex-end;
+      align-items: flex-start;
       justify-content: space-between;
       gap: var(--space-5);
     }
@@ -312,6 +312,17 @@ const gtmViewItem = {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
+  }
+
+  .car-header__buy-actions .btn-outline {
+    color: var(--color-black);
+    border-color: var(--color-border);
+  }
+
+  .car-header__buy-actions .btn-outline:hover,
+  .car-header__buy-actions .btn-outline:focus-visible {
+    background: var(--color-gray-light);
+    color: var(--color-black);
   }
 
   @media (min-width: 768px) {

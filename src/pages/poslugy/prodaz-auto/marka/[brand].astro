@@ -5,24 +5,20 @@ import CarCard from '../../../../components/CarCard.astro';
 import RelatedServices from '../../../../components/RelatedServices.astro';
 import { getServiceBySlug } from '../../../../data/services';
 import { TEAM, telHref } from '../../../../data/site';
-import { getCarListings, brandSlug, type CarListing } from '../../../../lib/cars';
+import { getCarListings, brandSlug } from '../../../../lib/cars';
 import { serviceSchema, breadcrumbSchema } from '../../../../utils/schema';
 
-export async function getStaticPaths() {
-  const cars = await getCarListings();
-  const brandNames = [...new Set(cars.map((c) => c.name).filter(Boolean))];
-  return brandNames.map((brand) => ({
-    params: { brand: brandSlug(brand) },
-    props: { brand, cars: cars.filter((c) => c.name === brand) },
-  }));
-}
+// Пререндер вимкнено, щоб список і статус авто по марці підхоплювались з Hygraph
+// свіжими через Vercel ISR (astro.config.mjs), а не застигали в білді до наступного деплою.
+export const prerender = false;
 
-interface Props {
-  brand: string;
-  cars: CarListing[];
+const allCarsForSlug = await getCarListings();
+const brand = allCarsForSlug.map((c) => c.name).find((name) => brandSlug(name) === Astro.params.brand);
+if (!brand) {
+  return Astro.redirect('/404');
 }
+const cars = allCarsForSlug.filter((c) => c.name === brand);
 
-const { brand, cars } = Astro.props;
 const service = getServiceBySlug('prodaz-auto')!;
 const responsible = TEAM[service.responsible];
 const path = `/poslugy/prodaz-auto/marka/${brandSlug(brand)}`;
@@ -38,8 +34,7 @@ const crumbs = [
 ];
 const schema = [breadcrumbSchema(crumbs), serviceSchema({ ...service, title, description }, path)];
 
-const allCars = await getCarListings();
-const otherBrands = [...new Set(allCars.map((c) => c.name).filter((n) => n !== brand))].sort();
+const otherBrands = [...new Set(allCarsForSlug.map((c) => c.name).filter((n) => n !== brand))].sort();
 ---
 
 <Layout title={title} description={description} path={path} schema={schema} serviceSlug={service.slug}>

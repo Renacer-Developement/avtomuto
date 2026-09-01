@@ -52,7 +52,7 @@ const showFilters = cars.length > 0;
               {statusOrder.map((status) => <option value={status}>{CAR_STATUS_LABELS[status]}</option>)}
             </select>
           </div>
-          {brands.length > 1 && (
+          {brands.length > 0 && (
             <div class="car-filter-field">
               <label class="car-filter-label" for="filter-brand">Марка</label>
               <select id="filter-brand" class="car-filter-select">

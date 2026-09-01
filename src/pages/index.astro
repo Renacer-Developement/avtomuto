@@ -11,6 +11,10 @@ import { SITE, TEAM, telHref } from '../data/site';
 import { organizationSchema } from '../utils/schema';
 import stoPhoto from '../assets/images/sto-photo.png';
 
+// Пререндер вимкнено, щоб блок авто в наявності (FeaturedCars) підхоплював статус/ціну
+// з Hygraph свіжими через Vercel ISR (astro.config.mjs), а не застигав до наступного деплою.
+export const prerender = false;
+
 const gridServices = SERVICES.filter((s) => !s.highlight);
 ---
 

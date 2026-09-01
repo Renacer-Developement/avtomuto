@@ -5,7 +5,11 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   site: 'https://avtomuto.com.ua',
   trailingSlash: 'never',
-  adapter: vercel(),
+  adapter: vercel({
+    isr: {
+      expiration: 60,
+    },
+  }),
   integrations: [sitemap()],
   i18n: {
     defaultLocale: 'uk',
