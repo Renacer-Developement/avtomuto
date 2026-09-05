@@ -3,7 +3,7 @@ import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 
 export default defineConfig({
-  site: 'https://avtomuto.com.ua',
+  site: 'https://www.avtomuto.com.ua',
   trailingSlash: 'never',
   adapter: vercel({
     isr: {

@@ -1,7 +1,7 @@
 export const SITE = {
   name: 'AvtoMuto',
   legalForm: 'ФОП',
-  domain: 'https://avtomuto.com.ua',
+  domain: 'https://www.avtomuto.com.ua',
   description:
     'AvtoMuto (Авто Мито) — автосервіс повного циклу у с. Рудники (Стрийський район, Львівська область): ремонт авто, автозапчастини, сертифікація, пригон авто, продаж авто, мийка/детейлінг, продаж коліс та евакуатор 24/7.',
   address: {
