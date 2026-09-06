@@ -28,7 +28,7 @@ const cars = (await getCarListings()).filter((c) => c.status === 'available').sl
 
       <div class="featured-cars__list">
         {cars.map((car) => (
-          <CarCard car={car} layout="list" />
+          <CarCard car={car} layout="list" hideStatus />
         ))}
       </div>
 

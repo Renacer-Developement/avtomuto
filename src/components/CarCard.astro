@@ -7,9 +7,10 @@ import { TEAM, telHref } from '../data/site';
 interface Props {
   car: CarListing;
   layout?: 'list' | 'grid';
+  hideStatus?: boolean;
 }
 
-const { car, layout = 'list' } = Astro.props;
+const { car, layout = 'list', hideStatus = false } = Astro.props;
 const detailUrl = `/poslugy/prodaz-auto/${car.slug}`;
 
 const quickSpecs = [
@@ -65,7 +66,7 @@ const gtmItem = JSON.stringify({
     ) : (
       <Icon name="car-sale" size={28} />
     )}
-    <span class="car-card__status">{CAR_STATUS_LABELS[car.status]}</span>
+    {!hideStatus && <span class="car-card__status">{CAR_STATUS_LABELS[car.status]}</span>}
     {layout === 'grid' && car.vin && (
       <span class="car-card__vin"><Icon name="car-sale" size={14} /> {car.vin}</span>
     )}

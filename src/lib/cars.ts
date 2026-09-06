@@ -111,7 +111,7 @@ function mapCar(c: HygraphCarListing): CarListing {
     bodyType: c.bodyType,
     engineVolume: c.engineVolume,
     color: c.color,
-    vin: c.vin,
+    vin: c.vin?.toUpperCase(),
     features: (c.features ?? []).map((f) => f.trim()).filter(Boolean),
     description: c.description,
     photoUrls: (c.photo ?? []).map((p) => p.url),
