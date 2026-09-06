@@ -15,7 +15,6 @@ export interface CarListing {
   slug: string;
   name: string; // марка, напр. "Opel"
   model: string; // модель, напр. "Astra"
-  /** Поля "Рік" ще немає в схемі Hygraph — лишається необов'язковим, доки його не додадуть */
   year?: number;
   status: CarStatus;
   priceUsd?: number;
@@ -25,7 +24,7 @@ export interface CarListing {
   driveType?: string;
   bodyType?: string;
   engineVolume?: string;
-  colorHex?: string;
+  color?: string;
   vin?: string;
   features: string[];
   description: string;
@@ -47,15 +46,15 @@ interface HygraphCarListing {
   driveType?: string;
   bodyType?: string;
   engineVolume?: string;
-  color?: { hex: string };
+  color?: string;
   vin?: string;
   features?: string[];
   description: string;
   photo: { url: string }[];
 }
 
-// "status" в Hygraph має API ID "car_Status" (не "status") — тому аліас нижче.
-// "color" зроблено полем типу Color, тому повертає { hex, rgba, css }, а не рядок.
+// "status" в Hygraph має API ID "car_Status" (не "status"), а "transmission" — "transmmisiion"
+// (одруківка в схемі) — тому аліаси нижче. "color" — звичайний текст (напр. "Сірий"), не Color-поле.
 const CAR_FIELDS = `
   id
   slug
@@ -66,16 +65,35 @@ const CAR_FIELDS = `
   priceUsd
   mileageKm
   fuelType
-  transmission
+  transmission: transmmisiion
   driveType
   bodyType
   engineVolume
-  color { hex }
+  color
   vin
   features
   description
-  photo { url }
+  photo(first: 50) { url }
 `;
+
+// fuelType, transmission і driveType — enum-поля в Hygraph з внутрішніми (не українськими) значеннями.
+const FUEL_TYPE_LABELS: Record<string, string> = {
+  benzin: 'Бензин',
+  dizel: 'Дизель',
+  electric: 'Електро',
+  hybrid: 'Гібрид',
+};
+
+const TRANSMISSION_LABELS: Record<string, string> = {
+  automatic: 'Автоматична',
+  mechanic: 'Механічна',
+};
+
+const DRIVE_TYPE_LABELS: Record<string, string> = {
+  front: 'Передній',
+  end: 'Задній',
+  full: 'Повний',
+};
 
 function mapCar(c: HygraphCarListing): CarListing {
   return {
@@ -87,12 +105,12 @@ function mapCar(c: HygraphCarListing): CarListing {
     status: c.status ?? 'available',
     priceUsd: c.priceUsd,
     mileageKm: c.mileageKm,
-    fuelType: c.fuelType,
-    transmission: c.transmission,
-    driveType: c.driveType,
+    fuelType: c.fuelType ? (FUEL_TYPE_LABELS[c.fuelType] ?? c.fuelType) : undefined,
+    transmission: c.transmission ? (TRANSMISSION_LABELS[c.transmission] ?? c.transmission) : undefined,
+    driveType: c.driveType ? (DRIVE_TYPE_LABELS[c.driveType] ?? c.driveType) : undefined,
     bodyType: c.bodyType,
     engineVolume: c.engineVolume,
-    colorHex: c.color?.hex,
+    color: c.color,
     vin: c.vin,
     features: (c.features ?? []).map((f) => f.trim()).filter(Boolean),
     description: c.description,

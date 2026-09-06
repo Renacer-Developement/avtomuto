@@ -54,14 +54,14 @@ export const TEAM: Record<TeamMemberKey, TeamMember> = {
   volodymyr: {
     key: 'volodymyr',
     name: 'Володимир',
-    role: 'Пригон авто, сертифікація',
+    role: 'Сертифікація авто',
     phone: '+380674283302',
     phoneDisplay: '+380 67 428 33 02',
   },
   andriy: {
     key: 'andriy',
     name: 'Андрій',
-    role: 'Продаж авто, детейлінг, евакуатор',
+    role: 'Продаж авто, пригон, детейлінг, евакуатор',
     phone: '+380975733073',
     phoneDisplay: '+380 97 573 30 73',
   },

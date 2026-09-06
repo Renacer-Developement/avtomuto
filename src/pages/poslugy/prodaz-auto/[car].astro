@@ -38,9 +38,9 @@ const specs = [
   { label: 'Привід', value: car.driveType },
   { label: 'Кузов', value: car.bodyType },
   { label: 'Об’єм двигуна', value: car.engineVolume ? `${car.engineVolume} л` : undefined },
-  { label: 'Колір', value: undefined as string | undefined, swatch: car.colorHex },
+  { label: 'Колір', value: car.color },
   { label: 'VIN', value: car.vin },
-].filter((s) => s.value || s.swatch);
+].filter((s) => s.value);
 
 const otherCars = (await getCarListings()).filter((c) => c.id !== car.id).slice(0, 3);
 const schema = [breadcrumbSchema(crumbs), vehicleSchema(car, path)];
@@ -149,10 +149,7 @@ const gtmViewItem = {
         {specs.map((s) => (
           <div class="specs__row">
             <dt>{s.label}</dt>
-            <dd>
-              {s.swatch && <span class="specs__swatch" style={`background:${s.swatch}`}></span>}
-              {s.value}
-            </dd>
+            <dd>{s.value}</dd>
           </div>
         ))}
       </dl>
@@ -588,15 +585,6 @@ const gtmViewItem = {
     text-align: right;
   }
 
-  .specs__swatch {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    margin-right: 6px;
-    vertical-align: middle;
-    border: 1px solid var(--color-border);
-  }
 
   .features__list {
     list-style: none;
