@@ -9,10 +9,16 @@ interface Props {
   noindex?: boolean;
 }
 
-const { title, description, path = '/', image = '/images/og-default.png', noindex = false } = Astro.props;
+const { title, description, path = '/', image, noindex = false } = Astro.props;
 
+// Розмір і тип фіксовані лише для дефолтного og-default.png (1200x630 PNG, який ми
+// самі згенерували). Фото авто з Hygraph — довільний jpeg довільних пропорцій, тож
+// для них ці теги не рендеримо: краще дати краулеру визначити їх самому, ніж
+// задекларувати неправильний type/розмір (Telegram і інші відкидають картинку
+// при розбіжності).
+const isDefaultImage = !image;
 const canonicalURL = new URL(path, SITE.domain).toString();
-const ogImageURL = new URL(image, SITE.domain).toString();
+const ogImageURL = new URL(image ?? '/images/og-default.png', SITE.domain).toString();
 const fullTitle = title.includes(SITE.name) ? title : `${title} — ${SITE.name}`;
 const gtmId = import.meta.env.PUBLIC_GTM_ID;
 const gscVerification = import.meta.env.PUBLIC_GSC_VERIFICATION;
@@ -33,9 +39,13 @@ const gscVerification = import.meta.env.PUBLIC_GSC_VERIFICATION;
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonicalURL} />
 <meta property="og:image" content={ogImageURL} />
-<meta property="og:image:type" content="image/png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
+{isDefaultImage && (
+  <>
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+  </>
+)}
 <meta property="og:locale" content="uk_UA" />
 <meta property="og:site_name" content={SITE.name} />
 
