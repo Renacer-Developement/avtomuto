@@ -1,7 +1,7 @@
 ---
 import CarCard from './CarCard.astro';
 import Icon from './Icon.astro';
-import { CAR_STATUS_LABELS, type CarListing, type CarStatus } from '../lib/cars';
+import { CAR_STATUS_LABELS, finalPriceUsd, type CarListing, type CarStatus } from '../lib/cars';
 import { TEAM, telHref, type TeamMember } from '../data/site';
 
 interface Props {
@@ -110,7 +110,7 @@ const showFilters = cars.length > 0;
           data-brand={car.name}
           data-body={car.bodyType ?? ''}
           data-fuel={car.fuelType ?? ''}
-          data-price={car.priceUsd ?? ''}
+          data-price={finalPriceUsd(car) ?? ''}
           data-mileage={car.mileageKm ?? ''}
         >
           <CarCard car={car} layout="grid" />

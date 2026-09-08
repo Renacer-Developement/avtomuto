@@ -6,7 +6,7 @@ import ContactCard from '../../../components/ContactCard.astro';
 import CarCard from '../../../components/CarCard.astro';
 import { getServiceBySlug } from '../../../data/services';
 import { TEAM, telHref } from '../../../data/site';
-import { getCarBySlug, getCarListings, CAR_STATUS_LABELS, carTitle, carMetaDescription } from '../../../lib/cars';
+import { getCarBySlug, getCarListings, CAR_STATUS_LABELS, carTitle, carMetaDescription, finalPriceUsd } from '../../../lib/cars';
 import { breadcrumbSchema, vehicleSchema } from '../../../utils/schema';
 
 // Пререндер вимкнено, щоб статус і ціна авто підхоплювались з Hygraph свіжими
@@ -45,6 +45,9 @@ const specs = [
 const otherCars = (await getCarListings()).filter((c) => c.id !== car.id).slice(0, 3);
 const schema = [breadcrumbSchema(crumbs), vehicleSchema(car, path)];
 
+const displayPrice = finalPriceUsd(car);
+const hasDiscount = Boolean(car.discountUsd && car.priceUsd);
+
 // GA4 ecommerce view_item — переглянута сторінка конкретного авто
 const gtmViewItem = {
   item_id: car.vin || car.slug,
@@ -52,7 +55,7 @@ const gtmViewItem = {
   item_brand: car.name,
   item_variant: car.model,
   item_category: car.bodyType || undefined,
-  price: car.priceUsd || undefined,
+  price: displayPrice || undefined,
   currency: 'USD',
 };
 ---
@@ -77,7 +80,12 @@ const gtmViewItem = {
         {car.year && <p class="car-header__year">{car.year}</p>}
       </div>
       <div class="car-header__buy">
-        {car.priceUsd && <p class="car-hero__price">${car.priceUsd.toLocaleString('uk-UA')}</p>}
+        {displayPrice != null && (
+          <p class="car-hero__price">
+            {hasDiscount && <span class="car-hero__price-old">${car.priceUsd!.toLocaleString('uk-UA')}</span>}
+            ${displayPrice.toLocaleString('uk-UA')}
+          </p>
+        )}
         <div class="car-header__buy-actions">
           <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
             <Icon name="phone" size={18} /> Запитати про це авто
@@ -545,6 +553,14 @@ const gtmViewItem = {
     font-weight: 800;
     color: var(--color-accent);
     margin: 0;
+  }
+
+  .car-hero__price-old {
+    margin-right: var(--space-2);
+    color: var(--color-gray-mid);
+    font-weight: 600;
+    font-size: 0.6em;
+    text-decoration: line-through;
   }
 
   .specs,

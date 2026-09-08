@@ -18,6 +18,8 @@ export interface CarListing {
   year?: number;
   status: CarStatus;
   priceUsd?: number;
+  /** Сума знижки в $, розпарсена з текстового поля "znizka" в Hygraph */
+  discountUsd?: number;
   mileageKm?: number;
   fuelType?: string;
   transmission?: string;
@@ -40,6 +42,7 @@ interface HygraphCarListing {
   year?: number;
   status?: CarStatus;
   priceUsd?: number;
+  znizka?: string;
   mileageKm?: number;
   fuelType?: string;
   transmission?: string;
@@ -63,6 +66,7 @@ const CAR_FIELDS = `
   year
   status: car_Status
   priceUsd
+  znizka
   mileageKm
   fuelType
   transmission: transmmisiion
@@ -95,6 +99,16 @@ const DRIVE_TYPE_LABELS: Record<string, string> = {
   full: 'Повний',
 };
 
+// "znizka" — текстове поле в Hygraph (не Int), тому може містити пробіли, "$" тощо —
+// беремо лише цифри. Порожнє значення чи 0 означає "знижки немає".
+function parseDiscount(raw?: string): number | undefined {
+  if (!raw) return undefined;
+  const digits = raw.replace(/[^0-9]/g, '');
+  if (!digits) return undefined;
+  const n = Number(digits);
+  return n > 0 ? n : undefined;
+}
+
 function mapCar(c: HygraphCarListing): CarListing {
   return {
     id: c.id,
@@ -104,6 +118,7 @@ function mapCar(c: HygraphCarListing): CarListing {
     year: c.year,
     status: c.status ?? 'available',
     priceUsd: c.priceUsd,
+    discountUsd: parseDiscount(c.znizka),
     mileageKm: c.mileageKm,
     fuelType: c.fuelType ? (FUEL_TYPE_LABELS[c.fuelType] ?? c.fuelType) : undefined,
     transmission: c.transmission ? (TRANSMISSION_LABELS[c.transmission] ?? c.transmission) : undefined,
@@ -149,6 +164,13 @@ export function carTitle(car: Pick<CarListing, 'name' | 'model' | 'year'>): stri
   return car.year ? `${car.name} ${car.model}, ${car.year}` : `${car.name} ${car.model}`;
 }
 
+/** Ціна авто з урахуванням знижки (не менше 0). Без знижки — просто priceUsd. */
+export function finalPriceUsd(car: Pick<CarListing, 'priceUsd' | 'discountUsd'>): number | undefined {
+  if (car.priceUsd == null) return undefined;
+  if (!car.discountUsd) return car.priceUsd;
+  return Math.max(car.priceUsd - car.discountUsd, 0);
+}
+
 /** ЧПУ-слаг марки авто для сторінок /poslugy/prodaz-auto/marka/[brand] */
 export function brandSlug(name: string): string {
   return name
@@ -171,6 +193,7 @@ export function carMetaDescription(car: CarListing): string {
   ]
     .filter(Boolean)
     .join(', ');
-  const price = car.priceUsd ? ` — $${car.priceUsd.toLocaleString('uk-UA')}` : '';
+  const finalPrice = finalPriceUsd(car);
+  const price = finalPrice ? ` — $${finalPrice.toLocaleString('uk-UA')}` : '';
   return `${carTitle(car)}${price}. ${specs ? `${specs}. ` : ''}Перевірене авто в наявності, AvtoMuto, с. Рудники.`;
 }

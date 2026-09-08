@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Icon from './Icon.astro';
-import { CAR_STATUS_LABELS, carTitle, type CarListing } from '../lib/cars';
+import { CAR_STATUS_LABELS, carTitle, finalPriceUsd, type CarListing } from '../lib/cars';
 import { TEAM, telHref } from '../data/site';
 
 interface Props {
@@ -12,6 +12,8 @@ interface Props {
 
 const { car, layout = 'list', hideStatus = false } = Astro.props;
 const detailUrl = `/poslugy/prodaz-auto/${car.slug}`;
+const displayPrice = finalPriceUsd(car);
+const hasDiscount = Boolean(car.discountUsd && car.priceUsd);
 
 const quickSpecs = [
   car.mileageKm != null ? `${car.mileageKm.toLocaleString('uk-UA')} км` : null,
@@ -44,7 +46,7 @@ const gtmItem = JSON.stringify({
   item_brand: car.name,
   item_variant: car.model,
   item_category: car.bodyType || undefined,
-  price: car.priceUsd || undefined,
+  price: displayPrice || undefined,
   currency: 'USD',
 });
 ---
@@ -73,7 +75,12 @@ const gtmItem = JSON.stringify({
     {car.photoUrls.length > 1 && <span class="car-card__photo-count">{car.photoUrls.length} фото</span>}
   </PhotoTag>
   <div class="car-card__body">
-    {car.priceUsd && <p class="car-card__price">${car.priceUsd.toLocaleString('uk-UA')}</p>}
+    {displayPrice != null && (
+      <p class="car-card__price">
+        {hasDiscount && <span class="car-card__price-old">${car.priceUsd!.toLocaleString('uk-UA')}</span>}
+        ${displayPrice.toLocaleString('uk-UA')}
+      </p>
+    )}
     <h4>{carTitle(car)}</h4>
     {layout === 'grid' ? (
       specs.length > 0 && (
@@ -195,6 +202,14 @@ const gtmItem = JSON.stringify({
     font-weight: 800;
     color: var(--color-accent);
     font-size: var(--fs-lg);
+  }
+
+  .car-card__price-old {
+    margin-right: var(--space-2);
+    color: var(--color-gray-mid);
+    font-weight: 600;
+    font-size: 0.75em;
+    text-decoration: line-through;
   }
 
   .car-card :global(.car-card__arrow) {

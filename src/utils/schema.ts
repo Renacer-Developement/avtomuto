@@ -1,6 +1,6 @@
 import { SITE, TEAM } from '../data/site';
 import type { Service } from '../data/services';
-import { carTitle, type CarListing } from '../lib/cars';
+import { carTitle, finalPriceUsd, type CarListing } from '../lib/cars';
 
 export function organizationSchema() {
   return {
@@ -90,7 +90,7 @@ export function vehicleSchema(car: CarListing, path: string) {
     offers: car.priceUsd
       ? {
           '@type': 'Offer',
-          price: car.priceUsd,
+          price: finalPriceUsd(car),
           priceCurrency: 'USD',
           availability:
             car.status === 'available'
