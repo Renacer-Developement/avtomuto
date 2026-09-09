@@ -37,7 +37,7 @@ const specs = [
   { label: 'Коробка передач', value: car.transmission },
   { label: 'Привід', value: car.driveType },
   { label: 'Кузов', value: car.bodyType },
-  { label: 'Об’єм двигуна', value: car.engineVolume ? `${car.engineVolume} л` : undefined },
+  { label: 'Об’єм двигуна', value: car.engineVolume ? (car.fuelType === 'Електро' ? car.engineVolume : `${car.engineVolume} л`) : undefined },
   { label: 'Колір', value: car.color },
   { label: 'VIN', value: car.vin },
 ].filter((s) => s.value);

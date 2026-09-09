@@ -15,9 +15,14 @@ const detailUrl = `/poslugy/prodaz-auto/${car.slug}`;
 const displayPrice = finalPriceUsd(car);
 const hasDiscount = Boolean(car.discountUsd && car.priceUsd);
 
+// Для електромобілів engineVolume вже містить одиниці "kWh" — суфікс "л" (літри)
+// зайвий і оманливий, тому додаємо його лише для авто на пальному.
+const isElectric = car.fuelType === 'Електро';
+const engineVolumeLabel = car.engineVolume ? (isElectric ? car.engineVolume : `${car.engineVolume} л`) : null;
+
 const quickSpecs = [
   car.mileageKm != null ? `${car.mileageKm.toLocaleString('uk-UA')} км` : null,
-  car.engineVolume ? `${car.engineVolume} л` : null,
+  engineVolumeLabel,
   car.fuelType,
   car.transmission,
 ].filter(Boolean);
@@ -28,7 +33,7 @@ const specs = [
   car.year ? { icon: 'calendar', label: String(car.year) } : null,
   car.fuelType ? { icon: 'fuel', label: car.fuelType } : null,
   car.transmission ? { icon: 'gearbox', label: car.transmission } : null,
-  car.engineVolume ? { icon: 'engine', label: `${car.engineVolume} л` } : null,
+  engineVolumeLabel ? { icon: 'engine', label: engineVolumeLabel } : null,
   car.driveType ? { icon: 'drive', label: car.driveType } : null,
 ].filter((s): s is { icon: string; label: string } => s !== null);
 
