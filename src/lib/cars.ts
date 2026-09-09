@@ -139,17 +139,38 @@ function mapCar(c: HygraphCarListing): CarListing {
  * потрібних полів — сторінка показує порожній стан із закликом зателефонувати
  * відповідальному майстру (запит просто повертає null, помилка йде у консоль сервера).
  */
-export async function getCarListings(): Promise<CarListing[]> {
-  const data = await hygraphFetch<{ carListings: HygraphCarListing[] }>(`
-    query CarListings {
-      carListings(orderBy: createdAt_DESC) {
-        ${CAR_FIELDS}
-      }
-    }
-  `);
+// Hygraph без явного "first" повертає лише перші 100 записів — з більшою кількістю
+// авто в CMS частина каталогу мовчки зникала зі списку. Тому вичитуємо сторінками,
+// поки чергова сторінка не виявиться коротшою за PAGE_SIZE.
+const PAGE_SIZE = 100;
 
-  if (!data?.carListings) return [];
-  const cars = data.carListings.map(mapCar);
+async function fetchAllCarListings(): Promise<HygraphCarListing[]> {
+  const all: HygraphCarListing[] = [];
+  let skip = 0;
+
+  while (true) {
+    const data = await hygraphFetch<{ carListings: HygraphCarListing[] }>(
+      `
+        query CarListings($first: Int!, $skip: Int!) {
+          carListings(orderBy: createdAt_DESC, first: $first, skip: $skip) {
+            ${CAR_FIELDS}
+          }
+        }
+      `,
+      { first: PAGE_SIZE, skip }
+    );
+
+    if (!data?.carListings) return skip === 0 ? [] : all;
+    all.push(...data.carListings);
+    if (data.carListings.length < PAGE_SIZE) break;
+    skip += PAGE_SIZE;
+  }
+
+  return all;
+}
+
+export async function getCarListings(): Promise<CarListing[]> {
+  const cars = (await fetchAllCarListings()).map(mapCar);
   // Продані авто лишаються в загальному списку для соціального доказу, але завжди в кінці —
   // стабільне сортування зберігає порядок createdAt_DESC для решти.
   return cars.sort((a, b) => Number(a.status === 'sold') - Number(b.status === 'sold'));

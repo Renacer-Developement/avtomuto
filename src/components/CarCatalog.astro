@@ -120,6 +120,8 @@ const showFilters = cars.length > 0;
     <p class="car-catalog__empty" id="car-catalog-empty" hidden>
       Авто за цими критеріями не знайдено. Спробуйте змінити фільтри або зателефонуйте — підберемо варіант.
     </p>
+    <p class="car-catalog__load-status" id="car-catalog-load-status" hidden></p>
+    <div class="car-catalog__sentinel" id="car-catalog-sentinel" hidden></div>
   </div>
 ) : (
   <div class="car-catalog__empty-state">
@@ -148,6 +150,8 @@ const showFilters = cars.length > 0;
   const resetBtn = document.getElementById('filter-reset');
   const emptyMsg = document.getElementById('car-catalog-empty');
   const countLabel = document.getElementById('car-catalog-count');
+  const loadStatus = document.getElementById('car-catalog-load-status');
+  const sentinel = document.getElementById('car-catalog-sentinel');
 
   const filtersToggle = document.getElementById('filters-toggle');
   const filtersPanel = document.getElementById('car-catalog-filters');
@@ -192,30 +196,60 @@ const showFilters = cars.length > 0;
   syncFiltersPosition(mobileMedia.matches);
   mobileMedia.addEventListener('change', (e) => syncFiltersPosition(e.matches));
 
+  // Каталог рендериться повністю в HTML (SSR), а на клієнті ми показуємо лише
+  // перші PAGE_SIZE авто, що пройшли фільтр, і довантажуємо ще по PAGE_SIZE,
+  // коли sentinel-елемент внизу списку потрапляє у viewport ("нескінченна прокрутка").
+  const PAGE_SIZE = 10;
+  let visibleLimit = PAGE_SIZE;
+
+  function matchesFilter(item: HTMLDivElement): boolean {
+    if (statusSel?.value && item.dataset.status !== statusSel.value) return false;
+    if (brandSel?.value && item.dataset.brand !== brandSel.value) return false;
+    if (bodySel?.value && item.dataset.body !== bodySel.value) return false;
+    if (fuelSel?.value && item.dataset.fuel !== fuelSel.value) return false;
+    const price = Number(item.dataset.price || 0);
+    if (priceMin?.value && price < Number(priceMin.value)) return false;
+    if (priceMax?.value && price > Number(priceMax.value)) return false;
+    const mileage = Number(item.dataset.mileage || 0);
+    if (mileageMin?.value && mileage < Number(mileageMin.value)) return false;
+    if (mileageMax?.value && mileage > Number(mileageMax.value)) return false;
+    return true;
+  }
+
   function applyFilters() {
-    let visibleCount = 0;
+    const matches: HTMLDivElement[] = [];
     items.forEach((item) => {
-      let visible = true;
-      if (statusSel?.value && item.dataset.status !== statusSel.value) visible = false;
-      if (brandSel?.value && item.dataset.brand !== brandSel.value) visible = false;
-      if (bodySel?.value && item.dataset.body !== bodySel.value) visible = false;
-      if (fuelSel?.value && item.dataset.fuel !== fuelSel.value) visible = false;
-      const price = Number(item.dataset.price || 0);
-      if (priceMin?.value && price < Number(priceMin.value)) visible = false;
-      if (priceMax?.value && price > Number(priceMax.value)) visible = false;
-      const mileage = Number(item.dataset.mileage || 0);
-      if (mileageMin?.value && mileage < Number(mileageMin.value)) visible = false;
-      if (mileageMax?.value && mileage > Number(mileageMax.value)) visible = false;
-      item.hidden = !visible;
-      if (visible) visibleCount++;
+      if (matchesFilter(item)) matches.push(item);
     });
-    if (emptyMsg) emptyMsg.hidden = visibleCount > 0;
-    if (filtersApply) filtersApply.textContent = `Показати ${visibleCount} авто`;
-    if (countLabel) countLabel.textContent = `Знайдено ${visibleCount} авто`;
+
+    const shown = matches.slice(0, visibleLimit);
+    const shownSet = new Set(shown);
+    items.forEach((item) => {
+      item.hidden = !shownSet.has(item);
+    });
+
+    const totalCount = matches.length;
+    if (emptyMsg) emptyMsg.hidden = totalCount > 0;
+    if (filtersApply) filtersApply.textContent = `Показати ${totalCount} авто`;
+    if (countLabel) countLabel.textContent = `Знайдено ${totalCount} авто`;
+
+    const hasMore = shown.length < totalCount;
+    if (sentinel) sentinel.hidden = !hasMore;
+    if (loadStatus) {
+      loadStatus.hidden = totalCount === 0;
+      loadStatus.textContent = `Показано ${shown.length} з ${totalCount} авто`;
+    }
+  }
+
+  function resetPaging() {
+    visibleLimit = PAGE_SIZE;
   }
 
   [statusSel, brandSel, bodySel, fuelSel, priceMin, priceMax, mileageMin, mileageMax].forEach((el) =>
-    el?.addEventListener('input', applyFilters)
+    el?.addEventListener('input', () => {
+      resetPaging();
+      applyFilters();
+    })
   );
 
   resetBtn?.addEventListener('click', () => {
@@ -227,8 +261,25 @@ const showFilters = cars.length > 0;
     if (priceMax) priceMax.value = '';
     if (mileageMin) mileageMin.value = '';
     if (mileageMax) mileageMax.value = '';
+    resetPaging();
     applyFilters();
   });
+
+  if (sentinel && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          visibleLimit += PAGE_SIZE;
+          applyFilters();
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(sentinel);
+  } else {
+    // Без підтримки IntersectionObserver показуємо все одразу, щоб авто не губились.
+    visibleLimit = Infinity;
+  }
 
   function openFilters() {
     filtersPanel?.classList.add('is-open');
@@ -246,6 +297,8 @@ const showFilters = cars.length > 0;
   filtersClose?.addEventListener('click', closeFilters);
   filtersBackdrop?.addEventListener('click', closeFilters);
   filtersApply?.addEventListener('click', closeFilters);
+
+  applyFilters();
 </script>
 
 <style>
@@ -576,6 +629,24 @@ const showFilters = cars.length > 0;
     border-radius: var(--radius-md);
     text-align: center;
     color: var(--color-gray-mid);
+  }
+
+  .car-catalog__load-status {
+    margin-top: var(--space-4);
+    text-align: center;
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  @media (min-width: 1024px) {
+    .car-catalog__load-status {
+      grid-column: 2;
+      grid-row: 4;
+    }
+  }
+
+  .car-catalog__sentinel {
+    height: 1px;
   }
 
   .car-catalog__empty-state {
