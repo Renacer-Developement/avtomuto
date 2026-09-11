@@ -17,9 +17,25 @@ const { cars, responsible } = Astro.props;
 // вибрати "Продано" не можна, вони видно лише коли обрано "Всі статуси".
 const statusOrder: CarStatus[] = ['available', 'in_transit', 'on_order'];
 
-const brands = [...new Set(cars.map((c) => c.name).filter(Boolean))].sort();
-const bodyTypes = [...new Set(cars.map((c) => c.bodyType).filter((v): v is string => Boolean(v)))].sort();
-const fuelTypes = [...new Set(cars.map((c) => c.fuelType).filter((v): v is string => Boolean(v)))].sort();
+// Значення в CMS іноді дублюються через регістр/пробіли ("KIA" і "KIA ", "Ford" і "FORD",
+// "Позашляховик" і "позашляховик") — дедуплікуємо за нормалізованим (trim + lowercase)
+// ключем, залишаючи перше написання для показу, і сортуємо без урахування регістру.
+const normalizeKey = (value: string) => value.trim().toLowerCase();
+function uniqueSorted(values: (string | undefined | null)[]) {
+  const displayByKey = new Map<string, string>();
+  for (const value of values) {
+    if (!value) continue;
+    const key = normalizeKey(value);
+    if (!displayByKey.has(key)) displayByKey.set(key, value.trim());
+  }
+  return [...displayByKey.entries()]
+    .sort((a, b) => a[1].localeCompare(b[1], 'uk', { sensitivity: 'base' }))
+    .map(([key, display]) => ({ key, display }));
+}
+
+const brands = uniqueSorted(cars.map((c) => c.name));
+const bodyTypes = uniqueSorted(cars.map((c) => c.bodyType));
+const fuelTypes = uniqueSorted(cars.map((c) => c.fuelType));
 const showFilters = cars.length > 0;
 ---
 
@@ -57,7 +73,7 @@ const showFilters = cars.length > 0;
               <label class="car-filter-label" for="filter-brand">Марка</label>
               <select id="filter-brand" class="car-filter-select">
                 <option value="">Всі марки</option>
-                {brands.map((b) => <option value={b}>{b}</option>)}
+                {brands.map((b) => <option value={b.key}>{b.display}</option>)}
               </select>
             </div>
           )}
@@ -66,7 +82,7 @@ const showFilters = cars.length > 0;
               <label class="car-filter-label" for="filter-body">Кузов</label>
               <select id="filter-body" class="car-filter-select">
                 <option value="">Всі кузови</option>
-                {bodyTypes.map((b) => <option value={b}>{b}</option>)}
+                {bodyTypes.map((b) => <option value={b.key}>{b.display}</option>)}
               </select>
             </div>
           )}
@@ -75,7 +91,7 @@ const showFilters = cars.length > 0;
               <label class="car-filter-label" for="filter-fuel">Пальне</label>
               <select id="filter-fuel" class="car-filter-select">
                 <option value="">Всі типи</option>
-                {fuelTypes.map((f) => <option value={f}>{f}</option>)}
+                {fuelTypes.map((f) => <option value={f.key}>{f.display}</option>)}
               </select>
             </div>
           )}
@@ -107,9 +123,9 @@ const showFilters = cars.length > 0;
         <div
           class="car-filter-item"
           data-status={car.status}
-          data-brand={car.name}
-          data-body={car.bodyType ?? ''}
-          data-fuel={car.fuelType ?? ''}
+          data-brand={car.name ? normalizeKey(car.name) : ''}
+          data-body={car.bodyType ? normalizeKey(car.bodyType) : ''}
+          data-fuel={car.fuelType ? normalizeKey(car.fuelType) : ''}
           data-price={finalPriceUsd(car) ?? ''}
           data-mileage={car.mileageKm ?? ''}
         >

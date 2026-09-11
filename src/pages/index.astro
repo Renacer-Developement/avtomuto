@@ -9,7 +9,7 @@ import FeaturedCars from '../components/FeaturedCars.astro';
 import { SERVICES } from '../data/services';
 import { SITE, TEAM, telHref } from '../data/site';
 import { organizationSchema } from '../utils/schema';
-import stoPhoto from '../assets/images/sto-photo.png';
+import heroPhoto from '../assets/images/hero-sto.jpg';
 
 // Пререндер вимкнено, щоб блок авто в наявності (FeaturedCars) підхоплював статус/ціну
 // з Hygraph свіжими через Vercel ISR (astro.config.mjs), а не застигав до наступного деплою.
@@ -25,14 +25,26 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
   schema={organizationSchema()}
 >
   <section class="hero" data-animate>
-    <div class="container hero__inner">
-      <div class="hero__text">
-        <span class="index-mark hero__index" aria-hidden="true">24/7</span>
+    <div class="hero__banner">
+      <Image
+        class="hero__banner-img"
+        src={heroPhoto}
+        alt="Територія СТО AvtoMuto — будівля автосервісу, авто в наявності та мийка в с. Рудники"
+        width={1280}
+        height={720}
+        format="avif"
+        quality={82}
+        loading="eager"
+        fetchpriority="high"
+      />
+      <div class="hero__scrim" aria-hidden="true"></div>
+      <div class="container hero__banner-content">
+        <span class="index-mark index-mark--on-dark hero__index" aria-hidden="true">24/7</span>
         <p class="eyebrow">Рудники · Львівська обл.</p>
         <h1>Ремонт, продаж і <span class="hero__highlight">евакуатор</span> авто — під ключ</h1>
         <p>
-          Ремонт, запчастини, продаж авто та коліс, сертифікація — AvtoMuto (Автомито, Автомуто) обслуговує клієнтів
-          із с. Рудники, Стрия, Дрогобича та Львова.
+          Ремонт, запчастини, продаж авто та коліс, сертифікація — AvtoMuto (Автомито, Автомуто) обслуговує
+          клієнтів із с. Рудники, Стрия, Дрогобича та Львова.
         </p>
         <div class="hero__actions">
           <a href={telHref(TEAM.ihor.phone)} class="btn btn-primary" data-gtm-event="click_phone">
@@ -41,21 +53,6 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
           <a href="/poslugy" class="btn btn-outline hero__outline">Усі послуги</a>
         </div>
       </div>
-      <figure class="hero__media">
-        <div class="offset-block">
-          <Image
-            src={stoPhoto}
-            alt="СТО AvtoMuto — будівля автосервісу з мийкою в с. Рудники"
-            width={800}
-            height={600}
-            format="avif"
-            quality={80}
-            loading="eager"
-            fetchpriority="high"
-          />
-        </div>
-        <figcaption>СТО AvtoMuto — с. Рудники, Стрийський район</figcaption>
-      </figure>
     </div>
     <div class="container hero__stats">
       <div class="hero__stat">
@@ -103,43 +100,61 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
 
 <style>
   .hero {
-    padding-block: var(--space-7) var(--space-6);
+    padding-block: 0 var(--space-6);
   }
 
-  .hero__inner {
-    display: grid;
-    gap: var(--space-6) var(--space-7);
-  }
-
-  @media (min-width: 900px) {
-    .hero__inner {
-      grid-template-columns: 5fr 7fr;
-      align-items: start;
-    }
-  }
-
-  .hero__text {
+  .hero__banner {
     position: relative;
-    padding-top: var(--space-3);
+    isolation: isolate;
+    display: flex;
+    align-items: flex-end;
+    min-height: clamp(26rem, 20rem + 20vw, 40rem);
+  }
+
+  .hero__banner :global(.hero__banner-img) {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+  }
+
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(12, 12, 12, 0.25) 0%, rgba(12, 12, 12, 0.35) 40%, rgba(12, 12, 12, 0.72) 100%);
+  }
+
+  .hero__banner-content {
+    position: relative;
+    padding-block: var(--space-6) var(--space-5);
   }
 
   .hero__index {
     position: absolute;
-    top: -1.6rem;
+    top: -2.2rem;
     left: -0.2rem;
     z-index: -1;
   }
 
-  .eyebrow {
+  .hero__banner-content .eyebrow {
     margin-bottom: var(--space-3);
+    color: var(--color-accent);
+  }
+
+  .hero__banner-content h1 {
+    color: var(--color-white);
   }
 
   .hero__highlight {
     color: var(--color-accent);
   }
 
-  .hero__text > p:not(.eyebrow) {
-    color: var(--color-gray-mid);
+  .hero__banner-content > p:not(.eyebrow) {
+    color: rgba(255, 255, 255, 0.82);
     max-width: 42ch;
   }
 
@@ -151,34 +166,15 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
   }
 
   .hero__outline {
-    color: var(--color-black);
-    border-color: var(--color-black);
+    color: var(--color-white);
+    border-color: var(--color-accent);
+    background: rgba(12, 12, 12, 0.35);
   }
 
   .hero__outline:hover {
-    background: var(--color-black);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
     color: var(--color-white);
-  }
-
-  .hero__media {
-    margin: 0;
-  }
-
-  .hero__media img {
-    display: block;
-    border-radius: 0;
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    aspect-ratio: 4 / 3;
-  }
-
-  .hero__media figcaption {
-    margin-top: var(--space-3);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    color: var(--color-gray-mid);
   }
 
   .hero__stats {
@@ -204,7 +200,7 @@ const gridServices = SERVICES.filter((s) => !s.highlight);
     font-family: var(--font-heading);
     font-size: var(--fs-2xl);
     font-weight: 700;
-    color: var(--color-black);
+    color: var(--color-accent);
     line-height: 1;
   }
 
