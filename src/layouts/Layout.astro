@@ -16,9 +16,10 @@ interface Props {
   schema?: object | object[];
   serviceSlug?: string;
   blogSlug?: string;
+  titleSuffix?: boolean;
 }
 
-const { title, description, path, image, noindex, schema, serviceSlug, blogSlug } = Astro.props;
+const { title, description, path, image, noindex, schema, serviceSlug, blogSlug, titleSuffix } = Astro.props;
 const gtmId = import.meta.env.PUBLIC_GTM_ID;
 const schemaList = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
 ---
@@ -26,7 +27,7 @@ const schemaList = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
 <!doctype html>
 <html lang="uk">
   <head>
-    <BaseHead title={title} description={description} path={path} image={image} noindex={noindex} />
+    <BaseHead title={title} description={description} path={path} image={image} noindex={noindex} titleSuffix={titleSuffix} />
     {schemaList.map((s) => (
       <script type="application/ld+json" set:html={JSON.stringify(s)} />
     ))}

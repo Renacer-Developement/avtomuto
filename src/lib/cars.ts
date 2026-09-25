@@ -182,7 +182,36 @@ export async function getCarBySlug(slugOrId: string): Promise<CarListing | undef
 }
 
 export function carTitle(car: Pick<CarListing, 'name' | 'model' | 'year'>): string {
-  return car.year ? `${car.name} ${car.model}, ${car.year}` : `${car.name} ${car.model}`;
+  const model = `${car.name.trim()} ${car.model.trim()}`;
+  return car.year ? `${model}, ${car.year}` : model;
+}
+
+/**
+ * Міста, з яких шукають авто («Opel Grandland X стрий», «… львів» тощо). Використовуються
+ * лише в SEO-полях (title, description, alt, schema) — на сторінці візуально не показуються.
+ */
+export const CAR_SEO_CITIES = [
+  { name: 'Львів', genitive: 'Львова', locative: 'у Львові' },
+  { name: 'Стрий', genitive: 'Стрия', locative: 'у Стрию' },
+  { name: 'Дрогобич', genitive: 'Дрогобича', locative: 'у Дрогобичі' },
+  { name: 'Миколаїв', genitive: 'Миколаєва', locative: 'у Миколаєві' },
+  { name: 'Городок', genitive: 'Городка', locative: 'у Городку' },
+];
+
+/**
+ * <title> сторінки авто під запити «Opel Grandland X автомито рудники» та «Opel Grandland X львів /
+ * стрий / дрогобич…»: модель на початку, далі бренд кирилицею + Рудники, далі міста.
+ * Рендериться без суфікса « — AvtoMuto» (titleSuffix={false}), бо «Автомито» вже є.
+ */
+export function carSeoTitle(car: Pick<CarListing, 'name' | 'model' | 'year'>): string {
+  const model = [car.name.trim(), car.model.trim(), car.year].filter(Boolean).join(' ');
+  return `${model} — Автомито Рудники: ${CAR_SEO_CITIES.map((c) => c.name).join(', ')}`;
+}
+
+/** «зі Львова, Стрия, Дрогобича, Миколаєва та Городка» */
+function carSeoCitiesGenitive(): string {
+  const names = CAR_SEO_CITIES.map((c) => c.genitive);
+  return `зі ${names.slice(0, -1).join(', ')} та ${names[names.length - 1]}`;
 }
 
 /** Ціна авто з урахуванням знижки (не менше 0). Без знижки — просто priceUsd. */
@@ -216,5 +245,5 @@ export function carMetaDescription(car: CarListing): string {
     .join(', ');
   const finalPrice = finalPriceUsd(car);
   const price = finalPrice ? ` — $${finalPrice.toLocaleString('uk-UA')}` : '';
-  return `${carTitle(car)}${price}. ${specs ? `${specs}. ` : ''}Перевірене авто в наявності, AvtoMuto, с. Рудники.`;
+  return `${carTitle(car)}${price}. ${specs ? `${specs}. ` : ''}Автомито (AvtoMuto), с. Рудники — для покупців ${carSeoCitiesGenitive()}.`;
 }

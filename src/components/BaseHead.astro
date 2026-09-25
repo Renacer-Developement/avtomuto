@@ -7,9 +7,11 @@ interface Props {
   path?: string;
   image?: string;
   noindex?: boolean;
+  /** false — не дописувати « — AvtoMuto» (коли title вже містить бренд і кожен символ на рахунку). */
+  titleSuffix?: boolean;
 }
 
-const { title, description, path = '/', image, noindex = false } = Astro.props;
+const { title, description, path = '/', image, noindex = false, titleSuffix = true } = Astro.props;
 
 // Розмір і тип фіксовані лише для дефолтного og-default.png (1200x630 PNG, який ми
 // самі згенерували). Фото авто з Hygraph — довільний jpeg довільних пропорцій, тож
@@ -19,7 +21,7 @@ const { title, description, path = '/', image, noindex = false } = Astro.props;
 const isDefaultImage = !image;
 const canonicalURL = new URL(path, SITE.domain).toString();
 const ogImageURL = new URL(image ?? '/images/og-default.png', SITE.domain).toString();
-const fullTitle = title.includes(SITE.name) ? title : `${title} — ${SITE.name}`;
+const fullTitle = !titleSuffix || title.includes(SITE.name) ? title : `${title} — ${SITE.name}`;
 const gtmId = import.meta.env.PUBLIC_GTM_ID;
 const gscVerification = import.meta.env.PUBLIC_GSC_VERIFICATION;
 ---

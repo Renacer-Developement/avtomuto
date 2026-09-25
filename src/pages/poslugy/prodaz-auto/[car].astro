@@ -6,7 +6,7 @@ import ContactCard from '../../../components/ContactCard.astro';
 import CarCard from '../../../components/CarCard.astro';
 import { getServiceBySlug } from '../../../data/services';
 import { TEAM, telHref } from '../../../data/site';
-import { getCarBySlug, getCarListings, CAR_STATUS_LABELS, carTitle, carMetaDescription, finalPriceUsd } from '../../../lib/cars';
+import { getCarBySlug, getCarListings, CAR_STATUS_LABELS, CAR_SEO_CITIES, carTitle, carSeoTitle, carMetaDescription, finalPriceUsd } from '../../../lib/cars';
 import { breadcrumbSchema, vehicleSchema } from '../../../utils/schema';
 
 // Пререндер вимкнено, щоб статус і ціна авто підхоплювались з Hygraph свіжими
@@ -22,6 +22,11 @@ const service = getServiceBySlug('prodaz-auto')!;
 const responsible = TEAM[service.responsible];
 const path = `/poslugy/prodaz-auto/${car.slug}`;
 const title = carTitle(car);
+// Alt фото теж працює на запити «модель + автомито / місто» у Google Картинках. Головне фото —
+// з брендом, мініатюри по черзі згадують міста з CAR_SEO_CITIES (невидимо для відвідувача).
+const photoAlt = `${title} — Автомито Рудники, Львівська область`;
+const thumbAlt = (i: number) =>
+  i === 0 ? photoAlt : `${title} — купити ${CAR_SEO_CITIES[(i - 1) % CAR_SEO_CITIES.length].locative}, фото ${i + 1}`;
 
 const crumbs = [
   { label: 'Головна', href: '/' },
@@ -61,7 +66,8 @@ const gtmViewItem = {
 ---
 
 <Layout
-  title={title}
+  title={carSeoTitle(car)}
+  titleSuffix={false}
   description={carMetaDescription(car)}
   path={path}
   image={car.photoUrls[0]}
@@ -102,7 +108,7 @@ const gtmViewItem = {
     <section class="container gallery-section" data-animate>
       <div class="gallery">
         <div class="gallery__main" data-photos={JSON.stringify(car.photoUrls)}>
-          <img id="main-photo" src={car.photoUrls[0]} alt={title} width="1200" height="675" />
+          <img id="main-photo" src={car.photoUrls[0]} alt={photoAlt} width="1200" height="675" />
           <button type="button" class="gallery__zoom" aria-label="Розглянути фото ближче">
             <Icon name="zoom" size={18} />
           </button>
@@ -122,7 +128,7 @@ const gtmViewItem = {
           <div class="gallery__thumbs">
             {car.photoUrls.map((url, i) => (
               <button type="button" class={`gallery__thumb ${i === 0 ? 'is-active' : ''}`} data-src={url}>
-                <img src={url} alt={`${title} — фото ${i + 1}`} width="120" height="90" loading="lazy" />
+                <img src={url} alt={thumbAlt(i)} width="120" height="90" loading="lazy" />
               </button>
             ))}
           </div>
@@ -147,7 +153,7 @@ const gtmViewItem = {
           <span class="lightbox__counter" id="lightbox-counter">1 / {car.photoUrls.length}</span>
         </>
       )}
-      <img id="lightbox-img" src={car.photoUrls[0]} alt={title} />
+      <img id="lightbox-img" src={car.photoUrls[0]} alt={photoAlt} />
     </div>
   )}
 

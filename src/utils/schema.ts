@@ -100,6 +100,8 @@ export function vehicleSchema(car: CarListing, path: string) {
                 : 'https://schema.org/PreOrder',
           itemCondition: 'https://schema.org/UsedCondition',
           url: `${SITE.domain}${path}`,
+          seller: { '@id': `${SITE.domain}/#organization` },
+          areaServed: ['Рудники', 'Львів', 'Стрий', 'Дрогобич', 'Миколаїв', 'Городок', 'Львівська область'],
         }
       : undefined,
   };
