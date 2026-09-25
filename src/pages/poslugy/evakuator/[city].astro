@@ -6,7 +6,11 @@ import Icon from '../../../components/Icon.astro';
 import ContactCard from '../../../components/ContactCard.astro';
 import RelatedServices from '../../../components/RelatedServices.astro';
 import { getServiceBySlug } from '../../../data/services';
-import { EVAKUATOR_CITIES, getEvakuatorCityBySlug } from '../../../data/evakuator-cities';
+import {
+  EVAKUATOR_CITIES,
+  getEvakuatorCitiesByDirection,
+  getEvakuatorDirection,
+} from '../../../data/evakuator-cities';
 import { TEAM, telHref } from '../../../data/site';
 import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
 
@@ -29,10 +33,24 @@ const crumbs = [
   { label: city.name, href: path },
 ];
 
-const title = `Евакуатор у ${city.nameLocative} — цілодобово`;
-const description = `Виклик евакуатора в ${city.nameLocative} та навколишніх населених пунктах — цілодобово, 24/7. ${city.intro}`;
+// Називний відмінок у title — під запити типу «евакуатор дроговиж».
+const title = `Евакуатор ${city.name} — виклик 24/7 у ${city.nameLocative}`;
+const description = `Евакуатор ${city.name} — цілодобовий виклик у ${city.nameLocative} та поруч. Виїзд з бази в Рудниках, дзвінок напряму водію, ціну називаємо до виїзду.`;
+const direction = getEvakuatorDirection(city.direction);
 
-const faqItems = [city.extraFaq, ...evakuator.faq];
+// Повний загальний FAQ живе на /poslugy/evakuator. Тут — питання міста + 2 загальні,
+// які чергуються між сторінками, щоб спільного тексту було якомога менше.
+const cityIndex = EVAKUATOR_CITIES.indexOf(city);
+const generalFaq = evakuator.faq;
+// Не дублюємо тему, яку вже покриває питання міста (ціна, супровід, ДТП…).
+const FAQ_TOPICS = ['коштує', 'разом', 'ДТП', 'відвозите', 'швидко'];
+const topicOf = (q: string) => FAQ_TOPICS.find((t) => q.includes(t));
+const cityTopic = topicOf(city.extraFaq.question);
+const generalPicks = generalFaq
+  .map((_, i) => generalFaq[(cityIndex * 2 + i) % generalFaq.length])
+  .filter((item) => !cityTopic || topicOf(item.question) !== cityTopic)
+  .slice(0, 2);
+const faqItems = [city.extraFaq, ...generalPicks];
 const ctaLabel = evakuator.ctaLabel ?? 'Викликати евакуатор';
 const schema = [
   breadcrumbSchema(crumbs),
@@ -41,7 +59,14 @@ const schema = [
 const faq = faqSchema(faqItems);
 if (faq) schema.push(faq);
 
-const otherCities = EVAKUATOR_CITIES.filter((c) => c.slug !== city.slug);
+// Лише найближчі сусіди по маршруту (порядок у масиві ≈ порядок уздовж дороги), а не всі
+// 50 пунктів: однаковий список на кожній сторінці — ознака doorway pages. Повний перелік — на хабі.
+const routeCities = getEvakuatorCitiesByDirection(city.direction);
+const routeIndex = routeCities.indexOf(city);
+const NEIGHBOR_SPAN = 3;
+const neighbors = routeCities
+  .slice(Math.max(0, routeIndex - NEIGHBOR_SPAN), routeIndex + NEIGHBOR_SPAN + 1)
+  .filter((c) => c.slug !== city.slug);
 ---
 
 <Layout title={title} description={description} path={path} schema={schema} serviceSlug={`evakuator-${city.slug}`}>
@@ -59,11 +84,19 @@ const otherCities = EVAKUATOR_CITIES.filter((c) => c.slug !== city.slug);
   </section>
 
   <section class="container info-row" data-animate>
-    <div class="info-card">
-      <span class="info-card__label">Відстань від бази</span>
-      <strong>{city.distanceKm}</strong>
-      <span class="info-card__note">від с. Рудники</span>
-    </div>
+    {city.distanceKm ? (
+      <div class="info-card">
+        <span class="info-card__label">Відстань від бази</span>
+        <strong>{city.distanceKm}</strong>
+        <span class="info-card__note">від с. Рудники</span>
+      </div>
+    ) : (
+      <div class="info-card">
+        <span class="info-card__label">Напрямок виїзду</span>
+        <strong class="info-card__text">{direction.title}</strong>
+        <span class="info-card__note">база — с. Рудники</span>
+      </div>
+    )}
     <div class="info-card">
       <span class="info-card__label">Маршрут виїзду</span>
       <strong class="info-card__text">{city.road}</strong>
@@ -88,13 +121,14 @@ const otherCities = EVAKUATOR_CITIES.filter((c) => c.slug !== city.slug);
   </section>
 
   <section class="container other-cities" data-animate>
-    <h2>Також виїжджаємо в:</h2>
+    <h2>Також виїжджаємо в сусідні населені пункти</h2>
+    <p class="other-cities__route">{direction.title}</p>
     <div class="other-cities__list">
-      <a href="/poslugy/evakuator">Рудники (база)</a>
-      {otherCities.map((c) => (
-        <a href={`/poslugy/evakuator/${c.slug}`}>{c.name}</a>
+      {neighbors.map((c) => (
+        <a href={`/poslugy/evakuator/${c.slug}`}>Евакуатор {c.name}</a>
       ))}
     </div>
+    <p class="other-cities__all"><a href="/poslugy/evakuator">Усі населені пункти й напрямки →</a></p>
   </section>
 
   {evakuator.related && <RelatedServices slugs={evakuator.related} />}
@@ -173,6 +207,17 @@ const otherCities = EVAKUATOR_CITIES.filter((c) => c.slug !== city.slug);
 
   .other-cities {
     padding-block: var(--space-5) var(--space-7);
+  }
+
+  .other-cities__route {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+    margin-bottom: var(--space-3);
+  }
+
+  .other-cities__all {
+    margin-top: var(--space-4);
+    font-weight: 600;
   }
 
   .other-cities__list {

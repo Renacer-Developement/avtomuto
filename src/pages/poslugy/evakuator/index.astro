@@ -10,7 +10,11 @@ import { getServiceBySlug } from '../../../data/services';
 import { TEAM, telHref } from '../../../data/site';
 import { TEAM_PHOTOS } from '../../../data/team-photos';
 import { SERVICE_PHOTOS } from '../../../data/service-photos';
-import { EVAKUATOR_CITIES } from '../../../data/evakuator-cities';
+import {
+  EVAKUATOR_DIRECTIONS,
+  getEvakuatorCityBySlug,
+  getEvakuatorCitiesByDirection,
+} from '../../../data/evakuator-cities';
 import { getBlogPosts } from '../../../data/blog';
 import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
 
@@ -33,10 +37,15 @@ const benefitIcons = ['clock', 'region', 'tow-truck', 'phone'];
 
 // Радіальна діаграма покриття — координати вузлів у SVG viewBox 0 0 500 400.
 const coverageNodes = [
-  { city: EVAKUATOR_CITIES[0], x: 140, y: 220 },
-  { city: EVAKUATOR_CITIES[1], x: 320, y: 150 },
-  { city: EVAKUATOR_CITIES[2], x: 420, y: 60 },
+  { city: getEvakuatorCityBySlug('stryi')!, x: 140, y: 220 },
+  { city: getEvakuatorCityBySlug('drohobych')!, x: 320, y: 150 },
+  { city: getEvakuatorCityBySlug('lviv')!, x: 420, y: 60 },
 ];
+
+const directionGroups = EVAKUATOR_DIRECTIONS.map((d) => ({
+  ...d,
+  cities: getEvakuatorCitiesByDirection(d.key),
+}));
 
 const posts = await getBlogPosts();
 const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
@@ -107,6 +116,22 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
           ))}
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="container places" data-animate>
+    <h2>Евакуатор по населених пунктах</h2>
+    <div class="places__grid">
+      {directionGroups.map((group) => (
+        <div class="places__group">
+          <h3>{group.title}</h3>
+          <ul>
+            {group.cities.map((c) => (
+              <li><a href={`/poslugy/evakuator/${c.slug}`}>Евакуатор {c.name}</a></li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   </section>
 
@@ -334,6 +359,48 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
   .coverage__city:hover :global(.coverage__city-arrow) {
     opacity: 1;
     transform: translateX(0);
+    color: var(--color-accent);
+  }
+
+  .places__grid {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 700px) {
+    .places__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .places__group h3 {
+    font-size: var(--fs-base);
+    margin-bottom: var(--space-2);
+    color: var(--color-accent);
+  }
+
+  .places__group ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: var(--space-4);
+  }
+
+  .places__group li {
+    padding-block: 4px;
+    break-inside: avoid;
+  }
+
+  .places__group a {
+    color: var(--color-black);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+  }
+
+  .places__group a:hover {
     color: var(--color-accent);
   }
 
