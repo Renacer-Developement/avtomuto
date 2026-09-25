@@ -8,7 +8,7 @@ import RelatedServices from '../../../components/RelatedServices.astro';
 import { getServiceBySlug } from '../../../data/services';
 import { TEAM, telHref } from '../../../data/site';
 import { getCarListings } from '../../../lib/cars';
-import { serviceSchema, breadcrumbSchema, faqSchema } from '../../../utils/schema';
+import { serviceSchema, breadcrumbSchema, faqSchema, carItemListSchema } from '../../../utils/schema';
 
 // Пререндер вимкнено, щоб дані про авто (статус, ціна) підхоплювались з Hygraph
 // свіжими через Vercel ISR (astro.config.mjs), а не застигали в білді до наступного деплою.
@@ -27,13 +27,16 @@ const faq = faqSchema(service.faq);
 if (faq) schema.push(faq);
 
 const cars = await getCarListings();
+// Список авто (без проданих) для Google — щоб каталог читався як перелік конкретних пропозицій.
+schema.push(carItemListSchema(cars.filter((c) => c.status !== 'sold')));
 
-const title = 'Автомобілі в наявності — купити в Рудниках';
+// Той самий патерн, що й на сторінках авто: «Автомито Рудники» + міста, без суфікса « — AvtoMuto».
+const title = 'Авто в наявності — Автомито Рудники: Львів, Стрий, Дрогобич';
 const description =
-  'Автомобілі в наявності в AvtoMuto: перевірені, з-за кордону та б/в. Огляд у Рудниках біля Стрия, Львівська область.';
+  'Перевірені авто з-за кордону та б/в в Автомито (AvtoMuto), с. Рудники — для покупців зі Львова, Стрия й Дрогобича. Телефонуйте, підготуємо авто до огляду!';
 ---
 
-<Layout title={title} description={description} path={path} schema={schema} serviceSlug={service.slug}>
+<Layout title={title} description={description} path={path} schema={schema} serviceSlug={service.slug} titleSuffix={false}>
   <div class="container">
     <Breadcrumbs items={crumbs} />
   </div>

@@ -54,7 +54,7 @@ const faqItems = [city.extraFaq, ...generalPicks];
 const ctaLabel = evakuator.ctaLabel ?? 'Викликати евакуатор';
 const schema = [
   breadcrumbSchema(crumbs),
-  serviceSchema({ ...evakuator, title, description, areaServed: city.name }, path),
+  serviceSchema({ ...evakuator, title, description, areaServed: city.name }, path, { allDay: true }),
 ];
 const faq = faqSchema(faqItems);
 if (faq) schema.push(faq);

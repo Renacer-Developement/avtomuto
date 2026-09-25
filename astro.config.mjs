@@ -10,7 +10,13 @@ export default defineConfig({
       expiration: 60,
     },
   }),
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      // Сторінки авто рендеряться на запит (Hygraph), тому живуть в окремому динамічному
+      // sitemap-cars.xml — посилаємось на нього з індексу, щоб Google точно його знайшов.
+      customSitemaps: ['https://www.avtomuto.com.ua/sitemap-cars.xml'],
+    }),
+  ],
   i18n: {
     defaultLocale: 'uk',
     locales: ['uk'],

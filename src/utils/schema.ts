@@ -45,17 +45,49 @@ export function organizationSchema() {
   };
 }
 
-export function serviceSchema(service: Service, path: string) {
+interface ServiceSchemaOptions {
+  /** Перелік населених пунктів замість одного рядка areaServed (напр. села евакуатора). */
+  areaServedList?: string[];
+  /** Послуга доступна цілодобово (евакуатор) — додає hoursAvailable 24/7. */
+  allDay?: boolean;
+}
+
+export function serviceSchema(service: Service, path: string, options: ServiceSchemaOptions = {}) {
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Service',
     serviceType: service.title,
     name: service.title,
     description: service.description,
-    provider: { '@id': `${SITE.domain}/#organization` },
+    // Organization повністю описана лише на головній, тому тут дублюємо ключові поля
+    // провайдера — щоб сторінка послуги була самодостатньою для валідаторів і Google.
+    provider: {
+      '@type': 'AutomotiveBusiness',
+      '@id': `${SITE.domain}/#organization`,
+      name: SITE.name,
+      alternateName: SITE.brandVariants,
+      url: SITE.domain,
+      telephone: TEAM[service.responsible].phone,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: SITE.address.settlement.replace('с. ', ''),
+        addressRegion: SITE.address.region,
+        addressCountry: 'UA',
+      },
+    },
     url: `${SITE.domain}${path}`,
-    areaServed: service.areaServed ?? SITE.address.region,
+    areaServed: options.areaServedList
+      ? options.areaServedList.map((name) => ({ '@type': 'Place', name }))
+      : (service.areaServed ?? SITE.address.region),
   };
+  if (options.allDay) {
+    schema.hoursAvailable = {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      opens: '00:00',
+      closes: '23:59',
+    };
+  }
   return schema;
 }
 
@@ -68,6 +100,22 @@ export function breadcrumbSchema(items: { label: string; href: string }[]) {
       position: i + 1,
       name: item.label,
       item: `${SITE.domain}${item.href}`,
+    })),
+  };
+}
+
+/** Каталог авто як ItemList: посилання на сторінки конкретних авто (там — повна Vehicle-розмітка). */
+export function carItemListSchema(cars: CarListing[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Авто в наявності — AvtoMuto',
+    numberOfItems: cars.length,
+    itemListElement: cars.map((car, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: carTitle(car),
+      url: `${SITE.domain}/poslugy/prodaz-auto/${car.slug}`,
     })),
   };
 }

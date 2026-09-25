@@ -86,7 +86,7 @@ const gtmItem = JSON.stringify({
         ${displayPrice.toLocaleString('uk-UA')}
       </p>
     )}
-    <h4>{carTitle(car)}</h4>
+    <h3>{carTitle(car)}</h3>
     {layout === 'grid' ? (
       specs.length > 0 && (
         <div class="car-card__specs">
@@ -185,13 +185,13 @@ const gtmItem = JSON.stringify({
     min-width: 0;
   }
 
-  .car-card h4 {
+  .car-card h3 {
     font-size: var(--fs-base);
     margin-bottom: var(--space-1);
   }
 
   @media (min-width: 640px) {
-    .car-card--list h4 {
+    .car-card--list h3 {
       font-size: var(--fs-lg);
     }
   }
@@ -249,7 +249,7 @@ const gtmItem = JSON.stringify({
     padding: var(--space-4);
   }
 
-  .car-card--grid h4 {
+  .car-card--grid h3 {
     font-size: var(--fs-lg);
     margin-bottom: var(--space-3);
   }

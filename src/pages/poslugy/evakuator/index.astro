@@ -11,6 +11,7 @@ import { TEAM, telHref } from '../../../data/site';
 import { TEAM_PHOTOS } from '../../../data/team-photos';
 import { SERVICE_PHOTOS } from '../../../data/service-photos';
 import {
+  EVAKUATOR_CITIES,
   EVAKUATOR_DIRECTIONS,
   getEvakuatorCityBySlug,
   getEvakuatorCitiesByDirection,
@@ -28,7 +29,13 @@ const crumbs = [
   { label: 'Послуги', href: '/poslugy' },
   { label: service.title, href: path },
 ];
-const schema = [breadcrumbSchema(crumbs), serviceSchema(service, path)];
+const schema = [
+  breadcrumbSchema(crumbs),
+  serviceSchema(service, path, {
+    areaServedList: [...EVAKUATOR_CITIES.map((c) => c.name), 'Львівська область'],
+    allDay: true,
+  }),
+];
 const faq = faqSchema(service.faq);
 if (faq) schema.push(faq);
 const ctaLabel = service.ctaLabel ?? "Зв'язатись з менеджером";
@@ -69,7 +76,7 @@ const relatedPosts = posts.filter((p) => p.relatedServiceSlug === service.slug);
         <p class="eyebrow">
           <Icon name={service.icon} size={16} /> Послуга
         </p>
-        <h1>{service.title}</h1>
+        <h1>Евакуатор 24/7 по Львівській області</h1>
         <p class="lead">{service.description}</p>
         <a href={telHref(responsible.phone)} class="hero__cta" data-gtm-event="click_phone">
           <Icon name="phone" size={20} /> {ctaLabel}
