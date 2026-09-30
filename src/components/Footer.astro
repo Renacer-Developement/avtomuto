@@ -65,6 +65,9 @@ const currentYear = new Date().getFullYear();
 
   <div class="container footer__bottom">
     <p>© {currentYear} {SITE.name}. Усі права захищено.</p>
+    <p class="footer__credit">
+      Розроблено <a href="https://renacer-sable.vercel.app/" target="_blank" rel="noopener">Renacer</a>
+    </p>
   </div>
 </footer>
 
@@ -196,5 +199,23 @@ const currentYear = new Date().getFullYear();
     padding-top: var(--space-4);
     color: #888;
     font-size: var(--fs-sm);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .footer__bottom p {
+    margin: 0;
+  }
+
+  .footer__credit a {
+    color: #c9c9c9;
+    text-decoration: none;
+  }
+
+  .footer__credit a:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
   }
 </style>
