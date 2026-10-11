@@ -1,5 +1,4 @@
 import { defineConfig } from 'astro/config';
-import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 
 export default defineConfig({
@@ -10,13 +9,11 @@ export default defineConfig({
       expiration: 60,
     },
   }),
-  integrations: [
-    sitemap({
-      // Сторінки авто рендеряться на запит (Hygraph), тому живуть в окремому динамічному
-      // sitemap-cars.xml — посилаємось на нього з індексу, щоб Google точно його знайшов.
-      customSitemaps: ['https://www.avtomuto.com.ua/sitemap-cars.xml'],
-    }),
-  ],
+  // Sitemap-и генеруються на запит у src/pages/sitemap-*.xml.ts. Старий sitemap-0.xml
+  // від @astrojs/sitemap міг лишитись у Search Console — ведемо його на новий.
+  redirects: {
+    '/sitemap-0.xml': '/sitemap-pages.xml',
+  },
   i18n: {
     defaultLocale: 'uk',
     locales: ['uk'],

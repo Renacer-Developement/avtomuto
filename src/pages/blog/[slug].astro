@@ -2,19 +2,18 @@
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Icon from '../../components/Icon.astro';
-import { getBlogPosts } from '../../data/blog';
+import { getPostBySlug } from '../../data/blog';
 import { getServiceBySlug } from '../../data/services';
 import { breadcrumbSchema, blogPostingSchema } from '../../utils/schema';
 
-export async function getStaticPaths() {
-  const posts = await getBlogPosts();
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
-}
+// Рендериться на запит (Vercel ISR), щоб нова стаття з Hygraph з'являлась без деплою —
+// так само, як і в sitemap-pages.xml.
+export const prerender = false;
 
-const { post } = Astro.props;
+const post = await getPostBySlug(Astro.params.slug!);
+if (!post) {
+  return Astro.redirect('/404');
+}
 const path = `/blog/${post.slug}`;
 const crumbs = [
   { label: 'Головна', href: '/' },

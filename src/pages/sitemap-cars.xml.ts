@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
-import { SITE } from '../data/site';
 import { getCarListings, brandSlug } from '../lib/cars';
+import { urlsetResponse } from '../lib/sitemap';
 
-// @astrojs/sitemap бачить лише пререндерені сторінки, а сторінки авто й марок рендеряться
-// на запит (дані з Hygraph) — тому для них окремий живий sitemap. Оновлюється разом з ISR,
-// тож нове авто з CMS потрапляє сюди без деплою. Підключений у public/robots.txt.
+// Сторінки авто й марок рендеряться на запит (дані з Hygraph), тому для них окремий живий
+// sitemap. Оновлюється разом з ISR,
+// тож нове авто з CMS потрапляє сюди без деплою. Підключений у sitemap-index.xml.
 export const prerender = false;
 
 export const GET: APIRoute = async () => {
@@ -18,13 +18,5 @@ export const GET: APIRoute = async () => {
     ...brands.map((b) => `/poslugy/prodaz-auto/marka/${b}`),
   ];
 
-  const body = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `  <url><loc>${SITE.domain}${u}</loc></url>`).join('\n')}
-</urlset>
-`;
-
-  return new Response(body, {
-    headers: { 'Content-Type': 'application/xml; charset=utf-8' },
-  });
+  return urlsetResponse(urls.map((path) => ({ path })));
 };

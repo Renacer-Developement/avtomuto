@@ -9,7 +9,7 @@ car repair, car sales, parts, certification, and a 24/7 tow truck.
 
 - [Astro](https://astro.build) 7 with the [`@astrojs/vercel`](https://docs.astro.build/en/guides/integrations-guide/vercel/) adapter (ISR, 60s)
 - [Hygraph](https://hygraph.com) (GraphQL CMS) for frequently changing content: cars in stock and the blog
-- `@astrojs/sitemap` plus custom dynamic sitemaps for cars and tow-truck city pages
+- Dynamic sitemaps rendered on request: an index plus pages (incl. blog), cars and tow-truck city pages
 - Vercel Speed Insights, Google Tag Manager / GA4, cookie consent banner
 - Contact form requests delivered to Telegram
 
@@ -56,7 +56,7 @@ src/
 │   │   └── prodaz-auto/[car].astro      # Car detail pages (from Hygraph)
 │   ├── blog/              # Blog list and posts
 │   ├── api/contact.ts     # Contact form endpoint → Telegram
-│   └── sitemap-*.xml.ts   # Dynamic sitemaps (cars, tow-truck cities)
+│   └── sitemap-*.xml.ts   # Dynamic sitemaps (index, pages, cars, tow-truck cities)
 ├── components/            # UI components (Header, CarCatalog, ContactForm, ConsentBanner…)
 ├── layouts/               # Base page layout
 ├── lib/                   # Hygraph client and car queries
@@ -70,7 +70,8 @@ design-system/MASTER.md    # Design direction and UI rules — read before chang
 
 Most pages are prerendered at build time. Pages backed by live data opt out with
 `export const prerender = false` and are rendered on request, cached with ISR for 60 seconds:
-the home page, car listings, car detail and brand pages, the car sitemap, and the contact API.
+the home page, car listings, car detail and brand pages, the blog, the pages and car sitemaps,
+and the contact API.
 
 ## Contact form
 

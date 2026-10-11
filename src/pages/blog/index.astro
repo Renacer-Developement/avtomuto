@@ -4,6 +4,9 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { getBlogPosts } from '../../data/blog';
 import { breadcrumbSchema } from '../../utils/schema';
 
+// Рендериться на запит (Vercel ISR), щоб нові статті з Hygraph з'являлись без деплою.
+export const prerender = false;
+
 const crumbs = [
   { label: 'Головна', href: '/' },
   { label: 'Блог', href: '/blog' },
