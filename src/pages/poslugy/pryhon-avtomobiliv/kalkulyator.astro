@@ -1,0 +1,676 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Icon from '../../../components/Icon.astro';
+import FaqAccordion from '../../../components/FaqAccordion.astro';
+import { TEAM, telHref } from '../../../data/site';
+import { FALLBACK_EUR_USD } from '../../../data/import-calculator';
+import { CLIENT_VEHICLE_TYPES, CLIENT_ENGINE_TYPES } from '../../../lib/client-calc';
+import { breadcrumbSchema, faqSchema } from '../../../utils/schema';
+
+// Рендер на запит (Vercel ISR), щоб курс EUR/USD для акцизу брався свіжий з НБУ.
+export const prerender = false;
+
+async function nbuRate(code: string): Promise<number | null> {
+  try {
+    const res = await fetch(`https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=${code}&json`, {
+      signal: AbortSignal.timeout(2500),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { rate?: number }[];
+    return data[0]?.rate ?? null;
+  } catch {
+    return null;
+  }
+}
+
+const [eurUah, usdUah] = await Promise.all([nbuRate('EUR'), nbuRate('USD')]);
+const eurUsd = eurUah && usdUah ? eurUah / usdUah : FALLBACK_EUR_USD;
+// Курс для підсумку в гривнях; без НБУ гривневу суму не показуємо.
+const uahPerUsd = usdUah ?? 0;
+
+const manager = TEAM.andriy;
+const path = '/poslugy/pryhon-avtomobiliv/kalkulyator';
+const crumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Послуги', href: '/poslugy' },
+  { label: 'Пригон автомобілів', href: '/poslugy/pryhon-avtomobiliv' },
+  { label: 'Калькулятор', href: path },
+];
+
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 30 }, (_, i) => currentYear - i);
+
+// Рядки результату — як на gal.in.ua; key — поле з calculateClient(), tooltip — підказка (ⓘ).
+const GROUPS: {
+  title: string;
+  icon: string;
+  rows: { key: string; label: string; tooltip?: string }[];
+  subtotal: { key: string; label: string };
+}[] = [
+  {
+    title: 'Аукціон',
+    icon: 'car-sale',
+    rows: [
+      { key: 'price', label: 'Ціна авто' },
+      { key: 'auctionFee', label: 'Аукціонний збір' },
+    ],
+    subtotal: { key: 'totalPurchase', label: 'Загальна сума купівлі' },
+  },
+  {
+    title: 'Доставка',
+    icon: 'tow-truck',
+    rows: [
+      { key: 'shippingToKlaipeda', label: 'Доставка сушею/морем в Клайпеду' },
+      { key: 'services', label: 'Вартість послуг AvtoMuto' },
+      { key: 'insurance', label: 'Страхівка' },
+      { key: 'storageUsa', label: 'Сторедж в США', tooltip: 'Стоянка авто на майданчику в США, якщо його не вивезли вчасно.' },
+      { key: 'expedition', label: 'Експедиція' },
+    ],
+    subtotal: { key: 'totalDelivery', label: 'Загальна вартість доставки' },
+  },
+  {
+    title: 'Витрати після прибуття',
+    icon: 'customs',
+    rows: [
+      { key: 'broker', label: 'Брокерські послуги' },
+      { key: 'loading', label: 'Погрузка' },
+      { key: 'customs', label: 'Розмитнення', tooltip: 'Мито, акциз і ПДВ' },
+      { key: 'deliveryToRudnyky', label: 'Доставка до Рудників' },
+    ],
+    subtotal: { key: 'totalAfterArrival', label: 'Загальна сума' },
+  },
+];
+
+const faq = [
+  {
+    question: 'Наскільки точний розрахунок?',
+    answer:
+      'Калькулятор дає попередню суму: мито, акциз і ПДВ рахуються за чинними формулами, а логістика — за нашими середніми тарифами. Точну вартість під конкретний лот назве менеджер.',
+  },
+  {
+    question: 'З чого складається митна вартість авто?',
+    answer:
+      'До митної вартості входить ціна лота, аукціонний збір і доставка до кордону України (у розрахунку — $1 800). Від неї рахуються ввізне мито (10%) та ПДВ (20%), а акциз залежить від об’єму двигуна, пального та віку авто.',
+  },
+  {
+    question: 'Чому доставка через Клайпеду?',
+    answer:
+      'Через Клайпеду авто приходить швидше, а доставка контейнером до Львівщини передбачувана за ціною й термінами.',
+  },
+  {
+    question: 'Як рахується акциз на електромобіль?',
+    answer: 'Для електромобілів акциз — 1 євро за кожну кВт·год ємності батареї, без коефіцієнта віку.',
+  },
+];
+
+const schema = [breadcrumbSchema(crumbs)];
+const faqLd = faqSchema(faq);
+if (faqLd) schema.push(faqLd);
+---
+
+<Layout
+  title="Калькулятор розмитнення авто зі США — AvtoMuto"
+  description="Порахуйте вартість авто з аукціонів США під ключ: аукціонний збір, доставка через Клайпеду, мито, акциз, ПДВ та доставка в Рудники (Львівська обл.)."
+  path={path}
+  schema={schema}
+  serviceSlug="pryhon-avtomobiliv"
+>
+  <div class="calc-page">
+    <div class="container calc-page__inner">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="calc-page__title">Калькулятор доставки авто з США</h1>
+
+      <div class="calc" data-calc data-eur-usd={eurUsd.toFixed(4)} data-uah-usd={uahPerUsd.toFixed(4)}>
+        <form class="calc__card" data-calc-form novalidate>
+          <p class="calc__heading"><Icon name="calculator" size={22} /> Калькулятор</p>
+
+          <div class="calc__grid">
+            <div class="calc__field">
+              <label for="calc-price">Ціна авто, USD:</label>
+              <input id="calc-price" type="text" name="price" inputmode="numeric" placeholder="Вкажіть ціну лоту" autocomplete="off" />
+            </div>
+            <div class="calc__field">
+              <label for="calc-year">Рік випуску:</label>
+              <select id="calc-year" name="year">
+                {years.map((y) => <option value={y} selected={y === currentYear - 1}>{y}</option>)}
+              </select>
+              <label class="calc__check">
+                <input type="checkbox" name="customsNextYear" />
+                Розмитнення на {currentYear + 1} рік
+              </label>
+            </div>
+            <div class="calc__field">
+              <label for="calc-type">Тип авто:</label>
+              <select id="calc-type" name="vehicleType">
+                {CLIENT_VEHICLE_TYPES.map((o) => <option value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div class="calc__field">
+              <label for="calc-engine">Тип двигуна:</label>
+              <select id="calc-engine" name="engineType">
+                {CLIENT_ENGINE_TYPES.map((o) => <option value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div class="calc__field">
+              <label for="calc-volume">Двигун (см³) / Батарея (кВт):</label>
+              <input id="calc-volume" type="text" name="engineVolume" inputmode="numeric" placeholder="Вкажіть об’єм двигуна" autocomplete="off" />
+            </div>
+            <div class="calc__field">
+              <label for="calc-auction">Аукціон:</label>
+              <select id="calc-auction" name="auction">
+                <option value="Copart">Copart</option>
+                <option value="IAAI">IAAI</option>
+              </select>
+            </div>
+            <div class="calc__field">
+              <span class="calc__label">Страхування:</span>
+              <label class="calc__check calc__check--inline">
+                <input type="checkbox" class="switch" name="insurance" checked role="switch" />
+                Страхування вантажу
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="calc__submit" data-calc-submit disabled>
+            <Icon name="calculator" size={18} /> Зробити прорахунок
+          </button>
+        </form>
+
+        <div class="calc__result" aria-live="polite" data-calc-result hidden>
+          <div class="calc__result-head">
+            <h2 class="calc__heading"><Icon name="clipboard" size={22} /> Розрахунок</h2>
+            <p class="calc__note">* Даний розрахунок є орієнтовним</p>
+          </div>
+
+          {GROUPS.map((group) => (
+            <div class="calc__group">
+              <p class="calc__group-title"><Icon name={group.icon} size={16} /> {group.title}</p>
+              {group.rows.map((row) => (
+                <div class="calc__row">
+                  <span class="calc__row-label">
+                    {row.label}
+                    {row.tooltip && (
+                      <span class="calc__tip" tabindex="0" data-tip={row.key === 'customs' ? 'customs' : undefined}>
+                        i<span class="calc__tip-text">{row.tooltip}</span>
+                      </span>
+                    )}
+                  </span>
+                  <span class="calc__row-line" aria-hidden="true"></span>
+                  <span class="calc__row-value" data-calc-value={row.key}></span>
+                </div>
+              ))}
+              <div class="calc__row calc__row--subtotal">
+                <span class="calc__row-label">{group.subtotal.label}</span>
+                <span class="calc__row-line" aria-hidden="true"></span>
+                <span class="calc__row-value" data-calc-value={group.subtotal.key}></span>
+              </div>
+            </div>
+          ))}
+
+          <div class="calc__total">
+            <div>
+              <p class="calc__total-label">Загальна ціна авто без ремонту</p>
+              <p class="calc__total-sum">
+                <strong data-calc-value="grandTotal"></strong>
+                <span data-calc-uah></span>
+              </p>
+            </div>
+            <a href={telHref(manager.phone)} class="calc__consult" data-gtm-event="click_phone">
+              <Icon name="phone" size={18} /> Замовити консультацію
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="container">
+    <FaqAccordion items={faq} />
+  </section>
+</Layout>
+
+<script>
+  import { calculateClient, type ClientEngineType, type ClientVehicleType } from '../../../lib/client-calc';
+
+  const root = document.querySelector<HTMLElement>('[data-calc]')!;
+  const form = root.querySelector<HTMLFormElement>('[data-calc-form]')!;
+  const submit = root.querySelector<HTMLButtonElement>('[data-calc-submit]')!;
+  const resultEl = root.querySelector<HTMLElement>('[data-calc-result]')!;
+  const eurUsd = Number(root.dataset.eurUsd);
+  const usdUah = Number(root.dataset.uahUsd);
+
+  // Формат сум як на GAL: «3,700$», «453,980 ₴».
+  const usd = (n: number) => `${Math.round(n).toLocaleString('en-US')}$`;
+  const value = (name: string) => (form.elements.namedItem(name) as HTMLInputElement).value;
+  const checked = (name: string) => (form.elements.namedItem(name) as HTMLInputElement).checked;
+
+  // Як і на GAL: результат з'являється після «Зробити прорахунок», далі оновлюється одразу.
+  let shown = false;
+
+  function render() {
+    const priceUSD = Number(value('price')) || 0;
+    const engineVolume = Number(value('engineVolume')) || 0;
+    const ready = priceUSD > 0 && engineVolume > 0;
+    submit.disabled = !ready;
+    const visible = shown && ready;
+    resultEl.hidden = !visible;
+    root.classList.toggle('has-result', visible);
+    if (!visible) return;
+
+    const r = calculateClient({
+      priceUSD,
+      year: Number(value('year')),
+      customsNextYear: checked('customsNextYear'),
+      vehicleType: value('vehicleType') as ClientVehicleType,
+      engineType: value('engineType') as ClientEngineType,
+      engineVolume,
+      auction: value('auction'),
+      insurance: checked('insurance'),
+      eurUsd,
+      usdUah,
+    });
+    root.querySelectorAll<HTMLElement>('[data-calc-value]').forEach((el) => {
+      el.textContent = usd(r[el.dataset.calcValue as keyof typeof r]);
+    });
+    root.querySelector('[data-tip="customs"] .calc__tip-text')!.textContent =
+      `Мито ${usd(r.toll)} · Акциз ${usd(r.excise)} · ПДВ ${usd(r.vat)}`;
+    root.querySelector('[data-calc-uah]')!.textContent = usdUah
+      ? `${r.grandTotalUAH.toLocaleString('en-US')} ₴`
+      : '';
+  }
+
+  // Ціна й об'єм — лише цифри, як на GAL.
+  for (const name of ['price', 'engineVolume']) {
+    const input = form.elements.namedItem(name) as HTMLInputElement;
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/\D/g, '');
+    });
+  }
+  // Для електро поле означає ємність батареї.
+  form.elements.namedItem('engineType')!.addEventListener('change', () => {
+    (form.elements.namedItem('engineVolume') as HTMLInputElement).placeholder =
+      value('engineType') === 'electric' ? 'Вкажіть ємність батареї' : 'Вкажіть об’єм двигуна';
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    shown = true;
+    render();
+    if (!resultEl.hidden) resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  form.addEventListener('input', render);
+  form.addEventListener('change', render);
+  render();
+</script>
+
+<style>
+  /* Розмітка й розміри — як у калькуляторі gal.in.ua; кольори — фірмові AvtoMuto. */
+  .calc-page {
+    background: #f7f7f7;
+    padding-bottom: var(--space-6);
+  }
+
+  .calc-page__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    font-family: var(--font-base);
+  }
+
+  .calc-page__inner :global(.breadcrumbs) {
+    margin-bottom: -16px;
+  }
+
+  .calc-page__title {
+    margin: 0;
+    font-family: var(--font-base);
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.05em;
+    color: #0f0f0f;
+  }
+
+  @media (min-width: 768px) {
+    .calc-page__title {
+      font-size: 40px;
+    }
+  }
+
+  .calc {
+    letter-spacing: -0.05em;
+    color: #0f0f0f;
+  }
+
+  .calc__card,
+  .calc__result {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+  }
+
+  @media (min-width: 768px) {
+    .calc__card,
+    .calc__result {
+      padding: 48px;
+    }
+  }
+
+  .calc.has-result .calc__card {
+    border-radius: 8px 8px 0 0;
+  }
+
+  .calc__result {
+    border-top: 0;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .calc__result[hidden] {
+    display: none;
+  }
+
+  .calc__heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-family: var(--font-base);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 24px;
+    letter-spacing: -0.05em;
+    color: #0f0f0f;
+  }
+
+  .calc__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  @media (min-width: 640px) {
+    .calc__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .calc__grid {
+      grid-template-columns: repeat(4, minmax(0, 264px));
+      justify-content: space-between;
+    }
+  }
+
+  .calc__field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .calc__field > label,
+  .calc__label {
+    font-size: 14px;
+    line-height: 17px;
+    color: #0f0f0f;
+  }
+
+  .calc__field input[type='text'],
+  .calc__field select {
+    width: 100%;
+    height: 56px;
+    padding: 0 20px;
+    border: 1px solid rgba(15, 15, 15, 0.24);
+    border-radius: 4px;
+    background: #fff;
+    font: inherit;
+    font-size: 16px;
+    letter-spacing: -0.05em;
+    color: #0f0f0f;
+    outline: none;
+  }
+
+  .calc__field input[type='text']::placeholder {
+    color: rgba(15, 15, 15, 0.48);
+  }
+
+  .calc__field input[type='text']:focus,
+  .calc__field select:focus {
+    border-color: var(--color-accent);
+  }
+
+  .calc__check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    line-height: 17px;
+    cursor: pointer;
+  }
+
+  .calc__check input:not(.switch) {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--color-accent);
+  }
+
+  .calc__check--inline {
+    height: 56px;
+    font-size: 16px;
+  }
+
+  .calc__submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 64px;
+    border: 0;
+    border-radius: 4px;
+    background: var(--color-accent);
+    color: #fff;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.05em;
+    cursor: pointer;
+    transition: background var(--transition-fast), opacity var(--transition-fast);
+  }
+
+  .calc__submit:hover:not(:disabled) {
+    background: var(--color-accent-dark);
+  }
+
+  .calc__submit:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .calc__result-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 24px;
+  }
+
+  .calc__note {
+    margin: 0;
+    font-size: 14px;
+    line-height: 17px;
+    color: rgb(213, 37, 37);
+  }
+
+  .calc__group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .calc__group-title {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 19px;
+    text-transform: uppercase;
+  }
+
+  .calc__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+    line-height: 19px;
+  }
+
+  .calc__row-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .calc__row-line {
+    flex: 1;
+    min-width: 16px;
+    height: 1px;
+    background-image: repeating-linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.16) 0,
+      rgba(0, 0, 0, 0.16) 10px,
+      transparent 10px,
+      transparent 18px
+    );
+  }
+
+  .calc__row-value {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .calc__row--subtotal {
+    font-weight: 700;
+  }
+
+  .calc__tip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgba(15, 15, 15, 0.36);
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0;
+    color: rgba(15, 15, 15, 0.36);
+    cursor: pointer;
+  }
+
+  .calc__tip-text {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    z-index: 5;
+    display: none;
+    width: max-content;
+    max-width: 260px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #0f0f0f;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+    letter-spacing: -0.02em;
+    transform: translateX(-50%);
+  }
+
+  .calc__tip:hover .calc__tip-text,
+  .calc__tip:focus .calc__tip-text {
+    display: block;
+  }
+
+  .calc__total {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 24px;
+    border-radius: 8px;
+    background: var(--color-black);
+    color: #fff;
+  }
+
+  @media (min-width: 768px) {
+    .calc__total {
+      padding: 40px;
+    }
+  }
+
+  .calc__total-label {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 24px;
+  }
+
+  .calc__total-sum {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 12px;
+    margin: 0;
+  }
+
+  .calc__total-sum strong {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--color-accent);
+  }
+
+  .calc__total-sum span {
+    font-size: 24px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .calc__total-sum span:not(:empty)::before {
+    content: '·';
+    margin-right: 12px;
+  }
+
+  .calc__consult {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 64px;
+    padding: 0 24px;
+    border-radius: 4px;
+    background: #fff;
+    color: #0f0f0f;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background var(--transition-fast), color var(--transition-fast);
+  }
+
+  .calc__consult:hover {
+    background: var(--color-accent);
+    color: #fff;
+  }
+</style>

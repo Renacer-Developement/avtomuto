@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import Icon from './Icon.astro';
 import { SERVICES } from '../data/services';
-import { TEAM, telHref } from '../data/site';
+import { SITE, TEAM, telHref } from '../data/site';
 import logo from '../assets/images/logo.png';
 
 const carSales = SERVICES.find((s) => s.slug === 'prodaz-auto');
@@ -11,7 +11,36 @@ const evakuator = SERVICES.find((s) => s.highlight);
 const mainPhone = TEAM.ihor.phone;
 const mainPhoneDisplay = TEAM.ihor.phoneDisplay;
 const mainPhoneMember = TEAM.ihor.name;
+const calculatorHref = '/poslugy/pryhon-avtomobiliv/kalkulyator';
+const infoLinks = [
+  { href: '/pro-nas', label: 'Про нас' },
+  { href: '/blog', label: 'Блог' },
+  { href: '/kontakty', label: 'Контакти' },
+];
 ---
+
+<div class="topbar">
+  <div class="container topbar__inner">
+    <ul class="topbar__info">
+      <li><Icon name="map-pin" size={16} /> {SITE.address.settlement}, {SITE.address.district}</li>
+      <li class="topbar__hours"><Icon name="clock" size={16} /> {SITE.hours.general}</li>
+      <li>
+        <a href={telHref(mainPhone)} data-gtm-event="click_phone" data-team-member={mainPhoneMember}>
+          <Icon name="phone" size={16} /> {mainPhoneDisplay}
+        </a>
+      </li>
+    </ul>
+    <div class="topbar__actions">
+      <a href={SITE.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram AvtoMuto" data-gtm-event="click_social">
+        <Icon name="instagram" size={18} />
+      </a>
+      <a href={SITE.social.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok AvtoMuto" data-gtm-event="click_social">
+        <Icon name="tiktok" size={18} />
+      </a>
+      <a href="/kontakty#forma" class="topbar__callback">Замовити дзвінок</a>
+    </div>
+  </div>
+</div>
 
 <header class="header" data-header>
   <div class="container header__inner">
@@ -21,9 +50,8 @@ const mainPhoneMember = TEAM.ihor.name;
 
     <nav class="header__nav" aria-label="Головна навігація">
       <ul class="header__nav-list">
-        <li><a href="/">Головна</a></li>
-        <li><a href="/pro-nas">Про нас</a></li>
-        {carSales && <li><a href={`/poslugy/${carSales.slug}`} class="header__nav-sales">{carSales.title}</a></li>}
+        <li><a href="/poslugy/pryhon-avtomobiliv">Пригін авто з США</a></li>
+        {carSales && <li><a href={`/poslugy/${carSales.slug}`}>Авто в наявності</a></li>}
         <li class="header__has-mega">
           <button class="header__mega-trigger" aria-expanded="false" data-mega-trigger>
             Послуги <Icon name="chevron-down" size={16} />
@@ -44,14 +72,24 @@ const mainPhoneMember = TEAM.ihor.name;
             )}
           </div>
         </li>
-        <li><a href="/kontakty">Контакти</a></li>
+        <li class="header__has-mega">
+          <button class="header__mega-trigger" aria-expanded="false" data-mega-trigger>
+            Інформація <Icon name="chevron-down" size={16} />
+          </button>
+          <div class="header__mega header__mega--small" data-mega>
+            <ul class="header__mega-list">
+              {infoLinks.map((l) => (
+                <li><a href={l.href}>{l.label}</a></li>
+              ))}
+            </ul>
+          </div>
+        </li>
       </ul>
     </nav>
 
     <div class="header__actions">
-      <a href={telHref(mainPhone)} class="btn btn-primary header__call" data-gtm-event="click_phone" data-team-member={mainPhoneMember}>
-        <Icon name="phone" size={18} />
-        <span class="header__call-text">{mainPhoneDisplay}</span>
+      <a href={calculatorHref} class="btn btn-dark header__calc">
+        <Icon name="calculator" size={18} /> Калькулятор
       </a>
       <button class="header__burger" aria-label="Відкрити меню" aria-expanded="false" data-drawer-trigger>
         <Icon name="menu" size={26} />
@@ -71,13 +109,15 @@ const mainPhoneMember = TEAM.ihor.name;
         <Icon name="close" size={26} />
       </button>
     </div>
+    <a href={calculatorHref} class="btn btn-dark drawer__calc">
+      <Icon name="calculator" size={18} /> Калькулятор
+    </a>
     <ul class="drawer__list">
-      <li><a href="/">Головна</a></li>
-      <li><a href="/pro-nas">Про нас</a></li>
+      <li><a href="/poslugy/pryhon-avtomobiliv">Пригін авто з США</a></li>
       {carSales && (
         <li>
           <a href={`/poslugy/${carSales.slug}`} class="drawer__sales">
-            <Icon name="car-sale" size={18} /> {carSales.title}
+            <Icon name="car-sale" size={18} /> Авто в наявності
           </a>
         </li>
       )}
@@ -94,7 +134,10 @@ const mainPhoneMember = TEAM.ihor.name;
           <a href={`/poslugy/${s.slug}`}>{s.title}</a>
         </li>
       ))}
-      <li><a href="/kontakty">Контакти</a></li>
+      <li class="drawer__group-title">Інформація</li>
+      {infoLinks.map((l) => (
+        <li><a href={l.href}>{l.label}</a></li>
+      ))}
     </ul>
     <a href={telHref(mainPhone)} class="btn btn-primary drawer__call" data-gtm-event="click_phone" data-team-member={mainPhoneMember}>
       <Icon name="phone" size={18} /> {mainPhoneDisplay}
@@ -103,6 +146,87 @@ const mainPhoneMember = TEAM.ihor.name;
 </div>
 
 <style>
+  .topbar {
+    display: none;
+    background: var(--color-black);
+    color: var(--color-white);
+    font-size: 0.8rem;
+  }
+
+  @media (min-width: 1024px) {
+    .topbar {
+      display: block;
+    }
+  }
+
+  .topbar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 40px;
+  }
+
+  .topbar__info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .topbar__info li,
+  .topbar__info a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .topbar__info :global(svg) {
+    color: var(--color-accent);
+  }
+
+  .topbar__info a:hover {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 1200px) {
+    .topbar__hours {
+      display: none !important;
+    }
+  }
+
+  .topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .topbar__actions a {
+    display: inline-flex;
+    color: var(--color-white);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .topbar__actions a:hover {
+    color: var(--color-accent);
+  }
+
+  .topbar__callback {
+    padding-left: var(--space-4);
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--color-accent) !important;
+    font-weight: 700;
+  }
+
+  .topbar__callback:hover {
+    color: var(--color-white) !important;
+  }
+
   .header {
     position: -webkit-sticky;
     position: sticky;
@@ -190,9 +314,6 @@ const mainPhoneMember = TEAM.ihor.name;
     transition: right var(--transition-base);
   }
 
-  .header__nav-sales {
-    color: var(--color-accent) !important;
-  }
 
   .header__nav-list > li > a:hover {
     color: var(--color-accent);
@@ -264,6 +385,29 @@ const mainPhoneMember = TEAM.ihor.name;
     color: var(--color-accent);
   }
 
+  .header__mega--small {
+    width: 220px;
+  }
+
+  .header__mega-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .header__mega-list a {
+    display: block;
+    padding: var(--space-2) 0;
+    text-decoration: none;
+    color: var(--color-black);
+    font-weight: 500;
+    font-size: var(--fs-sm);
+  }
+
+  .header__mega-list a:hover {
+    color: var(--color-accent);
+  }
+
   .header__mega-evakuator {
     display: flex;
     align-items: center;
@@ -287,8 +431,14 @@ const mainPhoneMember = TEAM.ihor.name;
     gap: var(--space-3);
   }
 
-  .header__call {
+  .header__calc {
     display: none;
+    padding: 0.6rem 1.25rem;
+    font-size: var(--fs-sm);
+  }
+
+  .header__calc:hover {
+    background: var(--color-accent);
   }
 
   .header__burger {
@@ -304,7 +454,7 @@ const mainPhoneMember = TEAM.ihor.name;
     .header__nav {
       display: block;
     }
-    .header__call {
+    .header__calc {
       display: inline-flex;
     }
     .header__burger {
@@ -407,8 +557,13 @@ const mainPhoneMember = TEAM.ihor.name;
     color: var(--color-accent) !important;
   }
 
-  .drawer__call {
+  .drawer__call,
+  .drawer__calc {
     width: 100%;
+  }
+
+  .drawer__calc {
+    margin-bottom: var(--space-3);
   }
 
   @media (min-width: 1024px) {
@@ -420,17 +575,25 @@ const mainPhoneMember = TEAM.ihor.name;
 </style>
 
 <script>
-  const megaHost = document.querySelector('[data-mega-trigger]')?.closest('.header__has-mega');
-  const megaTrigger = document.querySelector('[data-mega-trigger]');
-  megaTrigger?.addEventListener('click', () => {
-    const isOpen = megaHost?.classList.toggle('is-open');
-    megaTrigger.setAttribute('aria-expanded', String(!!isOpen));
+  // Випадайки «Послуги» й «Інформація»: відкрита лише одна, клік поза нею — закриває.
+  const megaHosts = [...document.querySelectorAll<HTMLElement>('.header__has-mega')];
+  function closeMegas(except?: HTMLElement) {
+    megaHosts.forEach((host) => {
+      if (host === except) return;
+      host.classList.remove('is-open');
+      host.querySelector('[data-mega-trigger]')?.setAttribute('aria-expanded', 'false');
+    });
+  }
+  megaHosts.forEach((host) => {
+    const trigger = host.querySelector('[data-mega-trigger]');
+    trigger?.addEventListener('click', () => {
+      closeMegas(host);
+      const isOpen = host.classList.toggle('is-open');
+      trigger.setAttribute('aria-expanded', String(isOpen));
+    });
   });
   document.addEventListener('click', (e) => {
-    if (megaHost && !megaHost.contains(e.target)) {
-      megaHost.classList.remove('is-open');
-      megaTrigger?.setAttribute('aria-expanded', 'false');
-    }
+    if (!megaHosts.some((host) => host.contains(e.target as Node))) closeMegas();
   });
 
   const drawer = document.querySelector('[data-drawer]');

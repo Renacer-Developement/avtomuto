@@ -1,0 +1,847 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { SITE, TEAM } from '../../../data/site';
+import {
+  VEHICLE_TYPES,
+  FUEL_TYPES,
+  AUCTIONS,
+  BROKER_FEE,
+  COMPANY_FEE,
+  FALLBACK_EUR_USD,
+} from '../../../data/import-calculator';
+import { yardGroups } from '../../../data/auction-yards';
+import { engineOptions, BATTERY_OPTIONS, DEFAULT_ENGINE_CC, DEFAULT_BATTERY_KWH } from '../../../lib/engine-options';
+
+// Внутрішній генератор картинки з розрахунком для клієнта. Відкривається лише за секретним
+// посиланням /internal/rozrakhunok/<INTERNAL_KEY>: ключ саме в шляху, а не в query, бо Vercel ISR
+// кешує сторінки за шляхом і інакше віддав би її будь-кому. З sitemap виключена ([key] — динамічний маршрут).
+export const prerender = false;
+
+const internalKey = import.meta.env.INTERNAL_KEY;
+if (!internalKey || Astro.params.key !== internalKey) {
+  // Порожня 404-відповідь — Astro сам підставить сторінку 404 (rewrite на неї заборонений, бо вона пререндерена).
+  return new Response(null, { status: 404 });
+}
+
+async function nbuRate(code: string): Promise<number | null> {
+  try {
+    const res = await fetch(`https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=${code}&json`, {
+      signal: AbortSignal.timeout(2500),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { rate?: number }[];
+    return data[0]?.rate ?? null;
+  } catch {
+    return null;
+  }
+}
+
+const [eurUah, usdUah] = await Promise.all([nbuRate('EUR'), nbuRate('USD')]);
+const eurUsd = eurUah && usdUah ? eurUah / usdUah : FALLBACK_EUR_USD;
+
+const manager = TEAM.andriy;
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 20 }, (_, i) => currentYear - i);
+const instagram = SITE.social.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '@');
+const domain = SITE.domain.replace(/^https?:\/\/(www\.)?/, '');
+
+// Рядки картки. auto — назва авторозрахунку у скрипті; без auto сума береться лише з поля.
+const sections = [
+  {
+    id: 'auction',
+    title: 'Аукціон',
+    subtotal: 'Загальна сума купівлі',
+    rows: [
+      { name: 'price', label: 'Ціна купівлі авто на аукціоні', auto: 'price' },
+      { name: 'auctionFee', label: 'Аукціонний збір', auto: 'auctionFee' },
+      { name: 'transferFee', label: 'Комісія за переказ коштів', auto: 'transferFee' },
+    ],
+  },
+  {
+    id: 'delivery',
+    title: 'Доставка',
+    subtotal: 'Вартість авто без розмитнення',
+    rows: [
+      { name: 'shipping', label: 'Доставка сушею й морем у Клайпеду', auto: 'shipping' },
+      { name: 'companyFee', label: 'Послуги AvtoMuto', default: COMPANY_FEE },
+      { name: 'insurance', label: 'Страхування', auto: 'insurance', toggle: 'insuranceOn' },
+      { name: 'storage', label: 'Стоянка в США' },
+      {
+        name: 'expedition',
+        label: 'Експедиція',
+        hint: 'вивантаження контейнера, розпломбування, вивантаження авто',
+        auto: 'expedition',
+      },
+    ],
+  },
+  {
+    id: 'customs',
+    title: 'Після прибуття в Литву',
+    subtotal: 'Загальна сума витрат розмитнення',
+    rows: [
+      { name: 'broker', label: 'Брокерські послуги', default: BROKER_FEE },
+      { name: 'loading', label: 'Погрузка автомобіля' },
+      // Розмитнення не редагується — завжди рахується за формулою (мито + акциз + ПДВ).
+      { name: 'customsPayments', label: 'Митні платежі', badge: 'орієнтовно', auto: 'customsPayments', readonly: true },
+      { name: 'toRudnyky', label: 'Доставка до Рудників', auto: 'toRudnyky' },
+    ],
+  },
+];
+---
+
+<Layout title="Розрахунок для клієнта" description="Внутрішній інструмент AvtoMuto" noindex titleSuffix={false}>
+  <section class="container tool" data-tool data-eur-usd={eurUsd.toFixed(4)}>
+    <form class="tool__form" data-tool-form novalidate>
+      <h1>Розрахунок для клієнта</h1>
+      <p class="tool__intro">
+        Заповніть дані — картка праворуч оновлюється одразу. Порожні суми з сірою підказкою рахуються автоматично;
+        впишіть своє число, щоб перекрити. Рядки з нулем на картці не показуються.
+      </p>
+
+      <fieldset>
+        <legend>Авто</legend>
+        <label class="field">
+          <span>Назва авто на картці</span>
+          <input type="text" name="title" placeholder="Напр. 2019 Tesla Model 3 Long Range" />
+        </label>
+        <div class="field__grid">
+          <label class="field">
+            <span>Номер лота</span>
+            <input type="text" name="lot" inputmode="numeric" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>VIN</span>
+            <input type="text" name="vin" maxlength="17" autocomplete="off" spellcheck="false" class="field__vin" />
+          </label>
+        </div>
+        <div class="field__grid">
+          <label class="field">
+            <span>Тип</span>
+            <select name="vehicleType">{VEHICLE_TYPES.map((o) => <option value={o.value}>{o.label}</option>)}</select>
+          </label>
+          <label class="field">
+            <span>Пальне</span>
+            <select name="fuel">{FUEL_TYPES.map((o) => <option value={o.value}>{o.label}</option>)}</select>
+          </label>
+          <label class="field">
+            <span>Рік</span>
+            <select name="year">
+              {years.map((y) => <option value={y} selected={y === currentYear - 5}>{y}</option>)}
+              <option value={currentYear - 20}>{currentYear - 20} і старше</option>
+            </select>
+          </label>
+          <label class="field" data-show="engine">
+            <span>Об’єм двигуна</span>
+            <select name="engine" data-engine-select>
+              {engineOptions(VEHICLE_TYPES[0].value).map((o) => (
+                <option value={o.value} selected={o.value === DEFAULT_ENGINE_CC}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+          <label class="field" data-show="battery" hidden>
+            <span>Ємність батареї</span>
+            <select name="battery">
+              {BATTERY_OPTIONS.map((kwh) => (
+                <option value={kwh} selected={kwh === DEFAULT_BATTERY_KWH}>{kwh} кВт·год</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Аукціон і маршрут</legend>
+        <label class="field">
+          <span>Аукціон</span>
+          <select name="auction">{AUCTIONS.map((o) => <option value={o.value}>{o.label}</option>)}</select>
+        </label>
+        <label class="field">
+          <span>Майданчик</span>
+          <select name="yard" data-yard-select>
+            {yardGroups(AUCTIONS[0].value).map((g) => (
+              <optgroup label={g.label}>
+                {g.yards.map((y) => <option value={y.value}>{y.label}</option>)}
+              </optgroup>
+            ))}
+          </select>
+        </label>
+      </fieldset>
+
+      {sections.map((section, i) => (
+        <fieldset>
+          <legend>{String(i + 1).padStart(2, '0')} · {section.title}</legend>
+          {section.rows.map((row) => (
+            <label class="field field--amount">
+              {row.toggle ? (
+                <span class="field__toggle">
+                  <input type="checkbox" class="switch" name={row.toggle} checked role="switch" data-toggle-for={row.name} />
+                  {row.label}
+                </span>
+              ) : (
+                <span>{row.label}</span>
+              )}
+              <input
+                type="number"
+                name={row.name}
+                min="0"
+                step="1"
+                inputmode="numeric"
+                value={row.default}
+                data-auto={row.auto}
+                readonly={row.readonly}
+                tabindex={row.readonly ? -1 : undefined}
+              />
+            </label>
+          ))}
+        </fieldset>
+      ))}
+    </form>
+
+    <div class="tool__preview">
+      <div class="tool__actions">
+        <button type="button" class="btn btn-primary" data-download>Завантажити PNG</button>
+        <button type="button" class="btn btn-dark" data-copy>Копіювати картинку</button>
+        <span class="tool__status" data-export-status role="status"></span>
+      </div>
+
+      <div class="card-frame" data-card-frame>
+        <div class="card" data-card>
+          <header class="card__head">
+            <p class="card__brand">Avto<span>Muto</span></p>
+            <h2 class="card__title">Розрахунок вартості</h2>
+            <p class="card__subtitle">доставки та розмитнення авто зі США в Україну</p>
+            <ul class="card__contacts">
+              <li>{SITE.address.settlement}, Стрийський р-н</li>
+              <li>{manager.phoneDisplay}</li>
+              <li>{instagram}</li>
+              <li>{domain}</li>
+            </ul>
+          </header>
+
+          <p class="card__car" data-card-car></p>
+
+          <div class="card__grid">
+            {[sections.slice(0, 2), sections.slice(2)].map((column, col) => (
+              <div class="card__col">
+            {column.map((section) => {
+              const i = sections.indexOf(section);
+              return (
+              <section class={`card__section card__section--${section.id}`} data-card-section={section.id}>
+                <h3>
+                  <span>{String(i + 1).padStart(2, '0')}</span>
+                  <span>{section.title}</span>
+                </h3>
+                {section.rows.map((row) => (
+                  <div class="card__row" data-card-row={row.name}>
+                    <span class="card__label">
+                      <span>{row.label}</span>
+                      {row.badge && <em>{row.badge}</em>}
+                      {row.hint && <small>{row.hint}</small>}
+                    </span>
+                    <strong data-card-amount={row.name}></strong>
+                  </div>
+                ))}
+                <div class="card__row card__row--subtotal">
+                  <span class="card__label">{section.subtotal}</span>
+                  <strong data-card-subtotal={section.id}></strong>
+                </div>
+              </section>
+              );
+            })}
+            {col === 1 && (
+              <div class="card__total">
+                <span>Загальна ціна авто без ремонту</span>
+                <strong data-card-total></strong>
+              </div>
+            )}
+              </div>
+            ))}
+          </div>
+
+          <footer class="card__foot">
+            <p>Митні платежі орієнтовні — точну суму розрахують у момент митного оформлення.</p>
+            <p>Усі ціни вказані в доларах США · <span data-card-date></span></p>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  import { toBlob } from 'html-to-image';
+  import {
+    EXPORT_DOCS_FEE,
+    EXPORT_PORTS,
+    INSURANCE_RATE,
+    PORT_COSTS,
+    MOTO_SHIPPING_MULTIPLIER,
+    PICKUP_SHIPPING_MULTIPLIER,
+      type AuctionKey,
+    type FuelType,
+    type VehicleType,
+  } from '../../../data/import-calculator';
+  import { yardInland } from '../../../data/auction-yards';
+  import { fillYardSelect } from '../../../lib/yard-select';
+  import { auctionFee, customsPayments } from '../../../lib/import-calc';
+  import { engineOptions, DEFAULT_ENGINE_CC } from '../../../lib/engine-options';
+
+  const root = document.querySelector<HTMLElement>('[data-tool]')!;
+  const form = root.querySelector<HTMLFormElement>('[data-tool-form]')!;
+  const card = root.querySelector<HTMLElement>('[data-card]')!;
+  const frame = root.querySelector<HTMLElement>('[data-card-frame]')!;
+  const eurUsd = Number(root.dataset.eurUsd);
+
+  const usd = (n: number) => `$${Math.round(n).toLocaleString('en-US').replace(/,/g, ' ')}`;
+  const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
+  const num = (name: string) => {
+    const v = Number(field(name).value);
+    return Number.isFinite(v) && v > 0 ? v : 0;
+  };
+  const text = (selector: string) => card.querySelector<HTMLElement>(selector)!;
+
+  /** Авторозрахунки для рядків з data-auto: показуються як підказка, поки поле порожнє. */
+  function autoValues() {
+    const data = new FormData(form);
+    const vehicle = data.get('vehicleType') as VehicleType;
+    const fuel = data.get('fuel') as FuelType;
+    const yard = yardInland(String(data.get('yard')));
+    const price = num('price');
+    const { fee, transferFeeRate } = auctionFee(String(data.get('auction')), price);
+    const multiplier =
+      vehicle === 'pickup' ? PICKUP_SHIPPING_MULTIPLIER : vehicle === 'moto' ? MOTO_SHIPPING_MULTIPLIER : 1;
+
+    const values: Record<string, number> = { price };
+    values.auctionFee = price ? fee : 0;
+    values.transferFee = (price + resolved('auctionFee', values)) * transferFeeRate;
+    values.shipping = yard.inland + EXPORT_DOCS_FEE + EXPORT_PORTS[yard.port].ocean * multiplier;
+    values.insurance = price * INSURANCE_RATE;
+    // Ті самі тарифи порту, що й у публічному калькуляторі: перший рядок — вигрузка, решта — шлях до Рудників.
+    const [unloading, ...toRudnyky] = PORT_COSTS;
+    values.expedition = unloading.amount;
+    values.toRudnyky = toRudnyky.reduce((sum, c) => sum + c.amount, 0);
+
+    // Митна вартість — лот, збір і всі витрати до кордону України (маршрут Клайпеда — Рудники
+    // майже весь іде Литвою й Польщею, тож доставку до Рудників теж включаємо).
+    const toBorder = ['auctionFee', 'shipping', 'insurance', 'storage', 'expedition', 'loading', 'toRudnyky'];
+    const customsValue = price + toBorder.reduce((sum, name) => sum + resolved(name, values), 0);
+
+    const engineCc = num('engine');
+    const payments = customsPayments({
+      customsValue,
+      fuel,
+      vehicle,
+      liters: engineCc / 1000,
+      cc: engineCc,
+      kwh: num('battery'),
+      year: num('year'),
+      eurUsd,
+    });
+    values.customsPayments = price ? payments.duty + payments.excise + payments.vat : 0;
+    return values;
+  }
+
+  /** Значення рядка: вписане вручну, інакше автоматичне. */
+  function resolved(name: string, auto: Record<string, number>) {
+    // Рядок із вимкненою галочкою (страхування) не рахується взагалі.
+    const toggle = form.querySelector<HTMLInputElement>(`[data-toggle-for="${name}"]`);
+    if (toggle && !toggle.checked) return 0;
+    // Поле лише для читання (розмитнення) — завжди автоматична сума.
+    if (field(name).readOnly) return auto[name] ?? 0;
+    return field(name).value !== '' ? num(name) : (auto[name] ?? 0);
+  }
+
+  function render() {
+    const auto = autoValues();
+    const data = new FormData(form);
+
+    form.querySelectorAll<HTMLInputElement>('[data-auto]').forEach((input) => {
+      const value = auto[input.dataset.auto!];
+      input.placeholder = value ? String(Math.round(value)) : '';
+      if (input.readOnly) input.value = value ? String(Math.round(value)) : '';
+    });
+    form.querySelectorAll<HTMLInputElement>('[data-toggle-for]').forEach((toggle) => {
+      field(toggle.dataset.toggleFor!).disabled = !toggle.checked;
+    });
+
+    const car = [String(data.get('title')).trim(), data.get('lot') && `лот ${data.get('lot')}`, String(data.get('vin')).trim().toUpperCase()]
+      .filter(Boolean)
+      .join(' · ');
+    const carEl = text('[data-card-car]');
+    carEl.textContent = car;
+    carEl.hidden = !car;
+
+    let total = 0;
+    card.querySelectorAll<HTMLElement>('[data-card-section]').forEach((section) => {
+      let subtotal = 0;
+      section.querySelectorAll<HTMLElement>('[data-card-row]').forEach((row) => {
+        const amount = resolved(row.dataset.cardRow!, auto);
+        row.hidden = amount === 0;
+        row.querySelector('strong')!.textContent = usd(amount);
+        subtotal += amount;
+      });
+      text(`[data-card-subtotal="${section.dataset.cardSection}"]`).textContent = usd(subtotal);
+      total += subtotal;
+    });
+    text('[data-card-total]').textContent = usd(total);
+    text('[data-card-date]').textContent = new Date().toLocaleDateString('uk-UA');
+  }
+
+  // --- Масштаб прев'ю: картка завжди 1080px завширшки (як у PNG), у рамці зменшується. ---
+  function fitPreview() {
+    const scale = Math.min(frame.clientWidth / card.offsetWidth, 1);
+    card.style.transform = `scale(${scale})`;
+    frame.style.height = `${card.offsetHeight * scale}px`;
+  }
+  new ResizeObserver(fitPreview).observe(frame);
+  new ResizeObserver(fitPreview).observe(card);
+
+  // --- Майданчики залежать від аукціону ---
+  const yardSelect = root.querySelector<HTMLSelectElement>('[data-yard-select]')!;
+  field('auction').addEventListener('change', (e) => {
+    fillYardSelect(yardSelect, (e.target as HTMLSelectElement).value as AuctionKey);
+  });
+
+  // --- Об'єм двигуна: список залежить від типу авто; для електро — ємність батареї ---
+  const engineSelect = root.querySelector<HTMLSelectElement>('[data-engine-select]')!;
+  field('vehicleType').addEventListener('change', () => {
+    const previous = Number(engineSelect.value) || DEFAULT_ENGINE_CC;
+    const options = engineOptions(field('vehicleType').value as VehicleType);
+    engineSelect.replaceChildren(...options.map((o) => new Option(o.label, String(o.value))));
+    const closest = options.reduce((a, b) => (Math.abs(b.value - previous) < Math.abs(a.value - previous) ? b : a));
+    engineSelect.value = String(closest.value);
+  });
+  function syncEngineFields() {
+    const isElectric = field('fuel').value === 'electric';
+    root.querySelectorAll<HTMLElement>('[data-show]').forEach((el) => {
+      el.hidden = el.dataset.show === 'battery' ? !isElectric : isElectric;
+    });
+  }
+  field('fuel').addEventListener('change', syncEngineFields);
+  syncEngineFields();
+
+  // --- Експорт ---
+  const exportStatus = root.querySelector<HTMLElement>('[data-export-status]')!;
+
+  async function renderPng() {
+    // Знімаємо масштаб прев'ю на час рендеру, щоб PNG був у повному розмірі.
+    const transform = card.style.transform;
+    card.style.transform = 'none';
+    try {
+      const blob = await toBlob(card, { pixelRatio: 2, cacheBust: true });
+      if (!blob) throw new Error('empty');
+      return blob;
+    } finally {
+      card.style.transform = transform;
+    }
+  }
+
+  function fileName() {
+    const slug = String(field('title').value || 'avto')
+      .toLowerCase()
+      .replace(/[^a-z0-9а-яіїєґ]+/gi, '-')
+      .replace(/^-|-$/g, '');
+    return `rozrakhunok-${slug}-${new Date().toISOString().slice(0, 10)}.png`;
+  }
+
+  root.querySelector('[data-download]')!.addEventListener('click', async () => {
+    exportStatus.textContent = 'Готуємо картинку…';
+    try {
+      const url = URL.createObjectURL(await renderPng());
+      const a = Object.assign(document.createElement('a'), { href: url, download: fileName() });
+      a.click();
+      URL.revokeObjectURL(url);
+      exportStatus.textContent = 'Завантажено.';
+    } catch {
+      exportStatus.textContent = 'Не вдалося створити картинку.';
+    }
+  });
+
+  root.querySelector('[data-copy]')!.addEventListener('click', async () => {
+    exportStatus.textContent = 'Готуємо картинку…';
+    try {
+      // Safari вимагає передати Promise у ClipboardItem синхронно в обробнику кліку.
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': renderPng() })]);
+      exportStatus.textContent = 'Скопійовано — вставте в Telegram/Viber.';
+    } catch {
+      exportStatus.textContent = 'Браузер не дозволив копіювання — завантажте PNG.';
+    }
+  });
+
+  form.addEventListener('input', render);
+  form.addEventListener('change', render);
+  render();
+</script>
+
+<style>
+  .tool {
+    display: grid;
+    gap: var(--space-5);
+    padding-block: var(--space-5) var(--space-7);
+    align-items: start;
+  }
+
+  @media (min-width: 1100px) {
+    .tool {
+      grid-template-columns: 380px 1fr;
+    }
+
+    .tool__preview {
+      position: sticky;
+      top: calc(var(--header-height) + var(--space-3));
+    }
+  }
+
+  .tool h1 {
+    font-size: var(--fs-2xl);
+  }
+
+  .tool__intro {
+    color: var(--color-gray-mid);
+    font-size: var(--fs-sm);
+  }
+
+  fieldset {
+    border: 0;
+    border-top: 2px solid var(--color-black);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3) 0 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  legend {
+    float: left;
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: var(--space-1);
+  }
+
+  .field {
+    display: grid;
+    gap: 2px;
+  }
+
+  .field[hidden] {
+    display: none;
+  }
+
+  .field__vin {
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+  }
+
+  .field > span {
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+
+  .field input,
+  .field select {
+    font: inherit;
+    font-size: var(--fs-sm);
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    color: var(--color-black);
+  }
+
+  .field input:focus-visible,
+  .field select:focus-visible {
+    border-color: var(--color-accent);
+  }
+
+
+
+
+
+
+
+
+
+  .field__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+
+  .field--amount {
+    grid-template-columns: 1fr 120px;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .field--amount input {
+    font-family: var(--font-mono);
+    text-align: right;
+  }
+
+  .field__toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+  }
+
+  .field--amount input[readonly] {
+    border-color: transparent;
+    background: var(--color-gray-light);
+    font-weight: 700;
+    cursor: default;
+  }
+
+  .field--amount input:disabled {
+    opacity: 0.4;
+  }
+
+  .field--amount input::placeholder {
+    color: #9a9a9a;
+  }
+
+  .tool__status {
+    margin: 0;
+    font-size: var(--fs-sm);
+    color: var(--color-gray-mid);
+  }
+
+
+
+
+  .tool__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .tool__preview {
+    min-width: 0;
+  }
+
+  .card-frame {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* ---- Картка (рендериться в PNG 1:1, тож розміри фіксовані в px) ---- */
+  .card {
+    width: 1080px;
+    transform-origin: top left;
+    background: #0c0c0c;
+    color: #fff;
+    font-family: var(--font-base);
+    font-size: 20px;
+    line-height: 1.3;
+  }
+
+  .card__head {
+    position: relative;
+    padding: 48px 56px 40px;
+    background: var(--color-accent);
+    color: #0c0c0c;
+    overflow: hidden;
+  }
+
+  .card__head::after {
+    content: '';
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 340px;
+    height: 340px;
+    border: 28px solid rgba(12, 12, 12, 0.12);
+    transform: rotate(18deg);
+  }
+
+  .card__brand {
+    margin: 0 0 20px;
+    font-family: var(--font-heading);
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .card__brand span {
+    color: #fff;
+  }
+
+  .card__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 76px;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+
+  .card__subtitle {
+    margin: 10px 0 28px;
+    font-weight: 700;
+    font-size: 22px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .card__contacts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .card__contacts li {
+    padding: 6px 14px;
+    border: 2px solid #0c0c0c;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .card__car {
+    margin: 0;
+    padding: 22px 56px;
+    border-bottom: 1px solid #2a2a2a;
+    font-family: var(--font-heading);
+    font-size: 30px;
+    font-weight: 600;
+  }
+
+  .card__car[hidden] {
+    display: none;
+  }
+
+  .card__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    padding: 36px 56px 12px;
+  }
+
+  .card__section {
+    border: 1px solid #2a2a2a;
+    background: #151515;
+  }
+
+  .card__col {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .card__section h3 {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    margin: 0;
+    padding: 16px 20px;
+    border-bottom: 2px solid var(--color-accent);
+    font-family: var(--font-heading);
+    font-size: 26px;
+    text-transform: uppercase;
+  }
+
+  .card__section h3 span:first-child {
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 18px;
+  }
+
+  .card__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #262626;
+  }
+
+  .card__row[hidden] {
+    display: none;
+  }
+
+  .card__label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    font-weight: 600;
+  }
+
+  .card__label em {
+    padding: 2px 8px;
+    background: var(--color-accent);
+    color: #0c0c0c;
+    font-style: normal;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .card__label small {
+    flex-basis: 100%;
+    color: #8c8c8c;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .card__row strong {
+    font-family: var(--font-mono);
+    font-size: 21px;
+    white-space: nowrap;
+  }
+
+  .card__row--subtotal {
+    border-bottom: 0;
+    color: var(--color-accent);
+    text-transform: uppercase;
+  }
+
+  .card__row--subtotal .card__label {
+    font-weight: 800;
+    font-size: 17px;
+  }
+
+  .card__total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 24px;
+    background: var(--color-accent);
+    color: #0c0c0c;
+  }
+
+  .card__total span {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.05;
+  }
+
+  .card__total strong {
+    font-family: var(--font-heading);
+    font-size: 52px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .card__foot {
+    padding: 24px 56px 40px;
+    color: #8c8c8c;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .card__foot p {
+    margin: 0 0 4px;
+  }
+</style>
