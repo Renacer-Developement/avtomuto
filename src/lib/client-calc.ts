@@ -1,5 +1,5 @@
 // Публічний калькулятор (/poslugy/pryhon-avtomobiliv/kalkulyator) — та сама логіка, що на gal.in.ua/calculator:
-// ті ж поля, збори, страхування й формула розмитнення. Відрізняються лише послуги AvtoMuto й доставка до Рудників.
+// ті ж поля, збори, страхування й формула розмитнення. Відрізняються лише послуги AvtoMuto й доставка до Львова.
 
 import { CLIENT_TARIFFS, COMPANY_FEE, CUSTOMS } from '../data/import-calculator';
 import { auctionFee } from './import-calc';
@@ -78,7 +78,7 @@ export function calculateClient(input: ClientCalcInput) {
 
   const c = customs(totalPurchase, input);
   const customsTotal = Math.round(c.toll + c.excise + c.vat);
-  const totalAfterArrival = t.broker + t.loading + customsTotal + t.deliveryToRudnyky;
+  const totalAfterArrival = t.broker + t.loading + customsTotal + t.deliveryToLviv;
 
   const grandTotal = totalPurchase + totalDelivery + totalAfterArrival;
   return {
@@ -97,7 +97,7 @@ export function calculateClient(input: ClientCalcInput) {
     toll: Math.round(c.toll),
     excise: Math.round(c.excise),
     vat: Math.round(c.vat),
-    deliveryToRudnyky: t.deliveryToRudnyky,
+    deliveryToLviv: t.deliveryToLviv,
     totalAfterArrival,
     grandTotal,
     grandTotalUAH: Math.round(grandTotal * input.usdUah),

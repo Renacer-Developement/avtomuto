@@ -76,7 +76,7 @@ const GROUPS: {
       { key: 'broker', label: 'Брокерські послуги' },
       { key: 'loading', label: 'Погрузка' },
       { key: 'customs', label: 'Розмитнення', tooltip: 'Мито, акциз і ПДВ' },
-      { key: 'deliveryToRudnyky', label: 'Доставка до Рудників' },
+      { key: 'deliveryToLviv', label: 'Доставка до Львова' },
     ],
     subtotal: { key: 'totalAfterArrival', label: 'Загальна сума' },
   },
@@ -111,7 +111,7 @@ if (faqLd) schema.push(faqLd);
 
 <Layout
   title="Калькулятор розмитнення авто зі США — AvtoMuto"
-  description="Порахуйте вартість авто з аукціонів США під ключ: аукціонний збір, доставка через Клайпеду, мито, акциз, ПДВ та доставка в Рудники (Львівська обл.)."
+  description="Порахуйте вартість авто з аукціонів США під ключ: аукціонний збір, доставка через Клайпеду, мито, акциз, ПДВ та доставка до Львова."
   path={path}
   schema={schema}
   serviceSlug="pryhon-avtomobiliv"

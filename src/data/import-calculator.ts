@@ -60,16 +60,16 @@ export const VIRTUAL_BID_FEE_ABOVE = 160;
 export const AUCTION_FIXED_FEES = 130;
 
 /**
- * Тарифи публічного калькулятора — як у gal.in.ua (крім послуг AvtoMuto й доставки до Рудників).
+ * Тарифи публічного калькулятора — як у gal.in.ua (крім послуг AvtoMuto й доставки до Львова).
  * customsDeliveryAllowance — умовна доставка, яку додають до ціни + збору для мита й ПДВ.
  */
 export const CLIENT_TARIFFS = {
-  shippingToKlaipeda: 1250,
+  shippingToKlaipeda: 1400,
   storageUsa: 0,
   expedition: 550,
   broker: 200,
   loading: 50,
-  deliveryToRudnyky: 750,
+  deliveryToLviv: 750,
   insuranceRate: 0.02,
   insuranceMin: 200,
   customsDeliveryAllowance: 1800,
@@ -158,14 +158,14 @@ export const REGION_TARIFFS: Record<string, { name: string; port: ExportPortKey;
 };
 
 /**
- * Логістика й послуги від Клайпеди до Рудників. Усе входить у митну вартість:
+ * Логістика й послуги від Клайпеди до Львова. Усе входить у митну вартість:
  * більша частина маршруту — Литва й Польща, тож рахуємо як доставку до кордону.
- * Перший рядок — вигрузка (в генераторі це «Експедиція»), решта — шлях до Рудників.
+ * Перший рядок — вигрузка (в генераторі це «Експедиція»), решта — шлях до Львова.
  */
 export const PORT_COSTS: { label: string; amount: number }[] = [
   { label: 'Вигрузка з порту Клайпеда', amount: 400 },
   // Фіксована ціна, разом із проходженням кордону.
-  { label: 'Доставка Клайпеда — Рудники', amount: 750 },
+  { label: 'Доставка Клайпеда — Львів', amount: 750 },
 ];
 
 /** Пікапам і бусам потрібне місце в контейнері під більше авто. */

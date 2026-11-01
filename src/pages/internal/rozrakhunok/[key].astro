@@ -83,7 +83,7 @@ const sections = [
       { name: 'loading', label: 'Погрузка автомобіля' },
       // Розмитнення не редагується — завжди рахується за формулою (мито + акциз + ПДВ).
       { name: 'customsPayments', label: 'Митні платежі', badge: 'орієнтовно', auto: 'customsPayments', readonly: true },
-      { name: 'toRudnyky', label: 'Доставка до Рудників', auto: 'toRudnyky' },
+      { name: 'toLviv', label: 'Доставка до Львова', auto: 'toLviv' },
     ],
   },
 ];
@@ -316,14 +316,14 @@ const sections = [
     values.transferFee = (price + resolved('auctionFee', values)) * transferFeeRate;
     values.shipping = yard.inland + EXPORT_DOCS_FEE + EXPORT_PORTS[yard.port].ocean * multiplier;
     values.insurance = price * INSURANCE_RATE;
-    // Ті самі тарифи порту, що й у публічному калькуляторі: перший рядок — вигрузка, решта — шлях до Рудників.
-    const [unloading, ...toRudnyky] = PORT_COSTS;
+    // Ті самі тарифи порту, що й у публічному калькуляторі: перший рядок — вигрузка, решта — шлях до Львова.
+    const [unloading, ...toLviv] = PORT_COSTS;
     values.expedition = unloading.amount;
-    values.toRudnyky = toRudnyky.reduce((sum, c) => sum + c.amount, 0);
+    values.toLviv = toLviv.reduce((sum, c) => sum + c.amount, 0);
 
-    // Митна вартість — лот, збір і всі витрати до кордону України (маршрут Клайпеда — Рудники
-    // майже весь іде Литвою й Польщею, тож доставку до Рудників теж включаємо).
-    const toBorder = ['auctionFee', 'shipping', 'insurance', 'storage', 'expedition', 'loading', 'toRudnyky'];
+    // Митна вартість — лот, збір і всі витрати до кордону України (маршрут Клайпеда — Львів
+    // майже весь іде Литвою й Польщею, тож доставку до Львова теж включаємо).
+    const toBorder = ['auctionFee', 'shipping', 'insurance', 'storage', 'expedition', 'loading', 'toLviv'];
     const customsValue = price + toBorder.reduce((sum, name) => sum + resolved(name, values), 0);
 
     const engineCc = num('engine');
