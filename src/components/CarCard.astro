@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Icon from './Icon.astro';
-import { CAR_STATUS_LABELS, carTitle, finalPriceUsd, type CarListing } from '../lib/cars';
+import { CAR_STATUS_LABELS, carTitle, finalPriceUsd, formatMileage, type CarListing } from '../lib/cars';
 import { TEAM, telHref } from '../data/site';
 
 interface Props {
@@ -21,7 +21,7 @@ const isElectric = car.fuelType === 'Електро';
 const engineVolumeLabel = car.engineVolume ? (isElectric ? car.engineVolume : `${car.engineVolume} л`) : null;
 
 const quickSpecs = [
-  car.mileageKm != null ? `${car.mileageKm.toLocaleString('uk-UA')} км` : null,
+  car.mileageKm != null ? formatMileage(car.mileageKm) : null,
   engineVolumeLabel,
   car.fuelType,
   car.transmission,
@@ -29,7 +29,7 @@ const quickSpecs = [
 
 // Розгорнута сітка характеристик — лише для layout="grid" (картка каталогу).
 const specs = [
-  car.mileageKm != null ? { icon: 'road', label: `${car.mileageKm.toLocaleString('uk-UA')} км` } : null,
+  car.mileageKm != null ? { icon: 'road', label: formatMileage(car.mileageKm) } : null,
   car.year ? { icon: 'calendar', label: String(car.year) } : null,
   car.fuelType ? { icon: 'fuel', label: car.fuelType } : null,
   car.transmission ? { icon: 'gearbox', label: car.transmission } : null,

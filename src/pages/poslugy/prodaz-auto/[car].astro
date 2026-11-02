@@ -6,7 +6,7 @@ import ContactCard from '../../../components/ContactCard.astro';
 import CarCard from '../../../components/CarCard.astro';
 import { getServiceBySlug } from '../../../data/services';
 import { TEAM, telHref } from '../../../data/site';
-import { getCarBySlug, getCarListings, CAR_STATUS_LABELS, CAR_SEO_CITIES, carTitle, carSeoTitle, carMetaDescription, finalPriceUsd } from '../../../lib/cars';
+import { getCarBySlug, getCarListings, CAR_STATUS_LABELS, CAR_SEO_CITIES, carTitle, carSeoTitle, carMetaDescription, finalPriceUsd, formatMileage } from '../../../lib/cars';
 import { breadcrumbSchema, vehicleSchema } from '../../../utils/schema';
 
 // Пререндер вимкнено, щоб статус і ціна авто підхоплювались з Hygraph свіжими
@@ -37,7 +37,7 @@ const crumbs = [
 
 const specs = [
   { label: 'Рік випуску', value: car.year ? String(car.year) : undefined },
-  { label: 'Пробіг', value: car.mileageKm != null ? `${car.mileageKm.toLocaleString('uk-UA')} км` : undefined },
+  { label: 'Пробіг', value: car.mileageKm != null ? formatMileage(car.mileageKm) : undefined },
   { label: 'Пальне', value: car.fuelType },
   { label: 'Коробка передач', value: car.transmission },
   { label: 'Привід', value: car.driveType },

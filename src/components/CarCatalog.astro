@@ -1,7 +1,7 @@
 ---
 import CarCard from './CarCard.astro';
 import Icon from './Icon.astro';
-import { CAR_STATUS_LABELS, finalPriceUsd, type CarListing, type CarStatus } from '../lib/cars';
+import { CAR_STATUS_LABELS, finalPriceUsd, mileageThousands, type CarListing, type CarStatus } from '../lib/cars';
 import { TEAM, telHref, type TeamMember } from '../data/site';
 
 interface Props {
@@ -103,7 +103,7 @@ const showFilters = cars.length > 0;
             </div>
           </div>
           <div class="car-filter-field">
-            <span class="car-filter-label">Пробіг, км</span>
+            <span class="car-filter-label">Пробіг, тис. км</span>
             <div class="car-catalog__filters-range">
               <input id="filter-mileage-min" class="car-filter-input" type="number" inputmode="numeric" placeholder="Від" />
               <input id="filter-mileage-max" class="car-filter-input" type="number" inputmode="numeric" placeholder="До" />
@@ -127,7 +127,7 @@ const showFilters = cars.length > 0;
           data-body={car.bodyType ? normalizeKey(car.bodyType) : ''}
           data-fuel={car.fuelType ? normalizeKey(car.fuelType) : ''}
           data-price={finalPriceUsd(car) ?? ''}
-          data-mileage={car.mileageKm ?? ''}
+          data-mileage={car.mileageKm != null ? mileageThousands(car.mileageKm) : ''}
         >
           <CarCard car={car} layout="grid" />
         </div>

@@ -1,6 +1,6 @@
 import { SITE, TEAM } from '../data/site';
 import type { Service } from '../data/services';
-import { carTitle, finalPriceUsd, type CarListing } from '../lib/cars';
+import { carTitle, finalPriceUsd, mileageThousands, type CarListing } from '../lib/cars';
 
 export function organizationSchema() {
   return {
@@ -128,7 +128,7 @@ export function vehicleSchema(car: CarListing, path: string) {
     brand: { '@type': 'Brand', name: car.name },
     model: car.model,
     vehicleModelDate: car.year ? String(car.year) : undefined,
-    mileageFromOdometer: car.mileageKm != null ? { '@type': 'QuantitativeValue', value: car.mileageKm, unitCode: 'KMT' } : undefined,
+    mileageFromOdometer: car.mileageKm != null ? { '@type': 'QuantitativeValue', value: mileageThousands(car.mileageKm) * 1000, unitCode: 'KMT' } : undefined,
     fuelType: car.fuelType,
     vehicleTransmission: car.transmission,
     vehicleEngine: car.engineVolume ? { '@type': 'EngineSpecification', engineDisplacement: `${car.engineVolume} L` } : undefined,

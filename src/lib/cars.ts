@@ -109,6 +109,16 @@ function parseDiscount(raw?: string): number | undefined {
   return n > 0 ? n : undefined;
 }
 
+// Пробіг у Hygraph вносять по-різному: повністю (106053) або вже в тисячах (106).
+// На сайті показуємо лише тисячі — перші три цифри шестизначного значення: 106053 → 106 т. км.
+export function mileageThousands(km: number): number {
+  return km >= 1000 ? Math.floor(km / 1000) : km;
+}
+
+export function formatMileage(km: number): string {
+  return `${mileageThousands(km)} т. км`;
+}
+
 function mapCar(c: HygraphCarListing): CarListing {
   return {
     id: c.id,
@@ -237,7 +247,7 @@ export function brandSlug(name: string): string {
  */
 export function carMetaDescription(car: CarListing): string {
   const specs = [
-    car.mileageKm != null ? `${car.mileageKm.toLocaleString('uk-UA')} км` : null,
+    car.mileageKm != null ? formatMileage(car.mileageKm) : null,
     car.fuelType,
     car.transmission,
   ]
