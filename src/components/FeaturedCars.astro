@@ -83,6 +83,17 @@ const cars = (await getCarListings()).filter((c) => c.status === 'available').sl
     border-color: var(--color-black);
   }
 
+  /* Кнопка в шапці — лише на десктопі; на мобільному її прибрано */
+  .featured-cars__head .featured-cars__all {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .featured-cars__head .featured-cars__all {
+      display: inline-flex;
+    }
+  }
+
   .featured-cars__all:hover,
   .featured-cars__all:focus-visible {
     background: var(--color-black);

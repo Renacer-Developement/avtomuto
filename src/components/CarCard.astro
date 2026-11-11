@@ -103,9 +103,8 @@ const gtmItem = JSON.stringify({
     )}
     {layout === 'grid' && (
       <div class="car-card__actions">
-        <a href={detailUrl} class="btn btn-primary car-card__view" data-gtm-select-item={gtmItem}>Переглянути автомобіль</a>
-        <a href={telHref(TEAM.andriy.phone)} class="btn btn-outline car-card__pick" data-gtm-event="click_phone" data-team-member={TEAM.andriy.name}>Підібрати авто: {TEAM.andriy.name}</a>
-        <a href={telHref(TEAM.volodymyr.phone)} class="btn btn-outline car-card__pick" data-gtm-event="click_phone" data-team-member={TEAM.volodymyr.name}>Підібрати авто: {TEAM.volodymyr.name}</a>
+        <a href={detailUrl} class="btn btn-primary car-card__view" data-gtm-select-item={gtmItem}>Переглянути</a>
+        <a href={telHref(TEAM.andriy.phone)} class="btn btn-outline car-card__pick" data-gtm-event="click_phone" data-team-member={TEAM.andriy.name}>Підібрати авто</a>
       </div>
     )}
   </div>
@@ -318,15 +317,16 @@ const gtmItem = JSON.stringify({
   }
 
   .car-card__actions {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: var(--space-3);
   }
 
   .car-card__view,
   .car-card__pick {
-    flex: 1;
-    min-width: 180px;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    font-size: var(--fs-sm, 0.875rem);
     text-align: center;
     justify-content: center;
   }

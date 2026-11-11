@@ -2,7 +2,7 @@
 import Layout from '../../../layouts/Layout.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import Icon from '../../../components/Icon.astro';
-import ContactCard from '../../../components/ContactCard.astro';
+import CarContactCard from '../../../components/CarContactCard.astro';
 import CarCard from '../../../components/CarCard.astro';
 import { getServiceBySlug } from '../../../data/services';
 import { TEAM, telHref } from '../../../data/site';
@@ -92,14 +92,6 @@ const gtmViewItem = {
             ${displayPrice.toLocaleString('uk-UA')}
           </p>
         )}
-        <div class="car-header__buy-actions">
-          <a href={telHref(responsible.phone)} class="btn btn-primary" data-gtm-event="click_phone">
-            <Icon name="phone" size={18} /> Запитати про це авто
-          </a>
-          <a href={telHref(TEAM.volodymyr.phone)} class="btn btn-outline" data-gtm-event="click_phone">
-            <Icon name="phone" size={18} /> {TEAM.volodymyr.phoneDisplay}
-          </a>
-        </div>
       </div>
     </div>
   </section>
@@ -190,8 +182,7 @@ const gtmViewItem = {
   )}
 
   <section class="container contact-cards" data-animate>
-    <ContactCard member={responsible} eyebrow="Хочете оглянути це авто?" ctaLabel="Запитати про це авто" />
-    <ContactCard member={TEAM.volodymyr} ctaLabel="Запитати про це авто" />
+    <CarContactCard member={TEAM.andriy} />
   </section>
 
   {otherCars.length > 0 && (

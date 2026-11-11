@@ -1,0 +1,168 @@
+---
+import Icon from './Icon.astro';
+import type { TeamMember } from '../data/site';
+import { telHref, waHref, viberHref, tgHref } from '../data/site';
+
+interface Props {
+  member: TeamMember;
+  heading?: string;
+  ctaLabel?: string;
+}
+
+const { member, heading = 'Сподобалось авто?', ctaLabel = 'Зателефонувати' } = Astro.props;
+---
+
+<aside class="car-contact">
+  <div class="car-contact__info">
+    <p class="car-contact__heading">{heading}</p>
+    <p class="car-contact__manager">
+      <span class="car-contact__avatar" aria-hidden="true">{member.name.charAt(0)}</span>
+      <span class="car-contact__who"><strong>{member.name}</strong><span class="car-contact__role">Менеджер з продажу авто</span></span>
+    </p>
+  </div>
+
+  <div class="car-contact__actions">
+    <a href={telHref(member.phone)} class="btn btn-primary car-contact__call" data-gtm-event="click_phone" data-team-member={member.name}>
+      <Icon name="phone" size={18} />
+      <span>{ctaLabel}</span>
+    </a>
+    <div class="car-contact__messengers">
+      <a href={waHref(member.phone)} data-gtm-event="click_messenger" data-team-member={member.name} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={18} /> WhatsApp</a>
+      <a href={viberHref(member.phone)} data-gtm-event="click_messenger" data-team-member={member.name}><Icon name="viber" size={18} /> Viber</a>
+      <a href={tgHref(member.phone)} data-gtm-event="click_messenger" data-team-member={member.name} target="_blank" rel="noopener noreferrer"><Icon name="telegram" size={18} /> Telegram</a>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .car-contact {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-6) var(--space-5);
+    background: var(--color-black);
+    color: var(--color-white);
+    border-radius: var(--radius-md);
+    border-bottom: 4px solid var(--color-accent);
+  }
+
+  @media (min-width: 768px) {
+    .car-contact {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-6);
+    }
+  }
+
+  .car-contact__heading {
+    font-size: var(--fs-xl, 1.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: var(--space-3);
+  }
+
+  .car-contact__manager {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: var(--fs-sm);
+  }
+
+  .car-contact__manager strong {
+    color: var(--color-white);
+    font-size: var(--fs-base);
+  }
+
+  .car-contact__who {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+  }
+
+  .car-contact__role {
+    font-size: var(--fs-sm);
+  }
+
+  .car-contact__avatar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-white);
+    font-weight: 800;
+  }
+
+  .car-contact__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 768px) {
+    .car-contact__actions {
+      align-items: flex-end;
+      text-align: right;
+    }
+  }
+
+  .car-contact__call {
+    justify-content: center;
+    white-space: nowrap;
+    padding-inline: 1rem;
+  }
+
+  .car-contact__messengers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .car-contact__messengers a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.4rem 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 999px;
+    color: var(--color-white);
+    font-size: var(--fs-sm);
+    text-decoration: none;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .car-contact__messengers a:hover,
+  .car-contact__messengers a:focus-visible {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  @media (max-width: 767px) {
+    .car-contact {
+      padding: var(--space-5) var(--space-4);
+    }
+
+    .car-contact__call {
+      font-size: 0.9375rem;
+    }
+
+    .car-contact .car-contact__messengers {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-2);
+    }
+
+    .car-contact__messengers a {
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 0.5rem 0.25rem;
+      font-size: 0.8125rem;
+    }
+  }
+</style>
