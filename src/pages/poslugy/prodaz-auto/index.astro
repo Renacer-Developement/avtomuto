@@ -50,9 +50,6 @@ const description =
       <a href={telHref(responsible.phone)} class="btn btn-primary hero__cta" data-gtm-event="click_phone" data-team-member={responsible.name}>
         <Icon name="phone" size={18} /> {responsible.phoneDisplay}
       </a>
-      <a href={telHref(TEAM.volodymyr.phone)} class="btn btn-outline hero__cta" data-gtm-event="click_phone" data-team-member={TEAM.volodymyr.name}>
-        <Icon name="phone" size={18} /> {TEAM.volodymyr.phoneDisplay}
-      </a>
     </div>
   </section>
 
@@ -98,6 +95,27 @@ const description =
   .catalog-page {
     position: relative;
     padding-block: var(--space-6) var(--space-8);
+  }
+
+  @media (max-width: 767px) {
+    /* Герой прихований візуально, але лишається в DOM (h1, текст, номер) для SEO та скрінрідерів.
+       Не display:none — цей прийом (sr-only) надійніше для індексації. */
+    .hero {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .catalog-page {
+      padding-top: var(--space-5);
+    }
   }
 
   .catalog-page__index {
