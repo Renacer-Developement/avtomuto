@@ -47,17 +47,13 @@ const description =
     <h1>Автомобілі в наявності — купити в Рудниках</h1>
     <p class="lead">{service.shortDescription}</p>
     <div class="hero__cta-group">
-      <a href={telHref(responsible.phone)} class="btn btn-primary hero__cta" data-gtm-event="click_phone" data-team-member={responsible.name}>
+      <a href={telHref(responsible.phone)} class="btn btn-primary hero__cta" tabindex="-1" data-gtm-event="click_phone" data-team-member={responsible.name}>
         <Icon name="phone" size={18} /> {responsible.phoneDisplay}
       </a>
     </div>
   </section>
 
   <section class="container catalog-page" data-animate>
-    <span class="index-mark catalog-page__index" aria-hidden="true">02</span>
-    <p class="eyebrow">Каталог</p>
-    <h2>Оберіть авто</h2>
-
     <CarCatalog cars={cars} responsible={responsible} />
   </section>
 
@@ -69,27 +65,19 @@ const description =
 </Layout>
 
 <style>
+  /* Герой прихований візуально на всіх екранах, але лишається в DOM (h1, текст, номер)
+     для SEO та скрінрідерів. Не display:none — цей прийом (sr-only) надійніше для індексації. */
   .hero {
-    position: relative;
-    padding-block: var(--space-7) var(--space-6);
-  }
-
-  .hero__index {
     position: absolute;
-    top: -1rem;
-    left: -0.2rem;
-    z-index: -1;
-  }
-
-  .hero__cta-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    margin-top: var(--space-4);
-  }
-
-  .hero__cta {
-    margin-top: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .catalog-page {
@@ -98,36 +86,8 @@ const description =
   }
 
   @media (max-width: 767px) {
-    /* Герой прихований візуально, але лишається в DOM (h1, текст, номер) для SEO та скрінрідерів.
-       Не display:none — цей прийом (sr-only) надійніше для індексації. */
-    .hero {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      margin: -1px;
-      padding: 0;
-      border: 0;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-
     .catalog-page {
       padding-top: var(--space-5);
     }
   }
-
-  .catalog-page__index {
-    position: absolute;
-    top: var(--space-4);
-    right: 0;
-    z-index: -1;
-  }
-
-  .lead {
-    color: var(--color-gray-mid);
-    max-width: 65ch;
-  }
-
 </style>

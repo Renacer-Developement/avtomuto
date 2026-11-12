@@ -299,6 +299,47 @@ const gtmViewItem = {
     }
   }
 
+  /* Мобільний: компактна шапка — назва з роком, під нею ціна зліва та статус справа.
+     Надпис «Продаж авто» ховаємо (він дублює хлібні крихти). */
+  @media (max-width: 767px) {
+    .car-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      column-gap: var(--space-3);
+      row-gap: var(--space-3);
+      padding-block: var(--space-4) var(--space-3);
+    }
+
+    .car-header .eyebrow {
+      display: none;
+    }
+
+    .car-header__row {
+      display: contents;
+    }
+
+    .car-header__row > div:first-child {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+
+    .car-header__row h1 {
+      margin-bottom: 0;
+    }
+
+    .car-header__buy {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .car-header .car-hero__status {
+      grid-column: 2;
+      grid-row: 2;
+      margin-bottom: 0;
+    }
+  }
+
   .car-header__year {
     margin: var(--space-1) 0 0;
     font-size: var(--fs-sm);

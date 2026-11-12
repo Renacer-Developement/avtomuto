@@ -42,7 +42,6 @@ const showFilters = cars.length > 0;
 {cars.length > 0 ? (
   <div class="car-catalog">
     <div class="car-catalog__toolbar">
-      <p class="car-catalog__count" id="car-catalog-count">Знайдено {cars.length} авто</p>
       {showFilters && (
         <button type="button" class="car-catalog__filters-toggle" id="filters-toggle">
           <Icon name="filter" size={16} /> Фільтри
@@ -165,7 +164,6 @@ const showFilters = cars.length > 0;
   const mileageMax = document.getElementById('filter-mileage-max') as HTMLInputElement | null;
   const resetBtn = document.getElementById('filter-reset');
   const emptyMsg = document.getElementById('car-catalog-empty');
-  const countLabel = document.getElementById('car-catalog-count');
   const loadStatus = document.getElementById('car-catalog-load-status');
   const sentinel = document.getElementById('car-catalog-sentinel');
 
@@ -247,7 +245,6 @@ const showFilters = cars.length > 0;
     const totalCount = matches.length;
     if (emptyMsg) emptyMsg.hidden = totalCount > 0;
     if (filtersApply) filtersApply.textContent = `Показати ${totalCount} авто`;
-    if (countLabel) countLabel.textContent = `Знайдено ${totalCount} авто`;
 
     const hasMore = shown.length < totalCount;
     if (sentinel) sentinel.hidden = !hasMore;
@@ -321,15 +318,9 @@ const showFilters = cars.length > 0;
   .car-catalog__toolbar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: var(--space-3);
     margin-top: var(--space-4);
-  }
-
-  .car-catalog__count {
-    margin: 0;
-    color: var(--color-gray-mid);
-    font-size: var(--fs-sm);
   }
 
   .car-catalog__filters-toggle {
@@ -574,12 +565,8 @@ const showFilters = cars.length > 0;
       gap: var(--space-5);
     }
 
-    .car-catalog__toolbar {
-      grid-column: 2;
-      grid-row: 1;
-      margin-top: 0;
-    }
-
+    /* на десктопі в тулбарі лишалась тільки мобільна кнопка «Фільтри» — ховаємо його цілком */
+    .car-catalog__toolbar,
     .car-catalog__filters-toggle,
     .car-catalog__backdrop,
     .car-catalog__filters-apply,
@@ -596,7 +583,7 @@ const showFilters = cars.length > 0;
       transform: none;
       box-shadow: none;
       grid-column: 1;
-      grid-row: 1 / span 3;
+      grid-row: 1 / span 2;
       display: flex;
       flex-direction: column;
       align-items: stretch;
@@ -639,14 +626,14 @@ const showFilters = cars.length > 0;
 
     .car-catalog__list {
       grid-column: 2;
-      grid-row: 2;
+      grid-row: 1;
       margin-top: 0;
       grid-template-columns: 1fr;
     }
 
     .car-catalog__empty {
       grid-column: 2;
-      grid-row: 3;
+      grid-row: 2;
     }
   }
 
@@ -669,7 +656,7 @@ const showFilters = cars.length > 0;
   @media (min-width: 1024px) {
     .car-catalog__load-status {
       grid-column: 2;
-      grid-row: 4;
+      grid-row: 3;
     }
   }
 
